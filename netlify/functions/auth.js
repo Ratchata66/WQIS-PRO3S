@@ -1,12 +1,5 @@
 'use strict';
 
-let generatedUsers = [];
-try {
-    generatedUsers = require('./generated-users').users || [];
-} catch (_) {
-    generatedUsers = [];
-}
-
 /**
  * POST /.netlify/functions/auth
  * Body: { username, password, remember }
@@ -48,7 +41,7 @@ exports.handler = async (event) => {
         { id: 3, username: process.env.USER_VIEWER,    password: process.env.PASS_VIEWER,    role: 'viewer',    name: 'Quality Viewer',        avatar: 'V' },
         { id: 4, username: process.env.USER_ADMIN2,    password: process.env.PASS_ADMIN2,    role: 'admin',     name: 'Nawapun W.',            avatar: 'N' },
     ];
-    const USERS = generatedUsers.length ? generatedUsers : envUsers;
+    const USERS = envUsers;
 
     const lookup = username.toLowerCase();
     const user = USERS.find(u =>
