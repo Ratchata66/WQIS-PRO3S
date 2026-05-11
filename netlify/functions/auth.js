@@ -14,6 +14,7 @@ try {
  * Credentials are stored in Netlify environment variables — never in source.
  * Required env vars:
  *   USER_ADMIN, PASS_ADMIN
+ *   USER_ADMIN2, PASS_ADMIN2
  *   USER_INSPECTOR, PASS_INSPECTOR
  *   USER_VIEWER, PASS_VIEWER
  */
@@ -45,6 +46,7 @@ exports.handler = async (event) => {
         { id: 1, username: process.env.USER_ADMIN,     password: process.env.PASS_ADMIN,     role: 'admin',     name: 'System Administrator', avatar: 'A' },
         { id: 2, username: process.env.USER_INSPECTOR, password: process.env.PASS_INSPECTOR, role: 'inspector', name: 'Weld Inspector',        avatar: 'I' },
         { id: 3, username: process.env.USER_VIEWER,    password: process.env.PASS_VIEWER,    role: 'viewer',    name: 'Quality Viewer',        avatar: 'V' },
+        { id: 4, username: process.env.USER_ADMIN2,    password: process.env.PASS_ADMIN2,    role: 'admin',     name: 'Nawapun W.',            avatar: 'N' },
     ];
     const USERS = generatedUsers.length ? generatedUsers : envUsers;
 
