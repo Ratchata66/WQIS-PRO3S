@@ -2,6 +2,7 @@ node_modules/
 dist/
 release/
 /generated-users.js
+netlify/functions/generated-users.js
 debug_out.txt
 .claude/
 .vscode/
