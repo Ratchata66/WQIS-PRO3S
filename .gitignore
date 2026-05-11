@@ -1,0 +1,8 @@
+node_modules/
+dist/
+release/
+generated-users.js
+debug_out.txt
+.claude/
+.vscode/
+*.docx

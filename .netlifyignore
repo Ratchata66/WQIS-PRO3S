@@ -1,0 +1,20 @@
+# Electron runtime: not needed on the web
+main.js
+node_modules/
+dist/
+release/
+package.json
+package-lock.json
+generated-users.js
+database/
+
+# Development and editor artifacts
+.git/
+.vscode/
+memory/
+CLAUDE.md
+
+# Legacy or local-only assets
+*.docx
+WEB1 WQIS/
+test_*.jpg

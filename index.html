@@ -1,0 +1,1934 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRO3S WQIS - Weld Quality Inspection System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+
+    /* DESIGN TOKENS - light / dark */
+    :root {
+        --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        /* transitions */
+        --trans: 0.18s cubic-bezier(.4,0,.2,1);
+        --trans-slow: 0.32s cubic-bezier(.22,1,.36,1);
+        /* radii */
+        --r-sm: 8px; --r-md: 10px; --r-lg: 14px; --r-xl: 18px; --r-2xl: 22px; --r-pill: 999px;
+        --sidebar-w: 220px;
+        --right-w: 292px;
+        --content-pad: 20px;
+    }
+
+    /* DARK (default) */
+    [data-theme="dark"] {
+        color-scheme: dark;
+        --bg:        #101114;
+        --surface:   #17191d;
+        --surface-2: #1d2026;
+        --card:      #20242b;
+        --card-alt:  #181b21;
+        --border:    rgba(255,255,255,0.075);
+        --border-em: rgba(255,255,255,0.14);
+        --text-1:    #f2f0ec;
+        --text-2:    rgba(242,240,236,0.62);
+        --text-3:    rgba(242,240,236,0.38);
+        --accent:    #5b8def;
+        --accent-soft: rgba(91,141,239,0.14);
+        --accent-em: rgba(91,141,239,0.28);
+        --success:   #34d399;
+        --success-soft: rgba(52,211,153,0.13);
+        --danger:    #f87171;
+        --danger-soft: rgba(248,113,113,0.13);
+        --warning:   #fbbf24;
+        --warning-soft: rgba(251,191,36,0.13);
+        --shadow:    rgba(0,0,0,0.42);
+        --shadow-card: 0 1px 2px rgba(0,0,0,0.28), 0 10px 26px rgba(0,0,0,0.20);
+        --scrollbar: rgba(255,255,255,0.12);
+        --splash-bg: radial-gradient(ellipse at center, rgba(91,141,239,0.14) 0%, #101114 68%);
+    }
+
+    /* LIGHT */
+    [data-theme="light"] {
+        color-scheme: light;
+        --bg:        #f6f7f9;
+        --surface:   #ffffff;
+        --surface-2: #f0f3f7;
+        --card:      #ffffff;
+        --card-alt:  #f7f9fc;
+        --border:    rgba(15,23,42,0.08);
+        --border-em: rgba(15,23,42,0.14);
+        --text-1:    #17181c;
+        --text-2:    #626975;
+        --text-3:    #9aa2af;
+        --accent:    #3167e7;
+        --accent-soft: rgba(49,103,231,0.09);
+        --accent-em: rgba(49,103,231,0.18);
+        --success:   #059669;
+        --success-soft: rgba(5,150,105,0.1);
+        --danger:    #dc2626;
+        --danger-soft: rgba(220,38,38,0.09);
+        --warning:   #d97706;
+        --warning-soft: rgba(217,119,6,0.1);
+        --shadow:    rgba(15,23,42,0.10);
+        --shadow-card: 0 1px 2px rgba(15,23,42,0.06), 0 8px 22px rgba(15,23,42,0.06);
+        --scrollbar: rgba(0,0,0,0.12);
+        --splash-bg: radial-gradient(ellipse at center, rgba(49,103,231,0.09) 0%, #f6f7f9 68%);
+    }
+
+
+    /* RESET & BASE */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; overflow: hidden; }
+    body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text-1);
+        font-size: 14px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: geometricPrecision;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+    }
+    img { display: block; }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: var(--r-pill); }
+
+
+    /* SPLASH */
+    .splash {
+        position: fixed; inset: 0; z-index: 999;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--splash-bg);
+        transition: opacity 0.5s var(--trans), visibility 0s linear 0.5s;
+    }
+    body.loaded .splash { opacity: 0; visibility: hidden; }
+    .splash-box {
+        display: flex; flex-direction: column; align-items: center; gap: 18px;
+        padding: 40px 48px; border-radius: var(--r-2xl);
+        background: var(--surface); border: 1px solid var(--border-em);
+        box-shadow: 0 32px 80px var(--shadow);
+        animation: splashIn 0.6s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes splashIn { from { opacity:0; transform:scale(.88) translateY(16px); } to { opacity:1; transform:none; } }
+    .splash-logo { width: 80px; height: 80px; object-fit: contain; filter: drop-shadow(0 0 18px var(--accent)); }
+    .splash-name { font-size: 2rem; font-weight: 800; letter-spacing: 0.04em; }
+    .splash-sub  { font-size: 0.88rem; color: var(--text-2); text-align: center; max-width: 320px; line-height: 1.65; }
+    .splash-bar  { width: 200px; height: 3px; background: var(--border); border-radius: var(--r-pill); overflow: hidden; }
+    .splash-progress { height: 100%; background: var(--accent); border-radius: var(--r-pill); animation: loadBar 1.6s ease forwards; }
+    @keyframes loadBar { from { width:0; } to { width:100%; } }
+
+
+    /* TOAST SYSTEM */
+    .toast-container {
+        position: fixed; bottom: 24px; right: 24px;
+        display: flex; flex-direction: column; gap: 8px; z-index: 998;
+    }
+    .toast {
+        display: flex; align-items: center; gap: 10px;
+        padding: 12px 16px; border-radius: var(--r-lg);
+        background: var(--card); border: 1px solid var(--border-em);
+        box-shadow: var(--shadow-card);
+        font-size: 0.875rem; font-weight: 500; color: var(--text-1);
+        min-width: 220px; max-width: 360px;
+        animation: toastIn 0.3s cubic-bezier(.34,1.56,.64,1) both;
+        transition: opacity 0.3s, transform 0.3s;
+    }
+    .toast.out { opacity:0; transform: translateX(20px); }
+    @keyframes toastIn { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: none; } }
+    .toast-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .toast.success .toast-dot { background: var(--success); }
+    .toast.error   .toast-dot { background: var(--danger); }
+    .toast.info    .toast-dot { background: var(--accent); }
+    .toast.warning .toast-dot { background: var(--warning); }
+
+
+    /* LAYOUT */
+    .app {
+        display: grid;
+        grid-template-columns: var(--sidebar-w) minmax(0, 1fr) var(--right-w);
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        background:
+            linear-gradient(180deg, rgba(255,255,255,0.015), transparent 220px),
+            var(--bg);
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+        min-width: 0;
+        display: flex; flex-direction: column;
+        background: color-mix(in srgb, var(--surface) 96%, transparent);
+        border-right: 1px solid var(--border);
+        padding: 16px 10px;
+        overflow-y: auto;
+        transition: background var(--trans), border-color var(--trans);
+    }
+    .sidebar-top {
+        display: flex; align-items: center; gap: 10px;
+        padding: 6px 8px 18px; border-bottom: 1px solid var(--border);
+        margin-bottom: 16px;
+    }
+    .sidebar-logo { width: 34px; height: 34px; object-fit: contain; flex-shrink:0; }
+    .sidebar-brand { display: flex; flex-direction: column; }
+    .brand-name { font-size: 0.95rem; font-weight: 700; color: var(--text-1); letter-spacing: 0.02em; }
+    .brand-tag  { font-size: 0.7rem;  font-weight: 500; color: var(--text-2); letter-spacing: 0.06em; text-transform: uppercase; }
+
+    .nav-label { font-size: 0.68rem; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.1em; padding: 0 8px; margin-bottom: 4px; margin-top: 4px; }
+    .nav-item {
+        display: flex; align-items: center; gap: 9px;
+        min-height: 38px;
+        padding: 8px 10px; border-radius: var(--r-md); border: 1px solid transparent;
+        color: var(--text-2); font-size: 0.84rem; font-weight: 560;
+        background: none; width: 100%; text-align: left; cursor: pointer;
+        transition: background var(--trans), border-color var(--trans), color var(--trans), transform var(--trans);
+        margin-bottom: 2px;
+    }
+    .nav-item:hover { background: var(--accent-soft); color: var(--text-1); transform: translateX(2px); }
+    .nav-item.active {
+        background: var(--accent-soft); border-color: var(--accent-em);
+        color: var(--accent); font-weight: 600;
+    }
+    .nav-icon { width: 18px; height: 18px; flex-shrink: 0; opacity: 0.7; }
+    .nav-item.active .nav-icon { opacity: 1; }
+
+    .sidebar-footer {
+        margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border);
+        font-size: 0.72rem; color: var(--text-3); line-height: 1.7;
+    }
+
+    /* MAIN */
+    .main { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+
+    .topbar {
+        display: flex; align-items: center; justify-content: space-between;
+        min-height: 70px;
+        padding: 11px var(--content-pad); border-bottom: 1px solid var(--border);
+        background: color-mix(in srgb, var(--surface) 96%, transparent);
+        gap: 16px; flex-shrink: 0;
+        transition: background var(--trans), border-color var(--trans);
+    }
+    .topbar-left { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+    .topbar-title { font-size: 1.02rem; font-weight: 720; color: var(--text-1); line-height: 1.25; }
+    .topbar-sub   { font-size: 0.76rem; color: var(--text-2); line-height: 1.35; max-width: 520px; }
+    .topbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+    .tag-badge {
+        padding: 4px 11px; border-radius: var(--r-pill);
+        background: var(--accent-soft); border: 1px solid var(--accent-em);
+        color: var(--accent); font-size: 0.68rem; font-weight: 600;
+        text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .clock-box {
+        display: flex; flex-direction: column; align-items: flex-end;
+        padding: 6px 12px; border-radius: var(--r-md);
+        background: var(--card); border: 1px solid var(--border);
+    }
+    .clock-time { font-size: 0.88rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-1); }
+    .clock-date { font-size: 0.7rem; color: var(--text-2); }
+
+    /* theme toggle button */
+    .theme-btn {
+        width: 34px; height: 34px; border-radius: var(--r-md);
+        background: var(--card); border: 1px solid var(--border);
+        color: var(--text-2); cursor: pointer; display: grid; place-items: center;
+        transition: background var(--trans), color var(--trans), transform var(--trans), border-color var(--trans);
+    }
+    .theme-btn:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-em); transform: translateY(-1px); }
+    .theme-btn.refreshing svg { animation: refreshSpin 0.65s ease; }
+    @keyframes refreshSpin { to { transform: rotate(360deg); } }
+
+    /* CONTENT AREA */
+    .content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: var(--content-pad); }
+    .page-view { display: none; animation: fadeUp 0.28s var(--trans-slow) both; }
+    .page-view.active { display: block; }
+    @keyframes fadeUp { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: none; } }
+
+    /* RIGHT PANEL */
+    .right-panel {
+        min-width: 0;
+        display: flex; flex-direction: column; gap: 0;
+        background: color-mix(in srgb, var(--surface) 96%, transparent);
+        border-left: 1px solid var(--border);
+        overflow-y: auto;
+        transition: background var(--trans);
+    }
+    .rp-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    .rp-section:last-child { border-bottom: none; }
+    .rp-section-title {
+        font-size: 0.7rem; font-weight: 600; color: var(--text-3);
+        text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 10px;
+    }
+    .rp-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 6px 0; font-size: 0.8rem;
+    }
+    .rp-row .label { color: var(--text-2); }
+    .rp-row .value { font-weight: 600; color: var(--text-1); font-size: 0.82rem; }
+
+
+    /* CARDS & KPI */
+    .card {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: var(--r-xl); box-shadow: var(--shadow-card);
+        transition: box-shadow var(--trans), border-color var(--trans), background var(--trans), transform var(--trans);
+    }
+    .card:hover { box-shadow: 0 8px 28px var(--shadow); border-color: var(--border-em); transform: translateY(-1px); }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 16px; }
+    .kpi-card { padding: 16px 18px; min-height: 118px; display: flex; flex-direction: column; justify-content: center; }
+    .kpi-label { font-size: 0.66rem; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.075em; margin-bottom: 8px; }
+    .kpi-value { font-size: clamp(1.55rem, 2.1vw, 1.95rem); font-weight: 800; color: var(--text-1); line-height: 1; margin-bottom: 7px; }
+    .kpi-note  { font-size: 0.73rem; color: var(--text-2); line-height: 1.42; max-width: 18rem; }
+    .kpi-accent { color: var(--accent) !important; }
+    .kpi-success { color: var(--success) !important; }
+    .kpi-danger  { color: var(--danger)  !important; }
+
+    /* chart grid */
+    .chart-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; margin-bottom: 16px; }
+    .chart-card { padding: 16px 18px; display: flex; flex-direction: column; min-width: 0; }
+    .chart-card h3 { font-size: 0.92rem; font-weight: 680; color: var(--text-1); margin-bottom: 2px; }
+    .chart-card p  { font-size: 0.74rem; color: var(--text-2); line-height: 1.45; margin-bottom: 12px; }
+    .chart-wrap { flex: 1; min-height: 184px; position: relative; }
+    .chart-wrap canvas { width: 100% !important; height: 100% !important; }
+
+
+    /* TABLE */
+    .table-wrap { overflow: auto; border-radius: var(--r-xl); }
+    table { width: 100%; border-collapse: collapse; min-width: 520px; }
+    th { padding: 9px 14px; font-size: 0.67rem; font-weight: 720; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.075em; border-bottom: 1px solid var(--border); text-align: left; background: color-mix(in srgb, var(--card-alt) 72%, transparent); }
+    td { padding: 10px 14px; font-size: 0.81rem; color: var(--text-1); border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background var(--trans); }
+    tbody tr:hover { background: var(--accent-soft); }
+
+    /* status pills */
+    .pill {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 3px 10px; border-radius: var(--r-pill);
+        font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+    }
+    .pill::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    .pill-pass    { background: var(--success-soft); color: var(--success); }
+    .pill-fail    { background: var(--danger-soft);  color: var(--danger);  }
+    .pill-warn    { background: var(--warning-soft); color: var(--warning); }
+
+    /* result badge (right panel) */
+    .result-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 5px 12px; border-radius: var(--r-pill);
+        font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em;
+    }
+    .result-badge.pass    { background: var(--success-soft); color: var(--success); border: 1px solid rgba(52,211,153,0.25); }
+    .result-badge.fail    { background: var(--danger-soft);  color: var(--danger);  border: 1px solid rgba(248,113,113,0.25); }
+    .result-badge.pending { background: var(--card); color: var(--text-2); border: 1px solid var(--border); }
+
+
+    /* INSPECTION FORM (right panel) */
+    .field-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 9px; }
+    .field-group:last-child { margin-bottom: 0; }
+    .field-label { font-size: 0.69rem; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.07em; }
+    .field-input, .field-select, .field-textarea {
+        background: var(--card-alt); border: 1px solid var(--border);
+        border-radius: var(--r-sm); padding: 7px 10px;
+        color: var(--text-1); font-size: 0.82rem; width: 100%;
+        transition: border-color var(--trans), background var(--trans), box-shadow var(--trans);
+    }
+    .field-input:focus, .field-select:focus, .field-textarea:focus {
+        outline: none; border-color: var(--accent); background: var(--card);
+        box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .field-input:disabled, .field-select:disabled, .field-textarea:disabled {
+        opacity: 0.5; cursor: default; background: transparent; border-color: transparent;
+        box-shadow: none;
+    }
+    .panel-edit-active .field-input:disabled,
+    .panel-edit-active .field-select:disabled,
+    .panel-edit-active .field-textarea:disabled { opacity: 1; }
+    .field-textarea { resize: vertical; min-height: 62px; }
+    .field-select option { background: var(--card); }
+
+    /* panel mode buttons */
+    .panel-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .panel-mode-btns { display: flex; gap: 4px; }
+    .pmbtn {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 4px 9px; border-radius: var(--r-sm); border: 1px solid var(--border);
+        font-size: 0.7rem; font-weight: 600; cursor: pointer;
+        background: var(--card); color: var(--text-2);
+        transition: background var(--trans), color var(--trans), border-color var(--trans);
+    }
+    .pmbtn:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-em); }
+    .pmbtn-save { background: var(--success-soft); color: var(--success); border-color: rgba(52,211,153,0.25); }
+    .pmbtn-save:hover { background: rgba(52,211,153,0.22); }
+    .pmbtn-cancel { background: var(--danger-soft); color: var(--danger); border-color: rgba(248,113,113,0.2); }
+    .pmbtn-cancel:hover { background: rgba(248,113,113,0.2); }
+
+    .save-indicator {
+        display: flex; align-items: center; gap: 6px;
+        font-size: 0.76rem; font-weight: 600; color: var(--success);
+        opacity: 0; transition: opacity 0.35s;
+    }
+    .save-indicator.visible { opacity: 1; }
+
+    /* saved list items */
+    .project-list { display: flex; flex-direction: column; gap: 6px; }
+    .project-list-item {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 9px 11px; border-radius: var(--r-md);
+        background: var(--card-alt); border: 1px solid var(--border);
+        cursor: pointer; transition: background var(--trans), border-color var(--trans);
+    }
+    .project-list-item:hover    { background: var(--accent-soft); border-color: var(--accent-em); }
+    .project-list-item.selected { background: var(--accent-soft); border-color: var(--accent-em); }
+    .project-list-name  { font-size: 0.82rem; font-weight: 600; color: var(--text-1); }
+    .project-list-meta  { font-size: 0.71rem; color: var(--text-2); margin-top: 1px; }
+    .project-del-btn {
+        background: none; border: none; cursor: pointer; color: var(--text-3);
+        font-size: 0.85rem; padding: 3px; line-height: 1;
+        transition: color var(--trans);
+    }
+    .project-del-btn:hover { color: var(--danger); }
+    .no-projects { font-size: 0.8rem; color: var(--text-3); text-align: center; padding: 14px 0; }
+
+    /* action buttons */
+    .btn {
+        border: none; border-radius: var(--r-md); cursor: pointer; padding: 9px 14px;
+        font-weight: 600; font-size: 0.84rem; width: 100%;
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+        transition: background var(--trans), box-shadow var(--trans), opacity var(--trans), transform var(--trans), border-color var(--trans);
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { opacity: 0.85; transform: translateY(0); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { box-shadow: 0 4px 20px rgba(79,142,247,0.35); }
+    .btn-ghost { background: var(--card-alt); color: var(--text-1); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-em); }
+    .btn-danger { background: var(--danger-soft); color: var(--danger); border: 1px solid rgba(248,113,113,0.2); }
+    .btn-danger:hover { background: rgba(248,113,113,0.2); }
+
+
+    /* AI INSPECT PAGE */
+    .upload-zone {
+        background: var(--card); border: 2px dashed var(--border-em);
+        border-radius: var(--r-xl); min-height: clamp(280px, 42vh, 420px);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; overflow: hidden; position: relative;
+        transition: border-color var(--trans), background var(--trans);
+    }
+    .upload-zone:hover { border-color: var(--accent); background: var(--accent-soft); }
+    .upload-zone.drag-over { border-color: var(--accent); background: var(--accent-soft); }
+    .upload-prompt {
+        display: flex; flex-direction: column; align-items: center; gap: 10px;
+        pointer-events: none; text-align: center; padding: 24px;
+    }
+    .upload-icon { opacity: 0.3; }
+    .upload-prompt h3 { font-size: 1rem; font-weight: 600; color: var(--text-1); }
+    .upload-prompt p  { font-size: 0.82rem; color: var(--text-2); line-height: 1.6; }
+    .img-canvas-wrap { position: relative; display: inline-block; max-width: 100%; padding: 12px; }
+    .img-canvas-wrap img { display: block; max-width: 100%; max-height: min(58vh, 520px); border-radius: var(--r-lg); }
+    #bboxCanvas { position: absolute; top: 12px; left: 12px; pointer-events: none; border-radius: var(--r-lg); }
+
+    .result-verdict {
+        padding: 18px; border-radius: var(--r-xl); text-align: center;
+        font-size: 1.28rem; font-weight: 800; border: 1.5px solid; margin-bottom: 14px;
+    }
+    .result-verdict.pass { background: var(--success-soft); border-color: rgba(52,211,153,0.3); color: var(--success); }
+    .result-verdict.fail { background: var(--danger-soft);  border-color: rgba(248,113,113,0.3); color: var(--danger); }
+
+    .ai-spinner {
+        width: 36px; height: 36px;
+        border: 3px solid var(--border); border-top-color: var(--accent);
+        border-radius: 50%; animation: spin 0.75s linear infinite; margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+
+    /* SETTINGS PAGE */
+    .settings-card { margin-bottom: 16px; overflow: hidden; }
+    .settings-title {
+        padding: 14px 20px; border-bottom: 1px solid var(--border);
+        font-size: 0.72rem; font-weight: 600; color: var(--text-2);
+        text-transform: uppercase; letter-spacing: 0.09em;
+    }
+    .settings-row {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 14px 20px; border-bottom: 1px solid var(--border); gap: 16px;
+    }
+    .settings-row:last-child { border-bottom: none; }
+    .settings-label { font-size: 0.875rem; font-weight: 500; color: var(--text-1); }
+    .settings-desc  { font-size: 0.75rem; color: var(--text-2); margin-top: 2px; }
+
+    /* toggle switch */
+    .toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+        position: absolute; inset: 0; background: var(--border-em);
+        border-radius: var(--r-pill); cursor: pointer; transition: 0.25s;
+    }
+    .toggle-slider::before {
+        content: ''; position: absolute; width: 16px; height: 16px;
+        left: 3px; top: 3px; background: white; border-radius: 50%; transition: 0.25s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--accent); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+
+    /* ANALYTICS & REPORTS PAGE */
+    .page-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .page-grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .metric-card { padding: 18px; }
+    .metric-card h3 { font-size: 0.9rem; font-weight: 600; color: var(--text-1); margin-bottom: 14px; }
+    .metric-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--border); }
+    .metric-row:last-child { border-bottom: none; }
+    .metric-label { font-size: 0.82rem; color: var(--text-2); }
+    .metric-val   { font-size: 0.88rem; font-weight: 700; color: var(--text-1); }
+
+    .report-card { padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+    .report-card h3 { font-size: 0.92rem; font-weight: 600; color: var(--text-1); }
+    .report-card p  { font-size: 0.8rem; color: var(--text-2); line-height: 1.6; flex: 1; }
+
+    /* colour reference tiles */
+    .colour-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 12px; }
+    .colour-tile { padding: 12px; border-radius: var(--r-lg); }
+    .colour-swatch { width: 28px; height: 28px; border-radius: var(--r-sm); margin-bottom: 8px; }
+    .colour-tile-name { font-size: 0.78rem; font-weight: 700; margin-bottom: 2px; }
+    .colour-tile-desc { font-size: 0.7rem; color: var(--text-2); line-height: 1.5; }
+
+    /* empty state */
+    .empty-state {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        min-height: 240px; gap: 12px; color: var(--text-2);
+    }
+    .empty-icon { opacity: 0.25; }
+    .empty-state p { font-size: 0.875rem; }
+
+    /* section heading row */
+    .section-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .section-hd h2 { font-size: 0.95rem; font-weight: 600; color: var(--text-1); }
+    .section-hd p  { font-size: 0.78rem; color: var(--text-2); }
+
+
+    /* RESPONSIVE */
+    @media (min-width: 1600px) {
+        :root { --content-pad: 24px; --sidebar-w: 232px; --right-w: 304px; }
+        .chart-wrap { min-height: 220px; }
+        .kpi-card { min-height: 132px; }
+    }
+    @media (max-width: 1280px) {
+        :root { --sidebar-w: 204px; --right-w: 270px; --content-pad: 18px; }
+        .kpi-grid  { grid-template-columns: repeat(2, 1fr); }
+        .chart-grid { grid-template-columns: 1fr; }
+        .topbar-sub { max-width: 420px; }
+    }
+    @media (max-width: 1024px) {
+        .app { grid-template-columns: var(--sidebar-w) minmax(0, 1fr); }
+        .right-panel { display: none; }
+        .topbar { flex-wrap: wrap; align-items: flex-start; }
+        .topbar-right { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+        .page-grid3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 860px) {
+        :root { --sidebar-w: 58px; --content-pad: 16px; }
+        .sidebar-top { padding: 6px 2px 14px; }
+        .sidebar-logo { width: 32px; height: 32px; }
+        .brand-name, .brand-tag, .nav-label, .sidebar-footer { display: none; }
+        .nav-item { justify-content: center; padding: 10px; }
+        .nav-item span.nav-label-text { display: none; }
+        .page-grid2, .page-grid3 { grid-template-columns: 1fr; }
+        .kpi-grid { grid-template-columns: 1fr 1fr; }
+        .topbar-title { font-size: 0.95rem; }
+        .topbar-sub { max-width: none; }
+    }
+    @media (max-width: 600px) {
+        :root { --sidebar-w: 52px; --content-pad: 12px; }
+        .kpi-grid { grid-template-columns: 1fr; }
+        .topbar { padding: 12px; gap: 10px; }
+        .chart-card, .metric-card, .report-card, .kpi-card { padding: 14px; }
+        th, td { padding: 9px 11px; }
+        .clock-box, .tag-badge { display: none; }
+        .toast-container { left: 12px; right: 12px; bottom: 12px; }
+        .toast { min-width: 0; max-width: none; }
+    }
+
+    /* USER MENU */
+    .user-menu {
+        display: flex; align-items: center; gap: 8px;
+        padding: 4px 10px 4px 4px; border-radius: var(--r-pill);
+        background: var(--card); border: 1px solid var(--border);
+        transition: border-color var(--trans);
+    }
+    .user-avatar {
+        width: 28px; height: 28px; border-radius: 50%;
+        display: grid; place-items: center;
+        font-size: 0.7rem; font-weight: 800; color: #fff; flex-shrink: 0;
+    }
+    .user-details { display: flex; flex-direction: column; line-height: 1.25; }
+    .user-name    { font-size: 0.78rem; font-weight: 600; color: var(--text-1); white-space: nowrap; }
+    .user-role-tag { font-size: 0.63rem; font-weight: 600; }
+    .logout-btn {
+        width: 26px; height: 26px; margin-left: 4px; flex-shrink: 0;
+        border-radius: var(--r-sm); background: none; border: 1px solid transparent;
+        color: var(--text-3); cursor: pointer; display: grid; place-items: center;
+        transition: background var(--trans), color var(--trans), border-color var(--trans);
+    }
+    .logout-btn:hover { background: var(--danger-soft); color: var(--danger); border-color: rgba(248,113,113,0.25); }
+    @media (max-width: 860px) { .user-details { display: none; } }
+
+    /* ROLE-BASED VISIBILITY */
+    body[data-role="viewer"] .role-inspector-up,
+    body[data-role="viewer"] .role-admin-only,
+    body[data-role="inspector"] .role-admin-only { display: none !important; }
+    body[data-role="viewer"] .project-del-btn { display: none !important; }
+    </style>
+    <script>
+    (function () {
+        const host = window.location.hostname;
+        const isLocal =
+            window.location.protocol === 'file:' ||
+            host === 'localhost' ||
+            host === '127.0.0.1' ||
+            host === '';
+        if (isLocal) {
+            document.write('<script src="generated-users.js"><\/script>');
+        }
+    })();
+    </script>
+    <script src="auth.js"></script>
+    <script>
+    /* Quick auth-guard - runs before body renders to prevent flash */
+    (function () {
+        try {
+            var s = JSON.parse(localStorage.getItem('wqis_session') || 'null');
+            if (!s || Date.now() > s.expiry) {
+                localStorage.removeItem('wqis_session');
+                window.location.replace('login.html');
+            }
+        } catch (_) { window.location.replace('login.html'); }
+    })();
+    </script>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div class="splash">
+    <div class="splash-box">
+        <img class="splash-logo" src="PRO3S_Logo_001.png" alt="PRO3S">
+        <div class="splash-name">PRO3S WQIS</div>
+        <p class="splash-sub">Enterprise Weld Quality Inspection System<br>powered by AI &amp; Tetra Pak B&nbsp;2310.64</p>
+        <div class="splash-bar"><div class="splash-progress"></div></div>
+    </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- APP SHELL -->
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-top">
+            <img class="sidebar-logo" src="PRO3S_Logo_001.png" alt="PRO3S">
+            <div class="sidebar-brand">
+                <div class="brand-name">PRO3S WQIS</div>
+                <div class="brand-tag">Weld Inspection</div>
+            </div>
+        </div>
+
+        <nav>
+            <div class="nav-label">Main</div>
+            <button class="nav-item active" data-page="dashboard">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/>
+                    <rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/>
+                </svg>
+                <span class="nav-label-text">Dashboard</span>
+            </button>
+            <button class="nav-item" data-page="inspections">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 6h12M4 10h8M4 14h6"/><rect x="2" y="2" width="16" height="16" rx="3"/>
+                </svg>
+                <span class="nav-label-text">Inspections</span>
+            </button>
+            <button class="nav-item role-inspector-up" data-page="ai-inspect">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9" cy="9" r="6"/><path d="M13.5 13.5L17 17"/>
+                    <path d="M9 6v6M6 9h6"/>
+                </svg>
+                <span class="nav-label-text">AI Inspect</span>
+            </button>
+            <div class="nav-label" style="margin-top:12px">Data</div>
+            <button class="nav-item" data-page="analytics">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 14l4-5 4 3 3-4 3 3"/><rect x="1" y="1" width="18" height="18" rx="3"/>
+                </svg>
+                <span class="nav-label-text">Analytics</span>
+            </button>
+            <button class="nav-item role-inspector-up" data-page="reports">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 2h8l4 4v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z"/><path d="M12 2v4h4M7 9h6M7 13h4"/>
+                </svg>
+                <span class="nav-label-text">Reports</span>
+            </button>
+            <div class="nav-label" style="margin-top:12px">System</div>
+            <button class="nav-item role-inspector-up" data-page="settings">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="10" cy="10" r="2.5"/>
+                    <path d="M10 3v1.5M10 15.5V17M3 10h1.5M15.5 10H17M5.05 5.05l1.06 1.06M13.89 13.89l1.06 1.06M5.05 14.95l1.06-1.06M13.89 6.11l1.06-1.06"/>
+                </svg>
+                <span class="nav-label-text">Settings</span>
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div>v1.0.0 - PRO3S</div>
+            <div>Industrial QA/QC Platform</div>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+        <!-- TOPBAR -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <div class="topbar-title" id="pageTitle">Weld Quality Inspection Dashboard</div>
+                <div class="topbar-sub"   id="pageSubtitle">Monitor inspection performance, defect trends, and process metrics.</div>
+            </div>
+            <div class="topbar-right">
+                <span class="tag-badge" id="headerTag">Operational Overview</span>
+                <div class="clock-box">
+                    <div class="clock-time" id="clockTime">00:00:00</div>
+                    <div class="clock-date" id="clockDate">-</div>
+                </div>
+                <button class="theme-btn" id="refreshButton" title="Refresh current view" aria-label="Refresh current view">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 3v5h-5"/>
+                        <path d="M16.2 8A7 7 0 105 16.2"/>
+                    </svg>
+                </button>
+                <button class="theme-btn" id="themeToggle" title="Toggle light/dark mode" aria-label="Toggle theme">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" id="themeIcon">
+                        <!-- Moon icon (shown in dark mode) -->
+                        <path d="M17 12A7 7 0 119 4a5 5 0 108 8z"/>
+                    </svg>
+                </button>
+                <!-- User menu -->
+                <div class="user-menu" id="userMenu">
+                    <div class="user-avatar" id="userAvatar">?</div>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">-</div>
+                        <div class="user-role-tag" id="userRoleTag">-</div>
+                    </div>
+                    <button class="logout-btn" id="logoutBtn" title="Sign out">
+                        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13 15l3-3-3-3M16 12H8"/><path d="M8 19H4a2 2 0 01-2-2V3a2 2 0 012-2h4"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCROLLABLE CONTENT -->
+        <div class="content">
+
+            <!-- DASHBOARD -->
+            <div class="page-view active" id="page-dashboard">
+                <!-- KPI Row -->
+                <div class="kpi-grid">
+                    <div class="card kpi-card">
+                        <div class="kpi-label">Total Inspections</div>
+                        <div class="kpi-value">1,250</div>
+                        <div class="kpi-note">Verified and logged in current batch.</div>
+                    </div>
+                    <div class="card kpi-card">
+                        <div class="kpi-label">Pass Rate</div>
+                        <div class="kpi-value kpi-success">75.0%</div>
+                        <div class="kpi-note">Welds cleared by AI inspection.</div>
+                    </div>
+                    <div class="card kpi-card">
+                        <div class="kpi-label">Fail Count</div>
+                        <div class="kpi-value kpi-danger">312</div>
+                        <div class="kpi-note">Non-conforming inspections to review.</div>
+                    </div>
+                    <div class="card kpi-card">
+                        <div class="kpi-label">Avg Confidence</div>
+                        <div class="kpi-value kpi-accent">87%</div>
+                        <div class="kpi-note">AI inspection confidence score.</div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="chart-grid">
+                    <div class="card chart-card">
+                        <h3>Defect Types</h3>
+                        <p>Distribution of defect categories captured during inspection.</p>
+                        <div class="chart-wrap"><canvas id="defectBarChart"></canvas></div>
+                    </div>
+                    <div class="card chart-card">
+                        <h3>Pass / Fail Ratio</h3>
+                        <p>Percentage of accepted vs rejected weld joints.</p>
+                        <div class="chart-wrap"><canvas id="passFailPie"></canvas></div>
+                    </div>
+                    <div class="card chart-card" style="grid-column: 1/-1;">
+                        <h3>Inspection Trend</h3>
+                        <p>Weld inspections completed over the last 7 days.</p>
+                        <div class="chart-wrap" style="min-height:180px"><canvas id="trendLineChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Recent Table -->
+                <div class="card table-wrap">
+                    <div style="padding:16px 20px;border-bottom:1px solid var(--border)">
+                        <div class="section-hd" style="margin:0">
+                            <h2>Recent Inspections</h2>
+                            <span style="font-size:0.76rem;color:var(--text-2)">Last 5 records</span>
+                        </div>
+                    </div>
+                    <table>
+                        <thead><tr><th>Joint ID</th><th>Result</th><th>Defect</th><th>Confidence</th><th>Date</th></tr></thead>
+                        <tbody>
+                            <tr><td>IMG_0048</td><td><span class="pill pill-pass">PASS</span></td><td>No defect</td><td>92%</td><td>2025-08-25</td></tr>
+                            <tr><td>IMG_0250</td><td><span class="pill pill-fail">FAIL</span></td><td>Porosity</td><td>74%</td><td>2025-08-25</td></tr>
+                            <tr><td>IMG_0252</td><td><span class="pill pill-pass">PASS</span></td><td>Undercut</td><td>89%</td><td>2025-08-24</td></tr>
+                            <tr><td>IMG_0253</td><td><span class="pill pill-pass">PASS</span></td><td>Slag Inclusion</td><td>85%</td><td>2025-08-24</td></tr>
+                            <tr><td>IMG_0251</td><td><span class="pill pill-fail">FAIL</span></td><td>Crack</td><td>68%</td><td>2025-08-23</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div><!-- /dashboard -->
+
+            <!-- INSPECTIONS -->
+            <div class="page-view" id="page-inspections">
+                <div class="section-hd">
+                    <h2>All Inspections</h2>
+                    <span style="font-size:0.76rem;color:var(--text-2)">7 records found</span>
+                </div>
+                <div class="card table-wrap">
+                    <table>
+                        <thead><tr><th>#</th><th>Joint ID</th><th>Result</th><th>Defect</th><th>Confidence</th><th>Welder</th><th>Date</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>IMG_0048</td><td><span class="pill pill-pass">PASS</span></td><td>No defect</td><td>92%</td><td>Team 3</td><td>2025-08-25</td></tr>
+                            <tr><td>2</td><td>IMG_0250</td><td><span class="pill pill-fail">FAIL</span></td><td>Porosity</td><td>74%</td><td>Team 5</td><td>2025-08-25</td></tr>
+                            <tr><td>3</td><td>IMG_0252</td><td><span class="pill pill-pass">PASS</span></td><td>Undercut</td><td>89%</td><td>Team 2</td><td>2025-08-24</td></tr>
+                            <tr><td>4</td><td>IMG_0253</td><td><span class="pill pill-pass">PASS</span></td><td>Slag Inclusion</td><td>85%</td><td>Team 1</td><td>2025-08-24</td></tr>
+                            <tr><td>5</td><td>IMG_0251</td><td><span class="pill pill-fail">FAIL</span></td><td>Crack</td><td>68%</td><td>Team 4</td><td>2025-08-23</td></tr>
+                            <tr><td>6</td><td>IMG_0249</td><td><span class="pill pill-warn">WARN</span></td><td>Undercut (minor)</td><td>71%</td><td>Team 5</td><td>2025-08-23</td></tr>
+                            <tr><td>7</td><td>IMG_0248</td><td><span class="pill pill-pass">PASS</span></td><td>No defect</td><td>95%</td><td>Team 1</td><td>2025-08-22</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div><!-- /inspections -->
+
+            <!-- AI INSPECT -->
+            <div class="page-view" id="page-ai-inspect">
+                <!-- Drop zone -->
+                <div class="upload-zone" id="uploadZone">
+                    <div class="upload-prompt" id="uploadPrompt">
+                        <svg class="upload-icon" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <h3>Drop weld image here</h3>
+                        <p>or click <strong style="color:var(--accent)">Upload Image</strong> in the right panel<br>Supports JPG - PNG - BMP</p>
+                    </div>
+                    <div class="img-canvas-wrap" id="imgCanvasWrap" style="display:none">
+                        <img id="previewImg" alt="Weld image">
+                        <canvas id="bboxCanvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- Oxide colour reference -->
+                <div class="card" style="margin-top:16px;padding:18px 20px">
+                    <div class="section-hd" style="margin-bottom:4px">
+                        <h2>Oxide Discolouration Acceptance Criteria</h2>
+                    </div>
+                    <p style="font-size:0.75rem;color:var(--text-2);margin-bottom:12px">
+                        Ref. B 2310.64 Issue 8, Section 4.4 - Force Technology Reference Colour Charts
+                    </p>
+                    <div class="colour-grid">
+                        <div class="colour-tile card" style="background:var(--success-soft);border:1px solid rgba(52,211,153,0.25)">
+                            <div class="colour-swatch" style="background:linear-gradient(135deg,#c8c8b8,#e8e8d0)"></div>
+                            <div class="colour-tile-name" style="color:var(--success)">PASS Silver / Straw</div>
+                            <div class="colour-tile-desc">Level A-B - <= 5 ppm O2<br>Accepted - optimal purge</div>
+                        </div>
+                        <div class="colour-tile card" style="background:var(--success-soft);border:1px solid rgba(52,211,153,0.25)">
+                            <div class="colour-swatch" style="background:linear-gradient(135deg,#b0c4de,#9bb5d0)"></div>
+                            <div class="colour-tile-name" style="color:var(--success)">PASS Light Blue</div>
+                            <div class="colour-tile-desc">Level C - <= 32 ppm O2<br>Accepted - Argon limit</div>
+                        </div>
+                        <div class="colour-tile card" style="background:var(--warning-soft);border:1px solid rgba(251,191,36,0.25)">
+                            <div class="colour-swatch" style="background:linear-gradient(135deg,#daa520,#b8860b)"></div>
+                            <div class="colour-tile-name" style="color:var(--warning)">Review Gold / Dark Blue</div>
+                            <div class="colour-tile-desc">Level D - > 32 ppm O2<br>Rejected - pickle clean</div>
+                        </div>
+                        <div class="colour-tile card" style="background:var(--danger-soft);border:1px solid rgba(248,113,113,0.25)">
+                            <div class="colour-swatch" style="background:linear-gradient(135deg,#8B4513,#4a2008)"></div>
+                            <div class="colour-tile-name" style="color:var(--danger)">FAIL Brown / Black</div>
+                            <div class="colour-tile-desc">Level E - Exceeds limit<br>Rejected - Remake required</div>
+                        </div>
+                    </div>
+                    <p style="font-size:0.7rem;color:var(--text-3);margin-top:10px">
+                        Ref: Force Technology Report 1337-4-da-en-2016 - Argon purge <= 32 ppm O2; Formier gas <= 75 ppm O2. Continue purging until weld &lt; 300 deg C.
+                    </p>
+                </div>
+
+                <!-- Detection results -->
+                <div id="detectResultsPanel" style="margin-top:16px"></div>
+            </div><!-- /ai-inspect -->
+
+            <!-- ANALYTICS -->
+            <div class="page-view" id="page-analytics">
+                <div class="page-grid2">
+                    <div class="card metric-card">
+                        <h3>Defect Summary</h3>
+                        <div class="metric-row"><span class="metric-label">Porosity</span><span class="metric-val" style="color:var(--accent)">112</span></div>
+                        <div class="metric-row"><span class="metric-label">Undercut</span><span class="metric-val" style="color:var(--success)">78</span></div>
+                        <div class="metric-row"><span class="metric-label">Slag Inclusion</span><span class="metric-val">56</span></div>
+                        <div class="metric-row"><span class="metric-label">Crack</span><span class="metric-val" style="color:var(--warning)">34</span></div>
+                        <div class="metric-row"><span class="metric-label">Incomplete Fusion</span><span class="metric-val" style="color:var(--danger)">25</span></div>
+                    </div>
+                    <div class="card metric-card">
+                        <h3>Team Performance</h3>
+                        <div class="metric-row"><span class="metric-label">Team 1</span><span class="metric-val kpi-success">94%</span></div>
+                        <div class="metric-row"><span class="metric-label">Team 2</span><span class="metric-val">88%</span></div>
+                        <div class="metric-row"><span class="metric-label">Team 3</span><span class="metric-val">82%</span></div>
+                        <div class="metric-row"><span class="metric-label">Team 4</span><span class="metric-val kpi-danger">71%</span></div>
+                        <div class="metric-row"><span class="metric-label">Team 5</span><span class="metric-val kpi-danger">65%</span></div>
+                    </div>
+                    <div class="card metric-card">
+                        <h3>Process Metrics</h3>
+                        <div class="metric-row"><span class="metric-label">Avg Inspection Time</span><span class="metric-val">1.4 s</span></div>
+                        <div class="metric-row"><span class="metric-label">Total Processed</span><span class="metric-val">1,250</span></div>
+                        <div class="metric-row"><span class="metric-label">AI Confidence Avg</span><span class="metric-val">87%</span></div>
+                        <div class="metric-row"><span class="metric-label">False Positive Rate</span><span class="metric-val">3.2%</span></div>
+                    </div>
+                    <div class="card metric-card">
+                        <h3>Defect Severity Breakdown</h3>
+                        <div class="metric-row"><span class="metric-label">Critical</span><span class="metric-val kpi-danger">147</span></div>
+                        <div class="metric-row"><span class="metric-label">Major: Major</span><span class="metric-val kpi-warning" style="color:var(--warning)">112</span></div>
+                        <div class="metric-row"><span class="metric-label">Minor</span><span class="metric-val">53</span></div>
+                        <div class="metric-row"><span class="metric-label">Conditional Accept</span><span class="metric-val">18</span></div>
+                    </div>
+                </div>
+            </div><!-- /analytics -->
+
+            <!-- REPORTS -->
+            <div class="page-view" id="page-reports">
+                <div class="section-hd"><h2>Available Reports</h2></div>
+                <div class="page-grid3">
+                    <div class="card report-card">
+                        <h3>Document: August 2025 Summary</h3>
+                        <p>Full monthly inspection overview with defect analysis and team performance.</p>
+                        <button class="btn btn-ghost" style="width:100%;font-size:0.8rem;padding:7px 12px">Download PDF</button>
+                    </div>
+                    <div class="card report-card">
+                        <h3>Document: Weekly Report W34</h3>
+                        <p>Week 34 weld inspection data including trend and defect breakdown.</p>
+                        <button class="btn btn-ghost" style="width:100%;font-size:0.8rem;padding:7px 12px">Download PDF</button>
+                    </div>
+                    <div class="card report-card">
+                        <h3>Document: Team Performance Q3</h3>
+                        <p>Quarterly team-level performance and defect rate comparison.</p>
+                        <button class="btn btn-ghost" style="width:100%;font-size:0.8rem;padding:7px 12px">Download PDF</button>
+                    </div>
+                </div>
+            </div><!-- /reports -->
+
+            <!-- SETTINGS -->
+            <div class="page-view" id="page-settings">
+                <div class="section-hd"><h2>Settings</h2></div>
+
+                <div class="card settings-card">
+                    <div class="settings-title">Appearance</div>
+                    <div class="settings-row">
+                        <div>
+                            <div class="settings-label">Dark Mode</div>
+                            <div class="settings-desc">Use dark color scheme across the dashboard.</div>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" id="darkModeToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="card settings-card">
+                    <div class="settings-title">Notifications</div>
+                    <div class="settings-row">
+                        <div>
+                            <div class="settings-label">Auto-refresh Data</div>
+                            <div class="settings-desc">Refresh inspection data every 30 seconds.</div>
+                        </div>
+                        <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+                    </div>
+                    <div class="settings-row">
+                        <div>
+                            <div class="settings-label">Show Notifications</div>
+                            <div class="settings-desc">Alert on new failed inspections.</div>
+                        </div>
+                        <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                    </div>
+                </div>
+
+                <div class="card settings-card">
+                    <div class="settings-title">AI Model</div>
+                    <div class="settings-row">
+                        <div>
+                            <div class="settings-label">Confidence Threshold</div>
+                            <div class="settings-desc">Minimum confidence to mark as PASS (current: 70%).</div>
+                        </div>
+                        <input type="range" min="50" max="95" value="70" style="width:110px;accent-color:var(--accent)">
+                    </div>
+                    <div class="settings-row">
+                        <div>
+                            <div class="settings-label">High-accuracy Mode</div>
+                            <div class="settings-desc">Use enhanced model (slower, more accurate).</div>
+                        </div>
+                        <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+                    </div>
+                </div>
+
+                <div class="card settings-card">
+                    <div class="settings-title">Data Management</div>
+                    <div class="settings-row">
+                        <div>
+                            <div class="settings-label">Export All Data</div>
+                            <div class="settings-desc">Download full inspection history as CSV.</div>
+                        </div>
+                        <button class="btn btn-ghost" style="width:auto;padding:6px 14px;font-size:0.8rem">Export CSV</button>
+                    </div>
+                    <div class="settings-row">
+                        <div>
+                            <div class="settings-label">Clear Saved Projects</div>
+                            <div class="settings-desc">Remove all saved inspection data from local storage.</div>
+                        </div>
+                        <button class="btn btn-danger" style="width:auto;padding:6px 14px;font-size:0.8rem" id="clearProjectsBtn">Clear All</button>
+                    </div>
+                </div>
+            </div><!-- /settings -->
+
+        </div><!-- /content -->
+    </main><!-- /main -->
+
+    <!-- RIGHT PANEL -->
+    <aside class="right-panel" id="detailPanel">
+
+        <!-- AI Result -->
+        <div class="rp-section">
+            <div class="rp-section-title">AI Result</div>
+            <div class="rp-row">
+                <span class="label">Verdict</span>
+                <span id="inspResult"><span class="result-badge pending">- Pending -</span></span>
+            </div>
+            <div class="rp-row">
+                <span class="label">Confidence</span>
+                <span class="value" id="inspConf" style="color:var(--text-2)">-</span>
+            </div>
+            <div class="rp-row">
+                <span class="label">Standard</span>
+                <span style="font-size:0.72rem;color:var(--text-2)">B 2310.64 / ISO 5817-C</span>
+            </div>
+        </div>
+
+        <!-- Inspection Record -->
+        <div class="rp-section" id="inspectionFormWrap">
+            <div class="panel-hd">
+                <div class="rp-section-title" style="margin:0">Inspection Record</div>
+                <div class="panel-mode-btns">
+                    <button class="pmbtn role-inspector-up" id="panelNewBtn">+ New</button>
+                    <button class="pmbtn role-inspector-up" id="panelEditBtn">Edit</button>
+                    <button class="pmbtn pmbtn-save"   id="panelSaveBtn"   style="display:none">Save</button>
+                    <button class="pmbtn pmbtn-cancel" id="panelCancelBtn" style="display:none">x</button>
+                </div>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Project Name</label>
+                <input class="field-input" id="f-project" type="text" placeholder="e.g. Synova Line 3" disabled>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Joint ID</label>
+                <input class="field-input" id="f-jointid" type="text" placeholder="e.g. JNT-2024-002" disabled>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Welder / Team</label>
+                <input class="field-input" id="f-welder" type="text" placeholder="e.g. Team 5" disabled>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Welding Process</label>
+                <select class="field-select" id="f-process" disabled>
+                    <option value="">- Select -</option>
+                    <option value="GTAW">GTAW (TIG)</option>
+                    <option value="GMAW">GMAW (MIG/MAG)</option>
+                    <option value="SMAW">SMAW (Stick)</option>
+                    <option value="FCAW">FCAW</option>
+                    <option value="SAW">SAW</option>
+                    <option value="PAW">PAW (Plasma)</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Material</label>
+                <input class="field-input" id="f-material" type="text" placeholder="e.g. SUS316L" disabled>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Inspection Date</label>
+                <input class="field-input" id="f-date" type="datetime-local" disabled>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Detected Defects</label>
+                <input class="field-input" id="f-defects" type="text" placeholder="e.g. Porosity, Crack" disabled>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Inspector Notes</label>
+                <textarea class="field-textarea" id="f-notes" placeholder="Additional remarks..." disabled></textarea>
+            </div>
+            <div class="save-indicator" id="saveIndicator">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 8 6 12 14 4"/></svg>
+                Record saved
+            </div>
+        </div>
+
+        <!-- Saved Inspections -->
+        <div class="rp-section">
+            <div class="panel-hd">
+                <div class="rp-section-title" style="margin:0">Saved Inspections</div>
+                <span id="projectCount" style="font-size:0.72rem;font-weight:600;color:var(--accent)">0</span>
+            </div>
+            <div class="project-list" id="projectList">
+                <div class="no-projects">No saved inspections yet.</div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="rp-section" style="display:flex;flex-direction:column;gap:6px">
+            <button class="btn btn-primary" id="analyzeButton">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5L17 17"/></svg>
+                Analyze Weld
+            </button>
+            <button class="btn btn-ghost" id="exportPdfButton">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h8l4 4v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z"/></svg>
+                Export PDF
+            </button>
+            <button class="btn btn-ghost" id="uploadButton">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v10M6 7l4-4 4 4"/><path d="M3 17h14"/></svg>
+                Upload Image
+            </button>
+        </div>
+        <input id="imageUpload" type="file" accept="image/*" hidden>
+
+    </aside>
+
+</div><!-- /app -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+<script>
+'use strict';
+
+// AUTH
+const SESSION = Auth.requireAuth();
+
+
+// TOAST SYSTEM
+
+function toast(message, type = 'info', duration = 3000) {
+    const container = document.getElementById('toastContainer');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<div class="toast-dot"></div><span>${message}</span>`;
+    container.appendChild(el);
+    setTimeout(() => {
+        el.classList.add('out');
+        setTimeout(() => el.remove(), 300);
+    }, duration);
+}
+
+
+// THEME
+
+const THEME_KEY = 'wqis_theme';
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    const icon = document.getElementById('themeIcon');
+    const darkToggle = document.getElementById('darkModeToggle');
+    if (theme === 'dark') {
+        // show moon icon
+        icon.innerHTML = '<path d="M17 12A7 7 0 119 4a5 5 0 108 8z"/>';
+        if (darkToggle) darkToggle.checked = true;
+    } else {
+        // show sun icon
+        icon.innerHTML = '<circle cx="10" cy="10" r="4"/><path d="M10 2v2M10 18v2M2 10h2M18 10h2M4.93 4.93l1.41 1.41M13.66 13.66l1.41 1.41M4.93 15.07l1.41-1.41M13.66 6.34l1.41-1.41"/>';
+        if (darkToggle) darkToggle.checked = false;
+    }
+    localStorage.setItem(THEME_KEY, theme);
+}
+const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
+applyTheme(savedTheme);
+
+document.getElementById('themeToggle').addEventListener('click', () => {
+    const curr = document.documentElement.getAttribute('data-theme');
+    applyTheme(curr === 'dark' ? 'light' : 'dark');
+});
+document.getElementById('darkModeToggle').addEventListener('change', function() {
+    applyTheme(this.checked ? 'dark' : 'light');
+});
+
+
+// APP STATE
+
+const AppState = {
+    page: 'dashboard',
+    projects: [],
+    selectedId: null,
+    editMode: false,
+    _formSnapshot: null,
+    ai: { file: null, detections: [], result: null, confidence: null },
+};
+
+
+// PAGE META
+
+const PAGE_META = {
+    dashboard:    { title: 'Weld Quality Inspection Dashboard',   subtitle: 'Monitor inspection performance, defect trends, and process metrics.', tag: 'Operational Overview' },
+    inspections:  { title: 'Inspection Log',                      subtitle: 'Browse and filter all weld inspection records.',                       tag: 'Inspection Log'      },
+    'ai-inspect': { title: 'AI Weld Inspection',                  subtitle: 'Upload a weld image - AI detects defects, draws bounding boxes, and classifies Pass / Fail.', tag: 'AI Detection' },
+    analytics:    { title: 'Analytics',                           subtitle: 'Defect trends, team performance, and process quality metrics.',        tag: 'Data Analytics'      },
+    reports:      { title: 'Reports',                             subtitle: 'Generated inspection reports for download and review.',                 tag: 'Report Centre'       },
+    settings:     { title: 'Settings',                            subtitle: 'Configure dashboard preferences, AI thresholds, and data options.',    tag: 'Configuration'       },
+};
+
+
+// ROUTER
+
+const Router = {
+    navigate(page) {
+        if (!PAGE_META[page]) return;
+        AppState.page = page;
+        document.querySelectorAll('.nav-item').forEach(b =>
+            b.classList.toggle('active', b.dataset.page === page));
+        document.querySelectorAll('.page-view').forEach(v =>
+            v.classList.toggle('active', v.id === 'page-' + page));
+        const m = PAGE_META[page];
+        document.getElementById('pageTitle').textContent    = m.title;
+        document.getElementById('pageSubtitle').textContent = m.subtitle;
+        document.getElementById('headerTag').textContent    = m.tag;
+    }
+};
+document.querySelectorAll('.nav-item').forEach(btn =>
+    btn.addEventListener('click', () => Router.navigate(btn.dataset.page)));
+
+
+// CLOCK
+
+function updateClock() {
+    const now = new Date();
+    document.getElementById('clockTime').textContent = now.toLocaleTimeString('en-US', { hour12: false });
+    document.getElementById('clockDate').textContent = now.toLocaleDateString('en-US');
+}
+
+
+// CHARTS
+
+function chartColor(hex, alpha) {
+    const r = parseInt(hex.slice(1,3),16);
+    const g = parseInt(hex.slice(3,5),16);
+    const b = parseInt(hex.slice(5,7),16);
+    return `rgba(${r},${g},${b},${alpha})`;
+}
+const TICK_COLOR = 'rgba(150,150,150,0.7)';
+const GRID_COLOR = 'rgba(150,150,150,0.1)';
+const chartDefaults = {
+    plugins: { legend: { display: false } },
+    scales: {
+        x: { grid: { display: false }, ticks: { color: TICK_COLOR, font: { size: 11, family: 'Inter' } } },
+        y: { grid: { color: GRID_COLOR }, ticks: { color: TICK_COLOR, font: { size: 11, family: 'Inter' } } }
+    },
+    responsive: true, maintainAspectRatio: false,
+};
+
+// Defect bar
+new Chart(document.getElementById('defectBarChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+        labels: ['Porosity', 'Undercut', 'Slag', 'Crack', 'LOF'],
+        datasets: [{
+            label: 'Count',
+            data: [112, 78, 56, 34, 25],
+            backgroundColor: ['#4f8ef7','#34d399','#a78bfa','#fbbf24','#f87171'],
+            borderRadius: 6, maxBarThickness: 38,
+        }]
+    },
+    options: { ...chartDefaults }
+});
+
+// Pass / Fail doughnut
+new Chart(document.getElementById('passFailPie').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Pass', 'Fail'],
+        datasets: [{ data: [938, 312], backgroundColor: ['#34d399','#f87171'], borderWidth: 0, hoverOffset: 6 }]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        cutout: '74%',
+        plugins: { legend: { position: 'bottom', labels: { color: TICK_COLOR, font: { size: 11, family: 'Inter' }, boxWidth: 10, padding: 14 } } }
+    }
+});
+
+// Trend line
+new Chart(document.getElementById('trendLineChart').getContext('2d'), {
+    type: 'line',
+    data: {
+        labels: ['Aug 19', 'Aug 20', 'Aug 21', 'Aug 22', 'Aug 23', 'Aug 24', 'Aug 25'],
+        datasets: [{
+            label: 'Inspections',
+            data: [150, 165, 142, 178, 190, 210, 215],
+            borderColor: '#4f8ef7',
+            backgroundColor: chartColor('#4f8ef7', 0.1),
+            fill: true, tension: 0.35,
+            pointRadius: 4, pointBackgroundColor: '#4f8ef7',
+            pointBorderColor: 'var(--card)', pointBorderWidth: 2,
+        }]
+    },
+    options: { ...chartDefaults, plugins: { legend: { display: false } } }
+});
+
+
+// PROJECTS - localStorage persistence
+
+const Projects = {
+    load() {
+        try { AppState.projects = JSON.parse(localStorage.getItem('wqis_projects') || '[]'); }
+        catch { AppState.projects = []; }
+    },
+    persist() {
+        try { localStorage.setItem('wqis_projects', JSON.stringify(AppState.projects)); } catch {}
+    },
+    render() {
+        const list  = document.getElementById('projectList');
+        const count = document.getElementById('projectCount');
+        count.textContent = AppState.projects.length;
+
+        if (!AppState.projects.length) {
+            list.innerHTML = '<div class="no-projects">No saved inspections yet.</div>';
+            return;
+        }
+        list.innerHTML = AppState.projects.map(p => {
+            const pillCls = p.result === 'PASS' ? 'pill-pass' : p.result === 'FAIL' ? 'pill-fail' : '';
+            const sel = p.id === AppState.selectedId ? ' selected' : '';
+            return `
+            <div class="project-list-item${sel}" data-id="${p.id}">
+                <div style="min-width:0">
+                    <div class="project-list-name">${p.project || '(Unnamed)'}</div>
+                    <div class="project-list-meta">
+                        ${p.jointId || '-'} - ${p.process || '-'}
+                        ${p.result ? `- <span class="pill ${pillCls}" style="font-size:0.65rem;padding:1px 7px">${p.result}</span>` : ''}
+                    </div>
+                </div>
+                <button class="project-del-btn" data-del="${p.id}" title="Delete">x</button>
+            </div>`;
+        }).join('');
+
+        list.querySelectorAll('.project-list-item').forEach(el => {
+            el.addEventListener('click', e => {
+                if (e.target.closest('.project-del-btn')) return;
+                const proj = AppState.projects.find(p => p.id === Number(el.dataset.id));
+                if (proj) { AppState.selectedId = proj.id; InspectionPanel.load(proj); Projects.render(); }
+            });
+        });
+        list.querySelectorAll('.project-del-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = Number(btn.dataset.del);
+                AppState.projects = AppState.projects.filter(p => p.id !== id);
+                if (AppState.selectedId === id) { AppState.selectedId = null; InspectionPanel.clear(); }
+                Projects.persist();
+                Projects.render();
+                toast('Inspection deleted.', 'info', 2500);
+            });
+        });
+    }
+};
+
+
+// INSPECTION PANEL
+
+const InspectionPanel = {
+    setMode(edit) {
+        AppState.editMode = edit;
+        const wrap = document.getElementById('inspectionFormWrap');
+        wrap.classList.toggle('panel-edit-active', edit);
+        const fields = wrap.querySelectorAll('.field-input,.field-select,.field-textarea');
+        fields.forEach(f => { f.disabled = !edit; });
+        document.getElementById('panelEditBtn').style.display   = edit ? 'none' : 'inline-flex';
+        document.getElementById('panelNewBtn').style.display    = edit ? 'none' : 'inline-flex';
+        document.getElementById('panelSaveBtn').style.display   = edit ? 'inline-flex' : 'none';
+        document.getElementById('panelCancelBtn').style.display = edit ? 'inline-flex' : 'none';
+    },
+
+    read() {
+        return {
+            project:    document.getElementById('f-project').value.trim(),
+            jointId:    document.getElementById('f-jointid').value.trim(),
+            welder:     document.getElementById('f-welder').value.trim(),
+            process:    document.getElementById('f-process').value,
+            material:   document.getElementById('f-material').value.trim(),
+            date:       document.getElementById('f-date').value,
+            defects:    document.getElementById('f-defects').value.trim(),
+            notes:      document.getElementById('f-notes').value.trim(),
+            result:     AppState.ai.result,
+            confidence: AppState.ai.confidence,
+        };
+    },
+
+    load(data) {
+        document.getElementById('f-project').value  = data.project  || '';
+        document.getElementById('f-jointid').value  = data.jointId  || '';
+        document.getElementById('f-welder').value   = data.welder   || '';
+        document.getElementById('f-process').value  = data.process  || '';
+        document.getElementById('f-material').value = data.material || '';
+        document.getElementById('f-date').value     = data.date     || '';
+        document.getElementById('f-defects').value  = data.defects  || '';
+        document.getElementById('f-notes').value    = data.notes    || '';
+        if (data.result) {
+            AppState.ai.result     = data.result;
+            AppState.ai.confidence = data.confidence || '-';
+            InspectionPanel.setResultBadge(data.result, data.confidence || '-');
+        }
+        this.setMode(false);
+    },
+
+    clear() {
+        ['f-project','f-jointid','f-welder','f-material','f-defects','f-notes']
+            .forEach(id => { document.getElementById(id).value = ''; });
+        document.getElementById('f-process').value = '';
+        document.getElementById('f-date').value    = new Date().toISOString().slice(0,16);
+        AppState.selectedId = null;
+        AppState.ai.result = null; AppState.ai.confidence = null;
+        document.getElementById('inspResult').innerHTML = '<span class="result-badge pending">- Pending -</span>';
+        document.getElementById('inspConf').textContent = '-';
+        this.setMode(true);
+    },
+
+    save() {
+        const data = this.read();
+        if (!data.project && !data.jointId) {
+            const el = document.getElementById('f-project');
+            el.style.borderColor = 'var(--danger)';
+            el.focus();
+            setTimeout(() => el.style.borderColor = '', 1500);
+            toast('Please enter a Project Name or Joint ID.', 'error', 3000);
+            return;
+        }
+        const record = { ...data, id: AppState.selectedId || Date.now(), savedAt: new Date().toISOString() };
+        if (AppState.selectedId) {
+            const idx = AppState.projects.findIndex(p => p.id === AppState.selectedId);
+            if (idx >= 0) AppState.projects[idx] = record;
+            else AppState.projects.unshift(record);
+        } else {
+            AppState.selectedId = record.id;
+            AppState.projects.unshift(record);
+        }
+        Projects.persist();
+        Projects.render();
+        this.setMode(false);
+        this._flash();
+        toast('Inspection record saved.', 'success', 3000);
+    },
+
+    cancel() {
+        if (AppState._formSnapshot) this.load(AppState._formSnapshot);
+        else if (AppState.selectedId) {
+            const proj = AppState.projects.find(p => p.id === AppState.selectedId);
+            if (proj) this.load(proj);
+        } else {
+            this.clear();
+            this.setMode(false);
+        }
+        AppState._formSnapshot = null;
+    },
+
+    setResultBadge(verdict, conf) {
+        const cls  = verdict === 'PASS' ? 'pass' : verdict === 'FAIL' ? 'fail' : 'pending';
+        const icon = verdict === 'PASS' ? 'PASS' : verdict === 'FAIL' ? 'FAIL' : '-';
+        document.getElementById('inspResult').innerHTML =
+            `<span class="result-badge ${cls}">${icon} ${verdict}</span>`;
+        document.getElementById('inspConf').textContent = conf || '-';
+    },
+
+    _flash() {
+        const el = document.getElementById('saveIndicator');
+        el.classList.add('visible');
+        setTimeout(() => el.classList.remove('visible'), 2500);
+    }
+};
+
+// Wire panel buttons
+document.getElementById('panelEditBtn').addEventListener('click', () => {
+    AppState._formSnapshot = InspectionPanel.read();
+    InspectionPanel.setMode(true);
+});
+document.getElementById('panelNewBtn').addEventListener('click',    () => InspectionPanel.clear());
+document.getElementById('panelSaveBtn').addEventListener('click',   () => InspectionPanel.save());
+document.getElementById('panelCancelBtn').addEventListener('click', () => InspectionPanel.cancel());
+
+document.getElementById('clearProjectsBtn').addEventListener('click', () => {
+    if (confirm('Clear all saved inspections? This cannot be undone.')) {
+        AppState.projects = []; AppState.selectedId = null;
+        Projects.persist(); Projects.render();
+        InspectionPanel.clear(); InspectionPanel.setMode(false);
+        toast('All inspections cleared.', 'warning', 3000);
+    }
+});
+
+// Boot
+Projects.load();
+Projects.render();
+InspectionPanel.setMode(false);
+
+
+// TETRA PAK B 2310.64 ISSUE 8 - STANDARD DATABASE
+// Reference: Tetra Pak Corporate Standard B 2310.64 Issue 8 (2024-05-02)
+// Quality Level: EN ISO 5817 Level C + Hygienic requirements (Table 1)
+
+const WELD_STANDARD = {
+    porosity: {
+        code: 'TP-1.3/1.4', isoCode: 'EN ISO 6520-1: 2017, 2025',
+        name: 'Surface Porosity / End Crater', verdict: 'FAIL', severity: 'critical',
+        rule: 'Not permitted. Zero tolerance regardless of size or location.',
+        detail: 'Ref. Table 1 (B 2310.64 Issue 8): Surface pores and end craters on pipe welds are not acceptable under any circumstances. Non-conformance with EN ISO 5817:2023 Quality Level C and Tetra Pak hygienic weld requirements.',
+        action: 'Cut out defective weld section and remake. Do not repair by filling.'
+    },
+    crack: {
+        code: 'EN-ISO-5817-100', isoCode: 'EN ISO 6520-1: 100-104',
+        name: 'Crack', verdict: 'FAIL', severity: 'critical',
+        rule: 'Not permitted. All crack types are rejected at EN ISO 5817 Quality Level C.',
+        detail: 'Ref. EN ISO 5817:2023 Level C: All crack types are cause for immediate rejection - including Longitudinal Crack (101), Transverse Crack (102), Crater Crack (104), Hot Crack, and Cold Crack. Cracks represent the most severe structural discontinuity.',
+        action: 'Reject weld. Full removal and complete remake required. Root cause analysis mandatory before re-welding.'
+    },
+    defect: {
+        code: 'TP-GEN', isoCode: 'EN ISO 6520-1',
+        name: 'Surface Defect', verdict: 'FAIL', severity: 'major',
+        rule: 'Surface discontinuity detected. Requires evaluation by a Qualified Welding Engineer or Welding Coordinator.',
+        detail: 'Ref. B 2310.64 Issue 8 & EN ISO 5817:2023 Level C: A surface discontinuity has been identified that does not conform to the applicable quality level. Full visual and dimensional assessment is required per EN ISO 5817 Table 1 before acceptance or rejection can be confirmed.',
+        action: 'Halt inspection. Evaluate against EN ISO 5817 Level C criteria. Repair or remake as determined by qualified personnel.'
+    },
+    spatter: {
+        code: 'TP-1.23/626', isoCode: 'EN ISO 6520-1: 602',
+        name: 'Weld Spatter', verdict: 'FAIL', severity: 'critical',
+        rule: 'Not permitted on any weld surface. Zero tolerance.',
+        detail: 'Ref. Table 1, Code 626/602 (B 2310.64 Issue 8): Spatter is not acceptable on any weld or adjacent base material surface. Presence of spatter indicates poor shielding gas coverage or incorrect welding parameters.',
+        action: 'Remove all spatter by mechanical means. Verify shielding gas flow and welding parameters before re-inspection.'
+    },
+    slag: {
+        code: 'TP-2.9/614', isoCode: 'EN ISO 6520-1: 614-637',
+        name: 'Slag Inclusion', verdict: 'CONDITIONAL', severity: 'major',
+        rule: 'Acceptable on external surfaces only if firmly attached. Not permitted on internal pipe surfaces or food-contact areas.',
+        detail: 'Ref. Table 1, Footnote [3] (B 2310.64 Issue 8): Slag islands on external weld surfaces are conditionally acceptable if firmly bonded. However, any slag on the internal bore of pipes or in hygienic / food-contact areas constitutes automatic rejection per EHEDG Document 35.',
+        action: 'Remove slag from all internal and hygienic surfaces. For external surfaces: remove where possible; otherwise document and accept with engineering approval.'
+    },
+    oxidation: {
+        code: 'TP-4.4.2', isoCode: 'Force Technology Ref. Colour Charts',
+        name: 'Excessive Heat Oxidation', verdict: 'FAIL', severity: 'critical',
+        rule: 'Oxide discolouration must not exceed Level C per Force Technology Reference Colour Chart (<=32 ppm O2 with Argon; <=75 ppm O2 with Formier gas).',
+        detail: 'Ref. Section 4.4.2 (B 2310.64 Issue 8): Brown, dark grey, or black discolouration indicates oxygen contamination exceeding permissible limits. This reduces chromium oxide layer integrity and compromises corrosion resistance. Purge gas must continue flowing until weld temperature drops below 300 deg C.',
+        action: 'Remove oxide by pickling (chemical cleaning) per KA 2672.23. If corrosion resistance cannot be confirmed after cleaning, the weld must be remade with correct purge gas parameters.'
+    },
+    discoloration: {
+        code: 'TP-4.4.1', isoCode: 'Force Technology Colour Chart',
+        name: 'Weld Surface Discolouration', verdict: 'FAIL', severity: 'major',
+        rule: 'Brown, dark grey, or black discolouration raises suspicion of reduced corrosion resistance and must be assessed.',
+        detail: 'Ref. Section 4.4.1 (B 2310.64 Issue 8): All weld oxide discolouration shall be removed after completion by an appropriate finishing process. Where discolouration is present and raises concern, the weld shall be assessed by a Qualified Welding Engineer or Welding Coordinator.',
+        action: 'Assess by Qualified Welding Engineer or Welding Coordinator. Outcome must be one of: Accept / Repair (pickling) / Discard and remake.'
+    },
+    undercut: {
+        code: 'EN-ISO-5817-5011', isoCode: 'EN ISO 6520-1: 5011, 5012',
+        name: 'Undercut', verdict: 'FAIL', severity: 'major',
+        rule: 'EN ISO 5817:2023 Level C: Continuous undercut depth h <= 0.5 mm; Intermittent undercut depth h <= 1 mm. Exceeding these limits is not acceptable.',
+        detail: 'Ref. EN ISO 5817:2023 Table 1, Level C: Undercut is a groove melted into the base metal adjacent to the weld toe that is not filled. Depth exceeding stated limits reduces effective cross-section and creates a stress concentration point that may initiate fatigue cracks in service.',
+        action: 'Repair by controlled TIG re-melting of the weld toe or by approved grinding method to remove the notch effect. Re-inspect after repair.'
+    },
+    incomplete_fusion: {
+        code: 'EN-ISO-5817-401', isoCode: 'EN ISO 6520-1: 401, 4011, 4012',
+        name: 'Incomplete Fusion / Lack of Fusion', verdict: 'FAIL', severity: 'critical',
+        rule: 'Not permitted. Zero tolerance in hygienic and structural weld applications.',
+        detail: 'Ref. EN ISO 5817:2023 Level C + B 2310.64 Issue 8: Lack of fusion (LOF) is an imperfection where the weld metal has failed to fuse completely with the base metal or adjacent weld bead. In hygienic applications, LOF creates voids that harbour bacteria and are not cleanable, constituting a direct food safety risk.',
+        action: 'Repair is not recommended for structural joints. Full remake is required. Review pre-heat conditions, travel speed, and heat input settings.'
+    },
+    icicle: {
+        code: 'TP-634', isoCode: 'EN ISO 6520-1: 504',
+        name: 'Icicle (Excess Root Penetration)', verdict: 'FAIL', severity: 'critical',
+        rule: 'Not permitted. Zero tolerance regardless of length or location.',
+        detail: 'Ref. Table 1, Code 634 (B 2310.64 Issue 8): An icicle is a localised region of excessive penetration forming a narrow, elongated projection of weld metal on the root side. Icicles create hygienic dead zones, impede product flow, and are a stress concentration source.',
+        action: 'Remake weld. Icicles cannot be repaired by grinding on the root side without compromising weld integrity. Review purge gas pressure and welding current settings.'
+    },
+    pass: {
+        code: 'ACCEPTED', isoCode: 'EN ISO 5817:2023 Level C',
+        name: 'Weld Joint Accepted', verdict: 'PASS', severity: 'none',
+        rule: 'Weld joint meets all applicable acceptance criteria.',
+        detail: 'Visual inspection confirms conformance with EN ISO 5817:2023 Quality Level C and Tetra Pak Corporate Standard B 2310.64 Issue 8. No rejectable surface discontinuities, unacceptable discolouration, or geometric deviations detected.',
+        action: 'Accepted. Proceed with post-weld treatment per B 2118.32 and cleaning per KA 2672.23 as applicable.'
+    },
+    fail: {
+        code: 'REJECTED', isoCode: 'EN ISO 5817:2023 Level C',
+        name: 'Weld Joint Rejected', verdict: 'FAIL', severity: 'major',
+        rule: 'AI inspection indicates the weld joint does not meet the minimum quality level requirements.',
+        detail: 'Ref. EN ISO 5817:2023 Level C and Tetra Pak B 2310.64 Issue 8: The weld has been classified as non-conforming based on visual AI assessment. A detailed manual inspection by a Qualified Welding Inspector or Welding Coordinator is required to confirm the nature and extent of the non-conformance.',
+        action: 'Quarantine weld joint. Conduct manual inspection per EN ISO 5817. Determine corrective action: Repair or Full Remake.'
+    }
+};
+
+function getDefectInfo(className) {
+    const key = (className || '').toLowerCase().replace(/[^a-z_]/g, '');
+    return WELD_STANDARD[key] || {
+        code: 'UNKNOWN', isoCode: 'N/A', name: className,
+        verdict: 'REVIEW', severity: 'unknown',
+        rule: 'Defect type not found in standard database. Manual assessment required.',
+        detail: 'This defect classification is not currently mapped in the WQIS standard database. A Qualified Welding Engineer or Welding Coordinator must perform a manual evaluation against EN ISO 5817:2023 Level C and Tetra Pak B 2310.64 Issue 8.',
+        action: 'Refer to Qualified Welding Engineer for assessment and disposition.'
+    };
+}
+
+function severityColor(s) {
+    return { critical: 'var(--danger)', major: 'var(--warning)', none: 'var(--success)', unknown: 'var(--text-2)' }[s] || 'var(--text-2)';
+}
+function severityLabel(s) {
+    return { critical: 'Critical', major: 'Major', none: 'OK', unknown: 'Unknown' }[s] || s;
+}
+
+
+// ROBOFLOW CONFIG
+
+const RF_API_KEY = 'si7NbGImhofF3nNet42N';
+const RF_MODEL   = 'joint-welding-detection';
+const RF_VERSION = 2;
+
+const CLASS_COLORS = { pass:'#34d399', fail:'#f87171', defect:'#fbbf24', porosity:'#4f8ef7', crack:'#f472b6' };
+function classColor(name) { return CLASS_COLORS[(name||'').toLowerCase()] || '#a78bfa'; }
+
+
+// UPLOAD & AI INSPECT
+
+document.getElementById('uploadButton').addEventListener('click', () =>
+    document.getElementById('imageUpload').click());
+
+document.getElementById('imageUpload').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    AppState.ai.file = file;
+    loadPreview(file);
+    Router.navigate('ai-inspect');
+    e.target.value = '';
+});
+
+// Drag & Drop
+const uploadZone = document.getElementById('uploadZone');
+uploadZone.addEventListener('dragover',  e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', ()  => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+    e.preventDefault(); uploadZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+        AppState.ai.file = file;
+        loadPreview(file);
+        Router.navigate('ai-inspect');
+    }
+});
+uploadZone.addEventListener('click', e => {
+    if (e.target === uploadZone || e.target.closest('.upload-prompt'))
+        document.getElementById('imageUpload').click();
+});
+
+function loadPreview(file) {
+    const reader = new FileReader();
+    reader.onload = evt => {
+        document.getElementById('previewImg').src                 = evt.target.result;
+        document.getElementById('uploadPrompt').style.display     = 'none';
+        document.getElementById('imgCanvasWrap').style.display    = 'inline-block';
+        const cv = document.getElementById('bboxCanvas');
+        cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
+        document.getElementById('detectResultsPanel').innerHTML   =
+            `<div class="card" style="padding:20px;text-align:center;color:var(--text-2)">
+                Image loaded. Click <strong style="color:var(--accent)">Analyze Weld</strong> to run AI inspection.
+             </div>`;
+        InspectionPanel.setResultBadge('Pending', '-');
+        AppState.ai.result = null; AppState.ai.confidence = null;
+    };
+    reader.readAsDataURL(file);
+}
+
+// Analyze button
+document.getElementById('analyzeButton').addEventListener('click', async () => {
+    if (!AppState.ai.file) {
+        Router.navigate('ai-inspect');
+        document.getElementById('imageUpload').click();
+        return;
+    }
+    document.getElementById('detectResultsPanel').innerHTML =
+        `<div class="card" style="padding:40px 24px;text-align:center">
+            <div class="ai-spinner"></div>
+            <div style="margin-top:14px;font-size:0.84rem;color:var(--text-2)">Analysing weld image - please wait...</div>
+         </div>`;
+    try {
+        const base64 = await toBase64(AppState.ai.file);
+        const data   = await callRoboflow(base64);
+        const preds  = data.predictions || [];
+        AppState.ai.detections = preds;
+        drawBoxes(preds, data.image);
+        renderResults(preds);
+
+        const isDefective = preds.some(p => ['fail','defect','porosity','crack'].includes(p.class.toLowerCase()));
+        const topConf     = preds.length ? Math.max(...preds.map(p => p.confidence)) : 0;
+        const verdict     = preds.length ? (isDefective ? 'FAIL' : 'PASS') : 'PASS';
+        const confStr     = preds.length ? `${Math.round(topConf * 100)}%` : 'N/A';
+
+        AppState.ai.result     = verdict;
+        AppState.ai.confidence = confStr;
+        InspectionPanel.setResultBadge(verdict, confStr);
+
+        const names = [...new Set(preds.map(p => p.class))];
+        document.getElementById('f-defects').value = names.join(', ');
+        document.getElementById('f-date').value    = new Date().toISOString().slice(0,16);
+        InspectionPanel.setMode(true);
+
+        toast(`Analysis complete - ${verdict}`, verdict === 'PASS' ? 'success' : 'error', 3500);
+    } catch (err) {
+        document.getElementById('detectResultsPanel').innerHTML =
+            `<div class="card" style="padding:20px;color:var(--danger)">
+                <strong>Warning: Analysis failed:</strong> ${err.message}
+             </div>`;
+        toast('Analysis failed: ' + err.message, 'error', 4000);
+    }
+});
+
+// ROBOFLOW API
+function toBase64(file) {
+    return new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload  = e => resolve(e.target.result.split(',')[1]);
+        r.onerror = reject;
+        r.readAsDataURL(file);
+    });
+}
+async function callRoboflow(base64) {
+    const url = `https://detect.roboflow.com/${RF_MODEL}/${RF_VERSION}?api_key=${RF_API_KEY}`;
+    const res = await fetch(url, {
+        method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: base64
+    });
+    if (!res.ok) throw new Error(`Roboflow API ${res.status}: ${res.statusText}`);
+    return res.json();
+}
+
+// DRAW BOUNDING BOXES
+function drawBoxes(preds, imgMeta) {
+    const img    = document.getElementById('previewImg');
+    const canvas = document.getElementById('bboxCanvas');
+    const ctx    = canvas.getContext('2d');
+    const dispW  = img.offsetWidth;
+    const dispH  = img.offsetHeight;
+    canvas.width  = dispW;
+    canvas.height = dispH;
+    const scaleX = dispW / (imgMeta?.width  || img.naturalWidth);
+    const scaleY = dispH / (imgMeta?.height || img.naturalHeight);
+    ctx.clearRect(0, 0, dispW, dispH);
+
+    preds.forEach(p => {
+        const color = classColor(p.class);
+        const x = (p.x - p.width  / 2) * scaleX;
+        const y = (p.y - p.height / 2) * scaleY;
+        const w = p.width  * scaleX;
+        const h = p.height * scaleY;
+
+        // Box with glow
+        ctx.shadowColor = color; ctx.shadowBlur = 8;
+        ctx.strokeStyle = color; ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, w, h);
+        ctx.shadowBlur = 0;
+
+        // Label background
+        const label = `${p.class}  ${Math.round(p.confidence * 100)}%`;
+        ctx.font = 'bold 11px Inter, sans-serif';
+        const tw = ctx.measureText(label).width;
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y - 20, tw + 10, 20);
+
+        // Label text
+        ctx.fillStyle = '#fff';
+        ctx.fillText(label, x + 5, y - 5);
+    });
+}
+
+// RENDER RESULT LIST (Standard-based)
+function renderResults(preds) {
+    const el = document.getElementById('detectResultsPanel');
+    const items        = preds.map(p => ({ pred: p, info: getDefectInfo(p.class) }));
+    const isDefective  = items.some(d => d.info.verdict === 'FAIL');
+    const criticalList = items.filter(d => d.info.severity === 'critical');
+    const majorList    = items.filter(d => d.info.severity === 'major');
+
+    if (!preds.length || !isDefective) {
+        el.innerHTML = `
+            <div class="result-verdict pass">
+                ACCEPTED - PASS
+                <div style="font-size:0.8rem;font-weight:400;margin-top:8px;opacity:0.85">No rejectable discontinuities detected.</div>
+            </div>
+            <div class="card" style="padding:20px">
+                <h3 style="font-size:0.92rem;font-weight:600;color:var(--text-1);margin-bottom:12px">Inspection Summary</h3>
+                <div style="font-size:0.82rem;color:var(--text-2);line-height:2">
+                    <div>PASS Visual inspection: Conforming</div>
+                    <div>PASS No Surface Porosity, Cracks, Spatter, Slag or Excessive Oxidation detected</div>
+                    <div>PASS Complies with EN ISO 5817:2023 Quality Level C</div>
+                    <div>PASS Complies with Tetra Pak B 2310.64 Issue 8 - Table 1</div>
+                </div>
+            </div>
+            <div class="card" style="padding:16px 20px;margin-top:10px">
+                <div style="font-size:0.76rem;color:var(--text-2);line-height:1.9">
+                    <div style="font-weight:600;color:var(--text-1);margin-bottom:6px">Standards: Applied Standards</div>
+                    <div>Document: Tetra Pak B 2310.64 Issue 8 (2024-05-02)</div>
+                    <div>ISO: EN ISO 5817:2023 - Fusion-welded joints, Quality Level C</div>
+                    <div>Class: EN ISO 6520-1:2007 - Classification of geometric imperfections</div>
+                </div>
+            </div>`;
+        return;
+    }
+
+    el.innerHTML = `
+        <div class="result-verdict fail">
+            REJECTED - FAIL
+            <div style="font-size:0.78rem;font-weight:400;margin-top:8px;opacity:0.85">
+                ${items.length} Defect${items.length > 1 ? 's' : ''} Detected
+                ${criticalList.length ? ` &nbsp;Critical: ${criticalList.length}` : ''}
+                ${majorList.length   ? ` &nbsp;Major: ${majorList.length}`       : ''}
+            </div>
+        </div>
+        <div class="card" style="padding:20px">
+            <h3 style="font-size:0.92rem;font-weight:600;color:var(--text-1);margin-bottom:14px">Defect Details &amp; Non-Conformance Report</h3>
+            <div style="display:flex;flex-direction:column;gap:12px">
+            ${items.map(({ pred, info }, i) => `
+                <div style="background:var(--card-alt);border:1px solid var(--border);border-left:3px solid ${severityColor(info.severity)};border-radius:var(--r-md);padding:14px">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <span style="background:${classColor(pred.class)};color:#fff;font-size:0.68rem;font-weight:700;padding:2px 7px;border-radius:4px">${i+1}</span>
+                            <span style="font-weight:600;font-size:0.88rem;color:${classColor(pred.class)}">${info.name}</span>
+                        </div>
+                        <span class="pill ${info.verdict==='PASS'?'pill-pass':info.verdict==='CONDITIONAL'?'pill-warn':'pill-fail'}" style="font-size:0.68rem">${info.verdict}</span>
+                    </div>
+                    <div style="display:flex;gap:12px;margin-bottom:8px">
+                        <span style="font-size:0.76rem;font-weight:600;color:${severityColor(info.severity)}">${severityLabel(info.severity)}</span>
+                        <span style="font-size:0.76rem;color:var(--text-2)">Confidence: ${Math.round(pred.confidence*100)}%</span>
+                    </div>
+                    <div style="font-size:0.8rem;margin-bottom:5px">
+                        <span style="color:var(--text-2)">Rule: </span>
+                        <span style="color:var(--text-1);font-weight:500">${info.rule}</span>
+                    </div>
+                    <div style="font-size:0.76rem;color:var(--text-2);line-height:1.65;margin-bottom:8px">${info.detail}</div>
+                    <div style="background:var(--danger-soft);border:1px solid rgba(248,113,113,0.2);border-radius:var(--r-sm);padding:7px 10px;font-size:0.76rem;margin-bottom:7px">
+                        <span style="color:var(--danger);font-weight:600">Action: </span>
+                        <span style="color:var(--text-2)">${info.action}</span>
+                    </div>
+                    <div style="font-size:0.7rem;color:var(--text-3);display:flex;gap:12px">
+                        <span style="color:var(--accent)">Standards: ${info.code}</span>
+                        <span>ISO: ${info.isoCode}</span>
+                    </div>
+                </div>`).join('')}
+            </div>
+        </div>
+        <div class="card" style="padding:16px 20px;margin-top:10px">
+            <div style="font-size:0.76rem;color:var(--text-2);line-height:1.9">
+                <div style="font-weight:600;color:var(--text-1);margin-bottom:6px">Standards: Applied Standards</div>
+                <div>Document: Tetra Pak B 2310.64 Issue 8 (2024-05-02)</div>
+                <div>ISO: EN ISO 5817:2023 - Fusion-welded joints, Quality Level C</div>
+                <div>Class: EN ISO 6520-1:2007 - Classification of geometric imperfections</div>
+                <div>EHEDG: EHEDG Document 35 - Hygienic welding of stainless steel tubing</div>
+                <div style="margin-top:10px;padding:8px 12px;background:var(--danger-soft);border-radius:var(--r-sm);border:1px solid rgba(248,113,113,0.2);color:var(--danger);font-weight:600;font-size:0.76rem">
+                    Warning: Corrective action required before this weld joint is placed into service.
+                </div>
+            </div>
+        </div>`;
+}
+
+// EXPORT PDF (placeholder)
+document.getElementById('exportPdfButton').addEventListener('click', () => {
+    toast('Export PDF - coming soon.', 'info', 3000);
+});
+
+
+// Refresh current app view without clearing login/session state.
+document.getElementById('refreshButton').addEventListener('click', () => {
+    const btn = document.getElementById('refreshButton');
+    btn.classList.remove('refreshing');
+    void btn.offsetWidth;
+    btn.classList.add('refreshing');
+
+    updateClock();
+    Projects.load();
+    Projects.render();
+    Router.navigate(AppState.page || 'dashboard');
+
+    if (AppState.ai.detections && AppState.ai.detections.length) {
+        renderResults(AppState.ai.detections);
+        drawBoxes(AppState.ai.detections);
+    }
+
+    toast('Current view refreshed.', 'success', 1800);
+    setTimeout(() => btn.classList.remove('refreshing'), 700);
+});
+
+// INIT
+
+window.addEventListener('DOMContentLoaded', () => {
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Splash out
+    setTimeout(() => document.body.classList.add('loaded'), 1900);
+
+    // Default date
+    const iso = new Date().toISOString().slice(0,16);
+    if (!document.getElementById('f-date').value)
+        document.getElementById('f-date').value = iso;
+
+    Router.navigate('dashboard');
+
+    // Sync dark mode toggle with current theme
+    const dt = document.getElementById('darkModeToggle');
+    dt.checked = document.documentElement.getAttribute('data-theme') === 'dark';
+
+    // USER INFO
+    const roleMeta = Auth.ROLE_META[SESSION.role] || Auth.ROLE_META.viewer;
+    document.body.setAttribute('data-role', SESSION.role);
+    const avEl = document.getElementById('userAvatar');
+    avEl.textContent       = SESSION.avatar;
+    avEl.style.background  = roleMeta.color;
+    document.getElementById('userName').textContent  = SESSION.name;
+    const rtEl = document.getElementById('userRoleTag');
+    rtEl.textContent  = roleMeta.label;
+    rtEl.style.color  = roleMeta.color;
+    document.getElementById('logoutBtn').addEventListener('click', () => Auth.logout());
+
+    /* ROLE-BASED VISIBILITY */
+    const _nav = Router.navigate.bind(Router);
+    Router.navigate = function (page) {
+        const minRoles = { 'ai-inspect': 1, reports: 1, settings: 1 };
+        const needed   = minRoles[page] !== undefined ? minRoles[page] : 0;
+        if ((Auth.ROLE_ORDER[SESSION.role] || 0) < needed) {
+            toast('Access restricted - insufficient role', 'error');
+            return;
+        }
+        _nav(page);
+    };
+});
+</script>
+</body>
+</html>

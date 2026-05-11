@@ -1,0 +1,63 @@
+{
+  "name": "wqis_demo",
+  "version": "1.0.0",
+  "description": "PRO3S Weld Quality Inspection System desktop and web app",
+  "author": "PRO3S",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "users:build": "powershell -ExecutionPolicy Bypass -File scripts/build-users-db.ps1",
+    "web:serve": "npx serve .",
+    "web:check": "node -e \"const fs=require('fs'); ['index.html','login.html','auth.js','netlify.toml','netlify/functions/auth.js'].forEach(f=>{if(!fs.existsSync(f)){throw new Error('Missing '+f)}}); console.log('Web deploy files OK')\""
+  },
+  "dependencies": {
+    "chart.js": "^4.5.1"
+  },
+  "devDependencies": {
+    "electron": "^25.0.0",
+    "electron-builder": "^26.8.1"
+  },
+  "build": {
+    "appId": "com.pro3s.wqis",
+    "productName": "PRO3S WQIS",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "index.html",
+      "login.html",
+      "auth.js",
+      "generated-users.js",
+      "PRO3S_Logo_001.png",
+      "PRO3S_Full_Logo.jpg",
+      "PRO3S_White_Logo.png",
+      "assets/**/*",
+      "css/**/*",
+      "js/**/*",
+      "node_modules/chart.js/**/*",
+      "package.json",
+      "!netlify{,/**/*}",
+      "!.netlifyignore",
+      "!netlify.toml",
+      "!dist{,/**/*}",
+      "!release{,/**/*}",
+      "!WEB1 WQIS{,/**/*}",
+      "!src{,/**/*}",
+      "!*.docx",
+      "!test_*.jpg",
+      "!CLAUDE.md",
+      "!.vscode{,/**/*}",
+      "!.git{,/**/*}"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "PRO3S_Logo_001.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

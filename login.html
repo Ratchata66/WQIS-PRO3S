@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRO3S WQIS — Sign In</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+    (function () {
+        const host = window.location.hostname;
+        const isLocal =
+            window.location.protocol === 'file:' ||
+            host === 'localhost' ||
+            host === '127.0.0.1' ||
+            host === '';
+        if (isLocal) {
+            document.write('<script src="generated-users.js"><\/script>');
+        }
+    })();
+    </script>
+    <script src="auth.js"></script>
+    <style>
+    :root {
+        --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        --trans: 0.22s cubic-bezier(.4,0,.2,1);
+        --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px; --r-2xl: 24px; --r-pill: 999px;
+    }
+    [data-theme="dark"] {
+        color-scheme: dark;
+        --bg:          #111215;
+        --surface:     #1a1c20;
+        --card:        #22252c;
+        --card-alt:    #1e2128;
+        --border:      rgba(255,255,255,0.07);
+        --border-em:   rgba(255,255,255,0.12);
+        --text-1:      #e9e6e2;
+        --text-2:      rgba(233,230,226,0.55);
+        --text-3:      rgba(233,230,226,0.32);
+        --accent:      #4f8ef7;
+        --accent-soft: rgba(79,142,247,0.14);
+        --accent-em:   rgba(79,142,247,0.25);
+        --success:     #34d399;
+        --success-soft:rgba(52,211,153,0.13);
+        --danger:      #f87171;
+        --danger-soft: rgba(248,113,113,0.13);
+        --shadow:      rgba(0,0,0,0.5);
+        --shadow-card: 0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.25);
+    }
+    [data-theme="light"] {
+        color-scheme: light;
+        --bg:          #f4f2ef;
+        --surface:     #fdfcfb;
+        --card:        #ffffff;
+        --card-alt:    #f8f7f5;
+        --border:      rgba(0,0,0,0.07);
+        --border-em:   rgba(0,0,0,0.13);
+        --text-1:      #1a1917;
+        --text-2:      #6b6760;
+        --text-3:      #a8a49e;
+        --accent:      #2563eb;
+        --accent-soft: rgba(37,99,235,0.09);
+        --accent-em:   rgba(37,99,235,0.18);
+        --success:     #059669;
+        --success-soft:rgba(5,150,105,0.1);
+        --danger:      #dc2626;
+        --danger-soft: rgba(220,38,38,0.09);
+        --shadow:      rgba(0,0,0,0.1);
+        --shadow-card: 0 1px 3px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.06);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+        width: 100%; height: 100%; overflow: hidden;
+        font-family: var(--font);
+        background: var(--bg); color: var(--text-1);
+        font-size: 14px; line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+    }
+    button, input, select { font: inherit; }
+
+    /* ── BACKGROUND ── */
+    .bg-grid {
+        position: fixed; inset: 0; z-index: 0; pointer-events: none;
+        background-image:
+            linear-gradient(var(--border) 1px, transparent 1px),
+            linear-gradient(90deg, var(--border) 1px, transparent 1px);
+        background-size: 48px 48px;
+        -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
+        mask-image:         radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
+    }
+    .bg-glow {
+        position: fixed; z-index: 0; pointer-events: none;
+        width: 700px; height: 700px; border-radius: 50%;
+        top: 50%; left: 50%; transform: translate(-50%, -50%);
+        background: radial-gradient(circle, var(--accent-soft) 0%, transparent 68%);
+    }
+
+    /* ── THEME TOGGLE ── */
+    .theme-btn {
+        position: fixed; top: 18px; right: 18px; z-index: 100;
+        width: 36px; height: 36px; border-radius: var(--r-md);
+        background: var(--card); border: 1px solid var(--border-em);
+        color: var(--text-2); cursor: pointer; display: grid; place-items: center;
+        box-shadow: var(--shadow-card);
+        transition: background var(--trans), color var(--trans), border-color var(--trans);
+    }
+    .theme-btn:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-em); }
+
+    /* ── OUTER LAYOUT ── */
+    .login-outer {
+        position: relative; z-index: 1;
+        width: 100%; height: 100%;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        padding: 24px; overflow-y: auto;
+    }
+
+    /* ── CARD ── */
+    .login-card {
+        width: 100%; max-width: 420px;
+        background: var(--card); border: 1px solid var(--border-em);
+        border-radius: var(--r-2xl);
+        box-shadow: 0 0 0 1px var(--border), 0 32px 80px var(--shadow);
+        padding: 40px 40px 36px;
+        animation: cardIn 0.5s cubic-bezier(.34,1.35,.64,1) both;
+    }
+    @keyframes cardIn {
+        from { opacity: 0; transform: translateY(28px) scale(.96); }
+        to   { opacity: 1; transform: none; }
+    }
+    @media (max-width: 480px) {
+        .login-card { padding: 32px 24px 28px; }
+    }
+
+    /* ── BRAND ── */
+    .login-brand {
+        display: flex; flex-direction: column; align-items: center; gap: 14px;
+        margin-bottom: 30px; text-align: center;
+    }
+    .login-logo {
+        width: 58px; height: 58px; object-fit: contain;
+        filter: drop-shadow(0 0 18px var(--accent));
+        animation: logoIn 0.6s 0.08s cubic-bezier(.34,1.4,.64,1) both;
+    }
+    @keyframes logoIn {
+        from { opacity: 0; transform: scale(.65) translateY(4px); }
+        to   { opacity: 1; transform: none; }
+    }
+    .login-title { font-size: 1.55rem; font-weight: 800; letter-spacing: 0.025em; color: var(--text-1); }
+    .login-sub   { font-size: 0.8rem; color: var(--text-2); line-height: 1.65; }
+
+    /* ── DIVIDER ── */
+    .divider { height: 1px; background: var(--border); margin-bottom: 26px; }
+
+    /* ── FORM ── */
+    .login-form { display: flex; flex-direction: column; gap: 14px; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field-label { font-size: 0.7rem; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.09em; }
+
+    .field-wrap { position: relative; display: flex; align-items: center; }
+    .field-icon {
+        position: absolute; left: 11px; pointer-events: none;
+        color: var(--text-3); display: flex; align-items: center;
+        transition: color var(--trans);
+    }
+    .field-wrap:focus-within .field-icon { color: var(--accent); }
+
+    .field-input {
+        width: 100%; background: var(--card-alt); border: 1px solid var(--border);
+        border-radius: var(--r-md); padding: 10px 12px 10px 36px;
+        color: var(--text-1); font-size: 0.88rem;
+        transition: border-color var(--trans), background var(--trans), box-shadow var(--trans);
+    }
+    .field-input:focus {
+        outline: none; border-color: var(--accent);
+        background: var(--card); box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .field-input::placeholder { color: var(--text-3); }
+
+    /* Password show/hide */
+    .pw-eye {
+        position: absolute; right: 10px;
+        background: none; border: none; cursor: pointer; padding: 4px;
+        color: var(--text-3); border-radius: var(--r-sm); display: flex; align-items: center;
+        transition: color var(--trans);
+    }
+    .pw-eye:hover { color: var(--text-1); }
+
+    /* Remember me */
+    .remember-row {
+        display: flex; align-items: center; gap: 9px; user-select: none;
+    }
+    .remember-check { width: 15px; height: 15px; cursor: pointer; accent-color: var(--accent); flex-shrink: 0; }
+    .remember-label { font-size: 0.82rem; color: var(--text-2); cursor: pointer; }
+
+    /* Error banner */
+    .login-error {
+        display: none; align-items: center; gap: 9px;
+        padding: 10px 14px; border-radius: var(--r-md);
+        background: var(--danger-soft); border: 1px solid rgba(248,113,113,0.22);
+        color: var(--danger); font-size: 0.82rem; font-weight: 500;
+        animation: shake 0.38s ease;
+    }
+    .login-error.visible { display: flex; }
+    @keyframes shake {
+        0%,100% { transform: translateX(0); }
+        20%,60%  { transform: translateX(-5px); }
+        40%,80%  { transform: translateX(5px); }
+    }
+
+    /* Submit button */
+    .login-btn {
+        width: 100%; padding: 11px 16px; border-radius: var(--r-md); border: none;
+        background: var(--accent); color: #fff;
+        font-size: 0.9rem; font-weight: 700; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        transition: opacity var(--trans), transform var(--trans), box-shadow var(--trans), background var(--trans);
+        box-shadow: 0 2px 10px rgba(79,142,247,0.35);
+        margin-top: 4px;
+    }
+    .login-btn:hover:not(:disabled) { opacity: .92; transform: translateY(-1px); box-shadow: 0 4px 18px rgba(79,142,247,0.45); }
+    .login-btn:active:not(:disabled) { transform: translateY(0); }
+    .login-btn:disabled { opacity: .6; cursor: default; }
+    .login-btn.success-state { background: var(--success); box-shadow: 0 2px 10px rgba(52,211,153,0.35); }
+
+    .btn-spinner {
+        width: 16px; height: 16px; border: 2.5px solid rgba(255,255,255,0.3);
+        border-top-color: #fff; border-radius: 50%;
+        animation: spin 0.65s linear infinite; display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Demo credentials */
+    .demo-wrap { margin-top: 22px; border-top: 1px solid var(--border); padding-top: 18px; }
+    .demo-hd {
+        display: flex; align-items: center; justify-content: space-between;
+        background: none; border: none; width: 100%; cursor: pointer;
+        padding: 0; color: var(--text-3); font-size: 0.7rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.1em;
+        transition: color var(--trans);
+    }
+    .demo-hd:hover { color: var(--text-2); }
+    .demo-chevron { transition: transform var(--trans); }
+    .demo-wrap.open .demo-chevron { transform: rotate(180deg); }
+
+    .demo-list { display: none; margin-top: 11px; flex-direction: column; gap: 6px; }
+    .demo-wrap.open .demo-list { display: flex; }
+
+    .demo-row {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 8px 11px; border-radius: var(--r-md);
+        background: var(--card-alt); border: 1px solid var(--border);
+        cursor: pointer; gap: 10px;
+        transition: border-color var(--trans), background var(--trans);
+    }
+    .demo-row:hover { border-color: var(--accent-em); background: var(--accent-soft); }
+    .demo-row-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .demo-row-user { font-size: 0.8rem; font-weight: 600; color: var(--text-1); }
+    .demo-row-pass { font-size: 0.72rem; color: var(--text-3); font-weight: 400; }
+    .role-pill {
+        flex-shrink: 0; font-size: 0.62rem; font-weight: 700; padding: 2px 9px;
+        border-radius: var(--r-pill); text-transform: uppercase; letter-spacing: 0.07em;
+    }
+
+    /* Footer */
+    .login-footer {
+        position: fixed; bottom: 18px; left: 0; right: 0;
+        font-size: 0.69rem; color: var(--text-3); text-align: center; z-index: 1;
+        pointer-events: none;
+    }
+    </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<!-- Theme toggle -->
+<button class="theme-btn" id="themeToggle" title="Toggle theme">
+    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"
+         stroke-linecap="round" stroke-linejoin="round" id="themeIcon">
+        <path d="M17 12A7 7 0 119 4a5 5 0 108 8z"/>
+    </svg>
+</button>
+
+<!-- Login card -->
+<div class="login-outer">
+<div class="login-card">
+
+    <!-- Brand -->
+    <div class="login-brand">
+        <img class="login-logo" src="PRO3S_Logo_001.png" alt="PRO3S" onerror="this.style.display='none'">
+        <div class="login-title">PRO3S WQIS</div>
+        <p class="login-sub">Weld Quality Inspection System<br>Sign in to your account to continue.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Form -->
+    <form class="login-form" id="loginForm" autocomplete="on">
+
+        <!-- Error -->
+        <div class="login-error" id="loginError">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
+                <circle cx="10" cy="10" r="8"/><path d="M10 7v4M10 14h.01"/>
+            </svg>
+            <span id="loginErrorText">Invalid username or password.</span>
+        </div>
+
+        <!-- Username -->
+        <div class="field">
+            <label class="field-label" for="username">Username</label>
+            <div class="field-wrap">
+                <input class="field-input" type="text" id="username" name="username"
+                       placeholder="Enter your username" autocomplete="username" required>
+                <div class="field-icon">
+                    <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="10" cy="7" r="3.5"/><path d="M2.5 17c0-3.5 3.5-6 7.5-6s7.5 2.5 7.5 6"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Password -->
+        <div class="field">
+            <label class="field-label" for="password">Password</label>
+            <div class="field-wrap">
+                <input class="field-input" type="password" id="password" name="password"
+                       placeholder="Enter your password" autocomplete="current-password" required>
+                <div class="field-icon">
+                    <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="9" width="14" height="10" rx="2"/>
+                        <path d="M7 9V6a3 3 0 016 0v3"/>
+                    </svg>
+                </div>
+                <button type="button" class="pw-eye" id="pwToggle" aria-label="Toggle password visibility">
+                    <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" id="pwIcon">
+                        <path d="M1 10s3.5-7 9-7 9 7 9 7-3.5 7-9 7-9-7-9-7z"/>
+                        <circle cx="10" cy="10" r="3"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Remember me -->
+        <div class="remember-row">
+            <input type="checkbox" class="remember-check" id="rememberMe" name="remember">
+            <label class="remember-label" for="rememberMe">Remember me for 7 days</label>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="login-btn" id="loginBtn">
+            <div class="btn-spinner" id="btnSpinner"></div>
+            <span id="btnText">Sign In</span>
+            <svg id="btnArrow" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 10h12M11 5l5 5-5 5"/>
+            </svg>
+        </button>
+    </form>
+
+    <!-- Demo credentials -->
+    <div class="demo-wrap" id="demoWrap">
+        <button class="demo-hd" id="demoHd" type="button">
+            <span>Demo Credentials</span>
+            <svg class="demo-chevron" width="13" height="13" viewBox="0 0 20 20" fill="none"
+                 stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 8l5 5 5-5"/>
+            </svg>
+        </button>
+        <div class="demo-list" id="demoList"></div>
+    </div>
+
+</div>
+</div>
+
+<div class="login-footer">
+    PRO3S WQIS v1.0.0 &nbsp;·&nbsp; Industrial QA/QC Platform &nbsp;·&nbsp; EN ISO 5817:2023
+</div>
+
+<script>
+'use strict';
+
+// ── THEME ──────────────────────────────────────────────────────────
+const THEME_KEY = 'wqis_theme';
+function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    const icon = document.getElementById('themeIcon');
+    icon.innerHTML = t === 'dark'
+        ? '<path d="M17 12A7 7 0 119 4a5 5 0 108 8z"/>'
+        : '<circle cx="10" cy="10" r="4"/><path d="M10 2v2M10 18v2M2 10h2M18 10h2M4.93 4.93l1.41 1.41M13.66 13.66l1.41 1.41M4.93 15.07l1.41-1.41M13.66 6.34l1.41-1.41"/>';
+    localStorage.setItem(THEME_KEY, t);
+}
+applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
+document.getElementById('themeToggle').addEventListener('click', () =>
+    applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
+
+// ── REDIRECT IF ALREADY AUTHENTICATED ─────────────────────────────
+if (Auth.isAuthenticated()) { window.location.replace('index.html'); }
+
+// ── PASSWORD TOGGLE ────────────────────────────────────────────────
+const pwInput = document.getElementById('password');
+const pwIcon  = document.getElementById('pwIcon');
+document.getElementById('pwToggle').addEventListener('click', () => {
+    const show = pwInput.type === 'password';
+    pwInput.type = show ? 'text' : 'password';
+    pwIcon.innerHTML = show
+        ? '<path d="M3 3l14 14M10.58 10.58A3 3 0 016.41 6.41M1 10s3.5-7 9-7c1.65 0 3.13.47 4.41 1.24M18.04 12.54C17.25 14.57 14.87 17 10 17c-1.6 0-3.01-.38-4.23-.97"/>'
+        : '<path d="M1 10s3.5-7 9-7 9 7 9 7-3.5 7-9 7-9-7-9-7z"/><circle cx="10" cy="10" r="3"/>';
+});
+
+// ── DEMO CREDENTIALS ───────────────────────────────────────────────
+const DEMO_FALLBACK = [
+    { username: 'admin',     password: 'pro3s@admin', role: 'admin',     label: 'Administrator' },
+    { username: 'inspector', password: 'weld@2024',   role: 'inspector', label: 'Inspector'     },
+    { username: 'viewer',    password: 'view@2024',   role: 'viewer',    label: 'Viewer'        },
+];
+const DEMOS = Array.isArray(window.WQIS_USERS) && window.WQIS_USERS.length
+    ? window.WQIS_USERS
+        .filter(u => u.status !== 'disabled')
+        .map(u => ({
+            username: u.username,
+            password: u.password,
+            role: u.role,
+            label: u.role === 'admin' ? 'Administrator' : u.role === 'inspector' ? 'Inspector' : 'Viewer'
+        }))
+    : DEMO_FALLBACK;
+const ROLE_COLORS = {
+    admin:     { color: '#4f8ef7', bg: 'rgba(79,142,247,0.14)'  },
+    inspector: { color: '#34d399', bg: 'rgba(52,211,153,0.13)'  },
+    viewer:    { color: '#a78bfa', bg: 'rgba(167,139,250,0.14)' },
+};
+
+const demoList = document.getElementById('demoList');
+DEMOS.forEach(d => {
+    const c = ROLE_COLORS[d.role];
+    const el = document.createElement('div');
+    el.className = 'demo-row';
+    el.innerHTML = `
+        <div class="demo-row-info">
+            <div class="demo-row-user">${d.username}</div>
+            <div class="demo-row-pass">${d.password}</div>
+        </div>
+        <span class="role-pill" style="background:${c.bg};color:${c.color}">${d.label}</span>`;
+    el.addEventListener('click', () => {
+        document.getElementById('username').value = d.username;
+        document.getElementById('password').value = d.password;
+        document.getElementById('loginForm').dispatchEvent(new Event('submit', { cancelable: true }));
+    });
+    demoList.appendChild(el);
+});
+
+document.getElementById('demoHd').addEventListener('click', () =>
+    document.getElementById('demoWrap').classList.toggle('open'));
+
+// ── LOGIN FORM ─────────────────────────────────────────────────────
+const loginForm  = document.getElementById('loginForm');
+const loginError = document.getElementById('loginError');
+const loginErrTx = document.getElementById('loginErrorText');
+const loginBtn   = document.getElementById('loginBtn');
+const btnSpinner = document.getElementById('btnSpinner');
+const btnText    = document.getElementById('btnText');
+const btnArrow   = document.getElementById('btnArrow');
+
+function showError(msg) {
+    loginError.classList.remove('visible');
+    void loginError.offsetWidth;          // reflow to restart animation
+    loginErrTx.textContent = msg;
+    loginError.classList.add('visible');
+}
+
+loginForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const remember = document.getElementById('rememberMe').checked;
+
+    loginError.classList.remove('visible');
+    loginBtn.disabled = true;
+    btnSpinner.style.display = 'block';
+    btnArrow.style.display   = 'none';
+    btnText.textContent      = 'Signing in…';
+
+    await new Promise(r => setTimeout(r, 580));
+
+    const result = await Auth.login(username, password, remember);
+    if (result.ok) {
+        btnSpinner.style.display = 'none';
+        btnText.textContent = 'Success  ✓';
+        loginBtn.classList.add('success-state');
+        setTimeout(() => window.location.replace('index.html'), 380);
+    } else {
+        btnSpinner.style.display = 'none';
+        btnArrow.style.display   = '';
+        btnText.textContent      = 'Sign In';
+        loginBtn.disabled        = false;
+        showError('Invalid username or password. Please try again.');
+        document.getElementById('password').value = '';
+        document.getElementById('password').focus();
+    }
+});
+
+// Auto-focus username on load
+window.addEventListener('DOMContentLoaded', () =>
+    document.getElementById('username').focus());
+</script>
+</body>
+</html>
