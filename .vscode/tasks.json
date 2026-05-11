@@ -1,0 +1,52 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "🚀 Deploy to Netlify",
+      "detail": "บันทึกและ Deploy ขึ้น Netlify อัตโนมัติ",
+      "type": "shell",
+      "command": "git add -A && git commit -m \"${input:commitMessage}\" && git push",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "panel": "new",
+        "focus": true,
+        "clear": true,
+        "reveal": "always"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "📊 Open Netlify Dashboard",
+      "detail": "เปิด Netlify Deploy Dashboard",
+      "type": "shell",
+      "command": "start https://app.netlify.com/sites/pro3s-wqis/deploys",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🌐 Open Live Site",
+      "detail": "เปิดเว็บไซต์ WQIS ที่ใช้งานจริง",
+      "type": "shell",
+      "command": "start https://pro3s-wqis.netlify.app",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "commitMessage",
+      "type": "promptString",
+      "description": "📝 ข้อความ Commit (Commit message)",
+      "default": "Update ${currentDatetime}"
+    }
+  ]
+}

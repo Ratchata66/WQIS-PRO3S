@@ -5,5 +5,4 @@ release/
 netlify/functions/generated-users.js
 debug_out.txt
 .claude/
-.vscode/
 *.docx
