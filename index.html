@@ -3495,6 +3495,13 @@ const WELD_STANDARD = {
         rule: 'AI inspection indicates the weld joint does not meet the minimum quality level requirements.',
         detail: 'Ref. EN ISO 5817:2023 Level C and Tetra Pak B 2310.64 Issue 8: The weld has been classified as non-conforming based on visual AI assessment. A detailed manual inspection by a Qualified Welding Inspector or Welding Coordinator is required to confirm the nature and extent of the non-conformance.',
         action: 'Quarantine weld joint. Conduct manual inspection per EN ISO 5817. Determine corrective action: Repair or Full Remake.'
+    },
+    negative_not_a_weld: {
+        code: 'NOT-A-WELD', isoCode: 'N/A',
+        name: 'Not a Weld Joint', verdict: 'REVIEW', severity: 'unknown',
+        rule: 'The uploaded image does not appear to contain a weld joint.',
+        detail: 'The AI model classified this image as "not a weld." This may indicate an incorrect image was uploaded, the image angle or lighting does not clearly show the weld surface, or the image is not relevant to a weld inspection task.',
+        action: 'Upload a clear image of the weld joint surface. Ensure adequate lighting and correct camera angle per inspection procedure.'
     }
 };
 
@@ -3520,10 +3527,10 @@ function severityLabel(s) {
 // ROBOFLOW CONFIG
 
 const RF_API_KEY = 'si7NbGImhofF3nNet42N';
-const RF_MODEL   = 'joint-welding-detection';
-const RF_VERSION = 2;
+const RF_MODEL   = 'wqis-weld-detection-defect';
+const RF_VERSION = 1;
 const MIN_AI_CONFIDENCE = 0.55;
-const LOCAL_YOLO_MIN_CONFIDENCE = 0.05;
+const LOCAL_YOLO_MIN_CONFIDENCE = 0.25;
 const LOCAL_MODEL_LABEL  = 'wqis-v2 · Local';
 const CLOUD_MODEL_LABEL  = 'cloud-v2 · Roboflow';
 const FAIL_CLASSES = new Set(['fail', 'defect', 'porosity', 'crack', 'spatter', 'oxidation', 'discoloration', 'undercut', 'incomplete_fusion', 'icicle']);
@@ -3556,6 +3563,17 @@ function evaluateWeldInspection(rawPreds, options = {}) {
             verdict: 'REVIEW',
             confidence: `${Math.round(topConf * 100)}%`,
             reason: `AI confidence is below the ${Math.round(minConfidence * 100)}% minimum threshold.`,
+            qualified,
+        };
+    }
+
+    // If every qualified detection is "not a weld", return early with REVIEW
+    const allNotWeld = qualified.every(p => normalizeClassName(p.class) === 'negative_not_a_weld');
+    if (allNotWeld) {
+        return {
+            verdict: 'REVIEW',
+            confidence: `${Math.round(Math.max(...qualified.map(p => Number(p.confidence || 0))) * 100)}%`,
+            reason: 'The image does not appear to contain a weld joint. Please upload a clear image of the weld surface.',
             qualified,
         };
     }
