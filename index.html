@@ -263,21 +263,21 @@
         display: flex; flex-direction: column; gap: 0;
         background: color-mix(in srgb, var(--surface) 96%, transparent);
         border-left: 1px solid var(--border);
-        overflow-y: auto;
+        overflow: hidden;               /* no scroll — all content must fit */
         transition: background var(--trans);
     }
-    .rp-section { padding: 11px 14px; border-bottom: 1px solid var(--border); }
+    .rp-section { padding: 8px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
     .rp-section:last-child { border-bottom: none; }
     .rp-section-title {
-        font-size: 0.7rem; font-weight: 600; color: var(--text-3);
-        text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 10px;
+        font-size: 0.68rem; font-weight: 600; color: var(--text-3);
+        text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 7px;
     }
     .rp-row {
         display: flex; justify-content: space-between; align-items: center;
-        padding: 6px 0; font-size: 0.8rem;
+        padding: 3px 0; font-size: 0.78rem;
     }
     .rp-row .label { color: var(--text-2); }
-    .rp-row .value { font-weight: 600; color: var(--text-1); font-size: 0.82rem; }
+    .rp-row .value { font-weight: 600; color: var(--text-1); font-size: 0.8rem; }
 
 
     /* CARDS & KPI */
@@ -338,13 +338,13 @@
 
 
     /* INSPECTION FORM (right panel) */
-    .field-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 9px; }
+    .field-group { display: flex; flex-direction: column; gap: 2px; margin-bottom: 4px; }
     .field-group:last-child { margin-bottom: 0; }
-    .field-label { font-size: 0.69rem; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.07em; }
+    .field-label { font-size: 0.63rem; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.07em; }
     .field-input, .field-select, .field-textarea {
         background: var(--card-alt); border: 1px solid var(--border);
-        border-radius: var(--r-sm); padding: 7px 10px;
-        color: var(--text-1); font-size: 0.82rem; width: 100%;
+        border-radius: var(--r-sm); padding: 4px 9px;
+        color: var(--text-1); font-size: 0.79rem; width: 100%;
         transition: border-color var(--trans), background var(--trans), box-shadow var(--trans);
     }
     .field-input:focus, .field-select:focus, .field-textarea:focus {
@@ -358,7 +358,7 @@
     .panel-edit-active .field-input:disabled,
     .panel-edit-active .field-select:disabled,
     .panel-edit-active .field-textarea:disabled { opacity: 1; }
-    .field-textarea { resize: vertical; min-height: 62px; }
+    .field-textarea { resize: none; min-height: 38px; }
     .field-select option { background: var(--card); }
 
     /* panel mode buttons */
@@ -693,14 +693,14 @@
     }
     .pulse-dot.pass { background: var(--success); box-shadow: 0 0 0 4px var(--success-soft); animation: none; }
     @keyframes pulseDot { 50% { box-shadow: 0 0 0 7px transparent; } }
-    .conf-meter { margin: 12px 0 0; }
+    .conf-meter { margin: 7px 0 0; }
     .conf-meter-head { display: flex; justify-content: space-between; align-items: baseline; }
     .conf-meter-head .cm-l { font-size: 0.72rem; color: var(--text-2); font-weight: 500; }
     .conf-meter-head .cm-r { font-family: "JetBrains Mono", monospace; font-size: 0.84rem; color: var(--text-1); font-weight: 600; }
     .conf-meter-bar { margin-top: 5px; height: 6px; background: var(--card-alt); border-radius: 3px; overflow: hidden; }
     .conf-meter-fill { height: 100%; background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 70%, white)); border-radius: 3px; transition: width .4s ease; }
     .conf-meter-scale { display: flex; justify-content: space-between; font-family: "JetBrains Mono", monospace; font-size: 0.6rem; color: var(--text-3); margin-top: 3px; }
-    .conf-meta { display: flex; gap: 5px; margin-top: 8px; }
+    .conf-meta { display: flex; gap: 5px; margin-top: 5px; }
     .conf-meta-pill { flex: 1; padding: 5px 8px; border: 1px solid var(--border); border-radius: 7px; background: var(--bg); }
     .conf-meta-pill .cmp-k { font-size: 0.6rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.09em; font-weight: 600; }
     .conf-meta-pill .cmp-v { font-family: "JetBrains Mono", monospace; font-size: 0.72rem; color: var(--text-1); margin-top: 1px; font-weight: 500; }
@@ -830,7 +830,7 @@
     #page-ai-inspect.active { display: flex !important; height: 100%; padding: var(--content-pad); padding-bottom: 8px; box-sizing: border-box; }
     body.page-ai-inspect .content { overflow: hidden; padding: 0; }
     .ai-bottom-scroll {
-        flex: 1; overflow-y: auto; min-height: 0;
+        flex: 0 0 auto; overflow-y: auto; max-height: 210px; min-height: 0;
     }
 
     .wf-stepper {
@@ -855,7 +855,36 @@
     .wf-step-name { font-size: 0.78rem; font-weight: 600; color: var(--text-1); margin-top: 1px; }
     .wf-step.idle .wf-step-name { color: var(--text-3); }
 
-    .hero-capture { background: var(--card); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; flex: 0 0 auto; max-height: clamp(210px, 42vh, 370px); display: flex; flex-direction: column; }
+    .hero-capture { background: var(--card); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    /* image preview fills the capture card */
+    #imgCanvasWrap { flex: 1; min-height: 0; overflow: hidden; padding: 8px 14px; display: flex; align-items: center; justify-content: center; }
+    #imgCanvasWrap .img-inner { position: relative; display: inline-block; max-width: 100%; max-height: 100%; line-height: 0; }
+    #imgCanvasWrap #previewImg { max-width: 100%; max-height: min(54vh, 420px); object-fit: contain; border-radius: var(--r-md); display: block; }
+    /* zoom button on image */
+    .img-zoom-btn {
+        position: absolute; top: 6px; right: 6px;
+        background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.18);
+        border-radius: 6px; padding: 4px 9px; color: #fff; cursor: pointer;
+        font-size: 0.72rem; display: flex; align-items: center; gap: 4px;
+        backdrop-filter: blur(4px); transition: background 0.15s;
+    }
+    .img-zoom-btn:hover { background: rgba(0,0,0,0.78); }
+    .img-zoom-btn svg { width: 11px; height: 11px; }
+    /* lightbox modal */
+    #imgZoomModal {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.88); z-index: 9999;
+        align-items: center; justify-content: center;
+    }
+    #imgZoomModal.open { display: flex; }
+    #imgZoomFull { max-width: 92vw; max-height: 90vh; object-fit: contain; border-radius: var(--r-lg); box-shadow: 0 8px 48px rgba(0,0,0,0.7); }
+    #imgZoomClose {
+        position: absolute; top: 18px; right: 22px;
+        background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.22);
+        border-radius: 8px; padding: 6px 16px; color: #fff; cursor: pointer;
+        font-size: 0.84rem; letter-spacing: 0.02em;
+    }
+    #imgZoomClose:hover { background: rgba(255,255,255,0.2); }
     .hero-capture-hd {
         padding: 10px 16px; border-bottom: 1px solid var(--border);
         display: flex; align-items: center; justify-content: space-between;
@@ -987,7 +1016,7 @@
 
     /* Pipeline stages in right panel */
     .ai-pipeline { display: flex; flex-direction: column; gap: 1px; margin: 8px 0; }
-    .ai-ps-row { display: flex; align-items: center; gap: 9px; padding: 5px 4px; font-size: 0.75rem; color: var(--text-3); }
+    .ai-ps-row { display: flex; align-items: center; gap: 8px; padding: 3px 4px; font-size: 0.72rem; color: var(--text-3); }
     .ai-ps-tick { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--border-em); flex: 0 0 16px; display: grid; place-items: center; font-size: 0; }
     .ai-ps-row.done .ai-ps-tick { background: var(--success); border-color: var(--success); font-size: 9px; color: #fff; }
     .ai-ps-row.running .ai-ps-tick { border-color: var(--accent); background: var(--accent-soft); }
@@ -1635,10 +1664,15 @@
                     </div>
 
                     <!-- Image display (shown after upload) -->
-                    <div id="imgCanvasWrap" style="display:none;padding:10px 14px">
-                        <div style="position:relative;display:inline-block;width:100%">
-                            <img id="previewImg" alt="Weld image" style="width:100%;max-height:clamp(140px,26vh,260px);object-fit:contain;border-radius:var(--r-md);display:block">
-                            <canvas id="bboxCanvas" style="position:absolute;top:0;left:0;pointer-events:none"></canvas>
+                    <div id="imgCanvasWrap" style="display:none">
+                        <div class="img-inner">
+                            <img id="previewImg" alt="Weld image">
+                            <canvas id="bboxCanvas" style="position:absolute;top:0;left:0;pointer-events:none;border-radius:var(--r-md)"></canvas>
+                            <button class="img-zoom-btn" id="imgZoomBtn"
+                                onclick="document.getElementById('imgZoomFull').src=document.getElementById('previewImg').src;document.getElementById('imgZoomModal').classList.add('open')">
+                                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8V3h5M17 12v5h-5M3 12v5h5M17 8V3h-5"/></svg>
+                                Zoom
+                            </button>
                         </div>
                     </div>
 
@@ -2103,11 +2137,6 @@
                     <div class="cmp-v">wq-v3.2</div>
                 </div>
             </div>
-            <div class="weld-preview-ph" id="weldPreviewPh">
-                <span class="wpp-tag">RGB · 1024×768</span>
-                <div class="wpp-box wpp-porosity" data-label="porosity"></div>
-                <div class="wpp-box wpp-crack" data-label="crack"></div>
-            </div>
         </div>
 
         <!-- Inspection Record -->
@@ -2167,36 +2196,27 @@
             </div>
         </div>
 
-        <!-- Saved Inspections -->
-        <div class="rp-section">
-            <div class="panel-hd">
-                <div class="rp-section-title" style="margin:0">Saved Inspections</div>
-                <span id="projectCount" style="font-size:0.72rem;font-weight:600;color:var(--accent)">0</span>
-            </div>
-            <div class="project-list" id="projectList">
-                <div class="no-projects">No saved inspections yet.</div>
-            </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="rp-section" style="display:flex;flex-direction:column;gap:6px">
-            <button class="btn btn-primary" id="analyzeButton">
-                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5L17 17"/></svg>
-                Analyze Weld
-            </button>
-            <button class="btn btn-ghost" id="exportPdfButton">
-                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h8l4 4v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z"/></svg>
+        <!-- Actions (compact) -->
+        <div class="rp-section" style="display:flex;gap:6px;flex-shrink:0">
+            <button class="btn btn-ghost" id="exportPdfButton" style="flex:1;padding:5px 10px;font-size:0.78rem">
+                <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h8l4 4v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z"/></svg>
                 Export PDF
             </button>
-            <button class="btn btn-ghost" onclick="document.getElementById('imageUpload').click()">
-                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v10M6 7l4-4 4 4"/><path d="M3 17h14"/></svg>
-                Upload Image
+            <button class="btn btn-ghost" onclick="document.getElementById('imageUpload').click()" style="flex:1;padding:5px 10px;font-size:0.78rem">
+                <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v10M6 7l4-4 4 4"/><path d="M3 17h14"/></svg>
+                Upload
             </button>
         </div>
 
     </aside>
 
 </div><!-- /app -->
+
+<!-- IMAGE ZOOM LIGHTBOX -->
+<div id="imgZoomModal" onclick="if(event.target===this)this.classList.remove('open')">
+    <img id="imgZoomFull" alt="Weld image full view">
+    <button id="imgZoomClose" onclick="document.getElementById('imgZoomModal').classList.remove('open')">✕ Close</button>
+</div>
 
 <!-- SETTINGS MODAL -->
 <div class="smodal-scrim" id="settingsModalScrim">
@@ -2566,7 +2586,7 @@ const Projects = {
     render() {
         const list  = document.getElementById('projectList');
         const count = document.getElementById('projectCount');
-        count.textContent = AppState.projects.length;
+        if (count) count.textContent = AppState.projects.length;
 
         if (!AppState.projects.length) {
             list.innerHTML = '<div class="no-projects">No saved inspections yet.</div>';
@@ -3365,7 +3385,7 @@ function loadPreview(file) {
         document.getElementById('previewImg').src              = evt.target.result;
         document.getElementById('uploadZone').style.display    = 'none';
         document.getElementById('uploadActionRow').style.display = 'none';
-        document.getElementById('imgCanvasWrap').style.display = 'block';
+        document.getElementById('imgCanvasWrap').style.display = 'flex';
         document.getElementById('aiActionBar').style.display   = '';
         const cv = document.getElementById('bboxCanvas');
         cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
