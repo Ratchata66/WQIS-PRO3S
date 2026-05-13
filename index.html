@@ -263,9 +263,33 @@
         display: flex; flex-direction: column; gap: 0;
         background: color-mix(in srgb, var(--surface) 96%, transparent);
         border-left: 1px solid var(--border);
-        overflow: hidden;               /* no scroll — all content must fit */
+        overflow-y: auto;               /* scroll hidden — no visible scrollbar */
+        scrollbar-width: none;
         transition: background var(--trans);
     }
+    .right-panel::-webkit-scrollbar { display: none; }
+    /* right-panel compact analyze button */
+    .rp-analyze-btn {
+        display: flex; align-items: center; justify-content: center; gap: 7px;
+        width: 100%; padding: 7px 10px; border-radius: var(--r-md);
+        background: var(--accent); color: #fff; border: none; cursor: pointer;
+        font: 600 0.82rem/1 var(--font); transition: filter var(--trans);
+    }
+    .rp-analyze-btn:hover { filter: brightness(1.12); }
+    .rp-analyze-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+    /* right-panel saved list */
+    .rp-saved-item {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 5px 7px; border-radius: var(--r-sm); border: 1px solid var(--border);
+        margin-bottom: 3px; cursor: pointer; font-size: 0.74rem;
+        transition: background var(--trans), border-color var(--trans);
+    }
+    .rp-saved-item:hover, .rp-saved-item.selected { background: var(--accent-soft); border-color: var(--accent-em); }
+    .rp-saved-item .rsi-name { font-weight: 600; color: var(--text-1); font-size: 0.77rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+    .rp-saved-item .rsi-meta { font-size: 0.67rem; color: var(--text-3); margin-top: 1px; }
+    .rp-saved-item .rsi-del  { color: var(--text-3); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: 4px; font-size: 0.75rem; flex-shrink: 0; }
+    .rp-saved-item .rsi-del:hover { color: var(--danger); background: var(--danger-soft); }
+    .rp-no-saved { font-size: 0.76rem; color: var(--text-3); text-align: center; padding: 10px 0; }
     .rp-section { padding: 8px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
     .rp-section:last-child { border-bottom: none; }
     .rp-section-title {
@@ -2196,16 +2220,33 @@
             </div>
         </div>
 
-        <!-- Actions (compact) -->
-        <div class="rp-section" style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-ghost" id="exportPdfButton" style="flex:1;padding:5px 10px;font-size:0.78rem">
-                <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h8l4 4v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z"/></svg>
-                Export PDF
+        <!-- Saved Inspections (right panel) -->
+        <div class="rp-section">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+                <div class="rp-section-title" style="margin:0">Saved Inspections</div>
+                <span id="rpSavedCount" style="font-size:0.72rem;font-weight:700;color:var(--accent)">0</span>
+            </div>
+            <div id="rpSavedList">
+                <div class="rp-no-saved">No saved inspections yet.</div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="rp-section" style="display:flex;flex-direction:column;gap:5px">
+            <button class="rp-analyze-btn" onclick="document.getElementById('analyzeButton').click()">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5L17 17"/></svg>
+                Analyze Weld
             </button>
-            <button class="btn btn-ghost" onclick="document.getElementById('imageUpload').click()" style="flex:1;padding:5px 10px;font-size:0.78rem">
-                <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v10M6 7l4-4 4 4"/><path d="M3 17h14"/></svg>
-                Upload
-            </button>
+            <div style="display:flex;gap:5px">
+                <button class="btn btn-ghost" id="exportPdfButton" style="flex:1;padding:5px 10px;font-size:0.78rem">
+                    <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h8l4 4v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z"/></svg>
+                    Export PDF
+                </button>
+                <button class="btn btn-ghost" onclick="document.getElementById('imageUpload').click()" style="flex:1;padding:5px 10px;font-size:0.78rem">
+                    <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v10M6 7l4-4 4 4"/><path d="M3 17h14"/></svg>
+                    Upload
+                </button>
+            </div>
         </div>
 
     </aside>
@@ -2587,6 +2628,44 @@ const Projects = {
         const list  = document.getElementById('projectList');
         const count = document.getElementById('projectCount');
         if (count) count.textContent = AppState.projects.length;
+
+        // ── right-panel saved list ──
+        const rpList  = document.getElementById('rpSavedList');
+        const rpCount = document.getElementById('rpSavedCount');
+        if (rpCount) rpCount.textContent = AppState.projects.length;
+        if (rpList) {
+            if (!AppState.projects.length) {
+                rpList.innerHTML = '<div class="rp-no-saved">No saved inspections yet.</div>';
+            } else {
+                rpList.innerHTML = AppState.projects.slice().reverse().map(p => {
+                    const sel = p.id === AppState.selectedId ? ' selected' : '';
+                    const verdColor = p.result === 'PASS' ? 'var(--success)' : p.result === 'FAIL' ? 'var(--danger)' : 'var(--warning)';
+                    return `<div class="rp-saved-item${sel}" data-id="${p.id}">
+                        <div style="min-width:0">
+                            <div class="rsi-name">${p.project || '(Unnamed)'}</div>
+                            <div class="rsi-meta">${p.jointId || '-'} · ${p.process || '-'}${p.result ? ` · <span style="color:${verdColor};font-weight:600">${p.result}</span>` : ''}</div>
+                        </div>
+                        <button class="rsi-del" data-del="${p.id}" title="Delete">✕</button>
+                    </div>`;
+                }).join('');
+                rpList.querySelectorAll('.rp-saved-item').forEach(el => {
+                    el.addEventListener('click', e => {
+                        if (e.target.closest('.rsi-del')) return;
+                        const proj = AppState.projects.find(p => p.id === Number(el.dataset.id));
+                        if (proj) { AppState.selectedId = proj.id; InspectionPanel.load(proj); Projects.render(); }
+                    });
+                });
+                rpList.querySelectorAll('.rsi-del').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const id = Number(btn.dataset.del);
+                        AppState.projects = AppState.projects.filter(p => p.id !== id);
+                        if (AppState.selectedId === id) { AppState.selectedId = null; InspectionPanel.clear(); }
+                        Projects.persist(); Projects.render();
+                        toast('Inspection deleted.', 'info', 2500);
+                    });
+                });
+            }
+        }
 
         if (!AppState.projects.length) {
             list.innerHTML = '<div class="no-projects">No saved inspections yet.</div>';
