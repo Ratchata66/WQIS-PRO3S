@@ -1851,7 +1851,7 @@
                                     <div class="pf-mark">
                                         <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                     </div>
-                                    <div><div class="pf-l">AI model online</div><div class="pf-v">wq-v3.2 · ready</div></div>
+                                    <div><div class="pf-l">AI model online</div><div class="pf-v" id="pfModelLabel">— · ready</div></div>
                                 </div>
                                 <div class="pf-check">
                                     <div class="pf-mark">
@@ -2343,7 +2343,7 @@
                 <div class="ai-ps-row done">
                     <span class="ai-ps-tick"><svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
                     <span class="ai-ps-label">Model loaded</span>
-                    <span class="ai-ps-time">wq-v3.2</span>
+                    <span class="ai-ps-time" id="psModelTime">—</span>
                 </div>
                 <div class="ai-ps-row done">
                     <span class="ai-ps-tick"><svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
@@ -2387,7 +2387,7 @@
                 </div>
                 <div class="conf-meta-pill">
                     <div class="cmp-k">Model</div>
-                    <div class="cmp-v">wq-v3.2</div>
+                    <div class="cmp-v" id="rpModelLabel">—</div>
                 </div>
             </div>
         </div>
@@ -2484,9 +2484,9 @@
     <div class="rp-view" id="rp-dashboard">
         <div class="rp-section">
             <div class="rp-section-title">System Status</div>
-            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">AI Model</span><span class="rp-status-val">wq-v3.2 · Online</span></div>
+            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">AI Model</span><span class="rp-status-val" id="rpDashModelVal">Detecting…</span></div>
             <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">Database</span><span class="rp-status-val">1,250 records</span></div>
-            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">Roboflow API</span><span class="rp-status-val">Connected</span></div>
+            <div class="rp-status-row"><span class="rp-status-dot" id="rpApiDot" style="background:var(--text-3)"></span><span class="rp-status-name">Roboflow API</span><span class="rp-status-val" id="rpApiVal">—</span></div>
             <div class="rp-status-row"><span class="rp-status-dot warn"></span><span class="rp-status-name">Storage</span><span class="rp-status-val">72% used</span></div>
             <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">Last Sync</span><span class="rp-status-val">09:40 today</span></div>
         </div>
@@ -2680,10 +2680,10 @@
         <div class="rp-section">
             <div class="rp-section-title">System Info</div>
             <div class="rp-status-row"><span class="rp-status-name">Version</span><span class="rp-status-val">v1.0.0-PRO3S</span></div>
-            <div class="rp-status-row"><span class="rp-status-name">AI Model</span><span class="rp-status-val">wq-v3.2</span></div>
+            <div class="rp-status-row"><span class="rp-status-name">AI Model</span><span class="rp-status-val" id="rpSettingsModelVal">—</span></div>
             <div class="rp-status-row"><span class="rp-status-name">Build Date</span><span class="rp-status-val">2026-05-13</span></div>
             <div class="rp-status-row"><span class="rp-status-name">Storage</span><span class="rp-status-val">localStorage</span></div>
-            <div class="rp-status-row"><span class="rp-status-name">Platform</span><span class="rp-status-val">Web / Electron</span></div>
+            <div class="rp-status-row"><span class="rp-status-name">Platform</span><span class="rp-status-val" id="rpPlatformVal">Web / Electron</span></div>
         </div>
         <div class="rp-section">
             <div class="rp-section-title">Current Session</div>
@@ -3524,6 +3524,8 @@ const RF_MODEL   = 'joint-welding-detection';
 const RF_VERSION = 2;
 const MIN_AI_CONFIDENCE = 0.55;
 const LOCAL_YOLO_MIN_CONFIDENCE = 0.05;
+const LOCAL_MODEL_LABEL  = 'wqis-v2 · Local';
+const CLOUD_MODEL_LABEL  = 'cloud-v2 · Roboflow';
 const FAIL_CLASSES = new Set(['fail', 'defect', 'porosity', 'crack', 'spatter', 'oxidation', 'discoloration', 'undercut', 'incomplete_fusion', 'icicle']);
 const PASS_CLASSES = new Set(['pass']);
 
@@ -3640,6 +3642,33 @@ function pipelineReset() {
     if (ct && ct.textContent === '—') ct.textContent = pipelineNow();
 }
 
+// ── Model source detection & UI label update ────────────────────────────────
+function getActiveModelLabel() {
+    return window.WQISLocalAI?.analyzeWeldImage
+        ? LOCAL_MODEL_LABEL
+        : CLOUD_MODEL_LABEL;
+}
+function updateModelLabels(label) {
+    const ids = ['psModelTime','rpModelLabel','rpDashModelVal','rpSettingsModelVal','pfModelLabel'];
+    ids.forEach(id => { const el = document.getElementById(id); if (el) el.textContent = label; });
+    // platform row
+    const plat = document.getElementById('rpPlatformVal');
+    if (plat) plat.textContent = window.WQISLocalAI?.analyzeWeldImage ? 'Electron (Desktop)' : 'Web (Browser)';
+    // API status row
+    const apiDot = document.getElementById('rpApiDot');
+    const apiVal = document.getElementById('rpApiVal');
+    if (window.WQISLocalAI?.analyzeWeldImage) {
+        if (apiDot) apiDot.style.background = 'var(--text-3)';
+        if (apiVal) apiVal.textContent = 'Not used (local)';
+    } else {
+        if (apiDot) apiDot.style.background = 'var(--success)';
+        if (apiVal) apiVal.textContent = 'Connected';
+    }
+}
+// Run once on load, then again after Electron bridge may initialise
+updateModelLabels(getActiveModelLabel());
+setTimeout(() => updateModelLabels(getActiveModelLabel()), 800);
+
 // Analyze button
 document.getElementById('analyzeButton').addEventListener('click', async () => {
     if (!AppState.ai.file) {
@@ -3719,13 +3748,17 @@ async function callLocalYolo(base64) {
 async function callWeldAI(base64) {
     if (window.WQISLocalAI?.analyzeWeldImage) {
         try {
-            return await callLocalYolo(base64);
+            const result = await callLocalYolo(base64);
+            updateModelLabels(LOCAL_MODEL_LABEL);
+            return result;
         } catch (err) {
             console.warn('Local YOLO failed, falling back to Roboflow:', err);
-            toast('Local YOLO unavailable - using Roboflow fallback.', 'warning', 3000);
+            toast('Local YOLO unavailable – using Roboflow fallback.', 'warning', 3000);
         }
     }
-    return callRoboflow(base64);
+    const result = await callRoboflow(base64);
+    updateModelLabels(CLOUD_MODEL_LABEL);
+    return result;
 }
 
 // DRAW BOUNDING BOXES
