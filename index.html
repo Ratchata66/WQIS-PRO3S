@@ -533,6 +533,7 @@
         .kpi-grid  { grid-template-columns: repeat(2, 1fr); }
         .chart-grid { grid-template-columns: 1fr; }
         .topbar-sub { max-width: 420px; }
+        .topbar-chip-hide { display: none; }
     }
     @media (max-width: 1024px) {
         .app { grid-template-columns: var(--sidebar-w) minmax(0, 1fr); }
@@ -560,6 +561,7 @@
         .chart-card, .metric-card, .report-card, .kpi-card { padding: 14px; }
         th, td { padding: 9px 11px; }
         .clock-box, .tag-badge { display: none; }
+        .topbar-chip-hide { display: none; }
         .toast-container { left: 12px; right: 12px; bottom: 12px; }
         .toast { min-width: 0; max-width: none; }
     }
@@ -1277,13 +1279,15 @@
         <!-- TOPBAR -->
         <div class="topbar">
             <div class="topbar-left">
-                <div class="topbar-title" id="pageTitle">Weld Quality Inspection Dashboard</div>
+                <div style="display:flex;align-items:center;gap:8px">
+                    <div class="topbar-title" id="pageTitle">Weld Quality Inspection Dashboard</div>
+                    <span class="tag-badge" id="headerTag">Operational Overview</span>
+                </div>
                 <div class="topbar-sub"   id="pageSubtitle">Monitor inspection performance, defect trends, and process metrics.</div>
             </div>
             <div class="topbar-right">
-                <span class="tag-badge" id="headerTag">Operational Overview</span>
-                <span class="topbar-chip"><span class="tc-dot"></span>Operational</span>
-                <span class="topbar-chip mono" style="font-size:0.68rem;letter-spacing:.05em">BATCH · WQIS-04-26</span>
+                <span class="topbar-chip topbar-chip-hide"><span class="tc-dot"></span>Operational</span>
+                <span class="topbar-chip topbar-chip-hide mono" style="font-size:0.68rem;letter-spacing:.05em">BATCH · WQIS-04-26</span>
                 <div class="clock-box">
                     <div class="clock-time mono" id="clockTime">00:00:00</div>
                     <div class="clock-date mono" id="clockDate">-</div>
