@@ -1269,6 +1269,18 @@
         </nav>
 
         <div class="sidebar-footer">
+            <button id="sidebarLogoutBtn" style="
+                display:flex; align-items:center; gap:8px; width:100%;
+                background:none; border:1px solid var(--border); border-radius:var(--r-md);
+                color:var(--text-2); font:inherit; font-size:0.8rem; font-weight:600;
+                padding:8px 10px; cursor:pointer; margin-bottom:8px;
+                transition:background 0.18s,color 0.18s,border-color 0.18s;">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M13 15l3-3-3-3M16 12H8"/><path d="M8 19H4a2 2 0 01-2-2V3a2 2 0 012-2h4"/>
+                </svg>
+                Sign Out
+            </button>
             <div>v1.0.0 - PRO3S</div>
             <div>Industrial QA/QC Platform</div>
         </div>
@@ -3727,6 +3739,10 @@ window.addEventListener('DOMContentLoaded', () => {
     rtEl.textContent  = roleMeta.label;
     rtEl.style.color  = roleMeta.color;
     document.getElementById('logoutBtn').addEventListener('click', () => Auth.logout());
+    const slo = document.getElementById('sidebarLogoutBtn');
+    slo.addEventListener('click', () => Auth.logout());
+    slo.addEventListener('mouseenter', () => { slo.style.background='var(--danger-soft)'; slo.style.color='var(--danger)'; slo.style.borderColor='rgba(248,113,113,0.25)'; });
+    slo.addEventListener('mouseleave', () => { slo.style.background=''; slo.style.color=''; slo.style.borderColor=''; });
 
     /* ROLE-BASED VISIBILITY */
     const _nav = Router.navigate.bind(Router);
