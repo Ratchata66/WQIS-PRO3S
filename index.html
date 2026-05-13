@@ -2360,6 +2360,11 @@
                     <span class="ai-ps-label">Defect detection</span>
                     <span class="ai-ps-time" id="psDetectTime">—</span>
                 </div>
+                <div class="ai-ps-row" id="psColor">
+                    <span class="ai-ps-tick"></span>
+                    <span class="ai-ps-label">Color oxidation analysis</span>
+                    <span class="ai-ps-time" id="psColorTime">—</span>
+                </div>
                 <div class="ai-ps-row" id="psVerdict">
                     <span class="ai-ps-tick"></span>
                     <span class="ai-ps-label">Verdict ready</span>
@@ -3610,6 +3615,216 @@ function evaluateWeldInspection(rawPreds, options = {}) {
 }
 
 
+// ── WELD COLOR OXIDATION ANALYSIS (AWS D18.1:2009) ──────────────────────────
+// Level 1-3 = PASS  |  Level 4-10 = FAIL
+// Reference: AWS D18.1/D18.1M:2009, Table 6.1 — Acceptable Heat Tint for Stainless Steel
+
+const COLOR_LEVEL_META = {
+    1:  { name: 'Silver',               hex: '#d0d4da', pass: true  },
+    2:  { name: 'Light straw',          hex: '#d4a832', pass: true  },
+    3:  { name: 'Dark straw / Bronze',  hex: '#b06e18', pass: true  },
+    4:  { name: 'Light blue',           hex: '#7aaced', pass: false },
+    5:  { name: 'Blue',                 hex: '#4272c4', pass: false },
+    6:  { name: 'Dark blue',            hex: '#1e3a80', pass: false },
+    7:  { name: 'Blue-gray / Purple',   hex: '#5a4f8a', pass: false },
+    8:  { name: 'Gray',                 hex: '#767676', pass: false },
+    9:  { name: 'Dark gray',            hex: '#424242', pass: false },
+    10: { name: 'Black (heavy oxidation)', hex: '#1a1a1a', pass: false },
+};
+
+function _rgbToHsv(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    let h = 0;
+    if (d > 0) {
+        switch (max) {
+            case r: h = ((g - b) / d % 6); break;
+            case g: h = (b - r) / d + 2;   break;
+            case b: h = (r - g) / d + 4;   break;
+        }
+        h = ((h * 60) + 360) % 360;
+    }
+    return { h, s: max === 0 ? 0 : d / max, v: max };
+}
+
+function _weldColorLevel(h, s, v) {
+    // h: 0-360°, s: 0-1, v: 0-1  →  returns oxidation level 1-10
+
+    // ── Very dark (all hues) ───────────────────────────────────────
+    if (v < 0.09)               return 10;   // Near-black
+    if (v < 0.22 && s < 0.30)  return 9;    // Dark gray
+    if (v < 0.38 && s < 0.22)  return 8;    // Medium gray
+
+    // ── Blue family (hue 168–272°) ────────────────────────────────
+    if (h >= 168 && h <= 272) {
+        if (s < 0.10) return v >= 0.55 ? 1 : 8;   // Neutral-blue → silver or gray
+        if ((v < 0.42 && s >= 0.42) || (v < 0.55 && s >= 0.55)) return 6; // Dark blue
+        if (s >= 0.38) return 5;                    // Vivid / medium blue
+        if (s >= 0.18) return 4;                    // Light blue tint  ← FAIL starts here
+        return 7;                                    // Very desaturated blue-gray
+    }
+
+    // ── Cyan edge (can appear with deep oxidation) ─────────────────
+    if (h >= 148 && h < 168 && s >= 0.18) return 7;
+
+    // ── Purple / violet (heavy oxidation boundary) ─────────────────
+    if (h > 272 && h <= 315 && s >= 0.22) return 7;
+
+    // ── Warm: orange / gold / bronze / straw ──────────────────────
+    const warm = (h >= 8 && h <= 75) || h >= 345;
+    if (warm) {
+        if (s >= 0.38 && v >= 0.20) return 3;   // Bronze / dark straw
+        if (s >= 0.10 && v >= 0.38) return 2;   // Light straw / golden
+    }
+
+    // ── Silver / metallic (neutral, bright) ───────────────────────
+    if (s < 0.12 && v >= 0.42)  return 1;
+    if (s < 0.22 && v >= 0.58)  return 1;
+
+    // ── Fallback ───────────────────────────────────────────────────
+    return v >= 0.42 ? 2 : 8;
+}
+
+function analyzeWeldColor(imgEl, detections) {
+    try {
+        // Draw to offscreen canvas at natural size
+        const oc = document.createElement('canvas');
+        oc.width  = imgEl.naturalWidth  || imgEl.width;
+        oc.height = imgEl.naturalHeight || imgEl.height;
+        if (!oc.width || !oc.height) return null;
+        const ctx = oc.getContext('2d');
+        ctx.drawImage(imgEl, 0, 0);
+
+        const W = oc.width, H = oc.height;
+
+        // ── Choose Region of Interest ──────────────────────────────
+        let rx, ry, rw, rh;
+        if (detections && detections.length > 0) {
+            // Use YOLO bbox union (coords in original image pixels)
+            let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+            detections.forEach(d => {
+                x0 = Math.min(x0, d.x - d.width  / 2);
+                y0 = Math.min(y0, d.y - d.height / 2);
+                x1 = Math.max(x1, d.x + d.width  / 2);
+                y1 = Math.max(y1, d.y + d.height / 2);
+            });
+            const pxPad = (x1 - x0) * 0.08, pyPad = (y1 - y0) * 0.08;
+            rx = Math.max(0, Math.round(x0 - pxPad));
+            ry = Math.max(0, Math.round(y0 - pyPad));
+            rw = Math.min(W - rx, Math.round(x1 - x0 + pxPad * 2));
+            rh = Math.min(H - ry, Math.round(y1 - y0 + pyPad * 2));
+        } else {
+            // Fallback: center 70% of image
+            rx = Math.round(W * 0.15); ry = Math.round(H * 0.15);
+            rw = Math.round(W * 0.70); rh = Math.round(H * 0.70);
+        }
+        if (rw < 4 || rh < 4) return null;
+
+        // ── Sample & classify pixels ───────────────────────────────
+        const imgData = ctx.getImageData(rx, ry, rw, rh);
+        const px = imgData.data;
+        const counts = new Array(11).fill(0);   // index 1-10 used
+        let total = 0;
+        const step = 4;  // sample every 4th pixel
+
+        for (let i = 0; i < px.length; i += 4 * step) {
+            if (px[i + 3] < 128) continue;
+            const { h, s, v } = _rgbToHsv(px[i], px[i+1], px[i+2]);
+            counts[_weldColorLevel(h, s, v)]++;
+            total++;
+        }
+        if (total < 10) return null;
+
+        // ── Aggregate ──────────────────────────────────────────────
+        const pct = l => counts[l] / total;
+        const dominant = counts.slice(1).indexOf(Math.max(...counts.slice(1))) + 1;
+
+        // Weighted average — fail levels get 1.35× weight (conservative bias)
+        let wSum = 0, wTot = 0;
+        for (let l = 1; l <= 10; l++) {
+            const w = pct(l) * (l >= 4 ? 1.35 : 1.0);
+            wSum += l * w; wTot += w;
+        }
+        const weightedAvg = wTot > 0 ? wSum / wTot : 1;
+
+        // Final level = higher of dominant vs weighted avg (safety-conservative)
+        const repLevel = Math.min(10, Math.round(Math.max(dominant, weightedAvg)));
+        const verdict  = repLevel <= 3 ? 'PASS' : 'FAIL';
+        const passFrac = [1,2,3].reduce((s, l) => s + pct(l), 0);
+        const failFrac = [4,5,6,7,8,9,10].reduce((s, l) => s + pct(l), 0);
+
+        return { level: repLevel, verdict, dominant, weightedAvg, passFrac, failFrac, counts, total };
+    } catch (e) {
+        console.warn('Color analysis error:', e);
+        return null;
+    }
+}
+
+function renderColorCard(colorResult) {
+    if (!colorResult) return '';
+    const { level, verdict, passFrac, failFrac, counts, total } = colorResult;
+    const meta   = COLOR_LEVEL_META[level];
+    const verdictColor = verdict === 'PASS' ? 'var(--success)' : 'var(--danger)';
+    const verdictBg    = verdict === 'PASS' ? 'var(--success-soft,rgba(52,211,153,0.12))' : 'var(--danger-soft)';
+
+    // Level scale: 10 colored segments, current level highlighted
+    const scaleHtml = Object.entries(COLOR_LEVEL_META).map(([lvl, m]) => {
+        const active  = Number(lvl) === level;
+        const border  = active ? `2px solid ${verdictColor}` : '2px solid transparent';
+        const opacity = active ? '1' : '0.45';
+        const scale   = active ? 'scaleY(1.5)' : 'scaleY(1)';
+        return `<div title="Level ${lvl}: ${m.name}" style="flex:1;height:18px;background:${m.hex};border:${border};opacity:${opacity};transform:${scale};transform-origin:center;border-radius:2px;transition:all .2s;cursor:default"></div>`;
+    }).join('');
+
+    const passBarW = Math.round(passFrac * 100);
+    const failBarW = Math.round(failFrac * 100);
+
+    return `
+    <div class="card" style="padding:16px 18px;margin-top:10px;border-left:3px solid ${verdictColor}">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-size:0.85rem;font-weight:700;color:var(--text-1)">
+                🎨 Color Oxidation — AWS D18.1:2009
+            </div>
+            <span style="background:${verdictBg};color:${verdictColor};border:1px solid ${verdictColor};font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:20px">
+                Level ${level} — ${verdict}
+            </span>
+        </div>
+
+        <!-- Level scale 1-10 -->
+        <div style="display:flex;gap:3px;align-items:center;margin-bottom:8px">
+            ${scaleHtml}
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--text-3);margin-bottom:10px">
+            <span style="color:var(--success)">✓ PASS ← 1</span>
+            <span style="color:var(--text-3)">│ 3 │ 4 │</span>
+            <span style="color:var(--danger)">10 → FAIL ✗</span>
+        </div>
+
+        <!-- Detected level info -->
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--card-alt);border-radius:var(--r-sm);margin-bottom:10px">
+            <div style="width:20px;height:20px;border-radius:4px;background:${meta.hex};flex-shrink:0;border:1px solid rgba(255,255,255,0.15)"></div>
+            <div>
+                <div style="font-size:0.82rem;font-weight:600;color:var(--text-1)">Level ${level} — ${meta.name}</div>
+                <div style="font-size:0.74rem;color:var(--text-2)">${verdict === 'PASS' ? 'Within acceptable oxidation range (≤ Level 3)' : 'Exceeds acceptable limit — oxidation too high (> Level 3)'}</div>
+            </div>
+        </div>
+
+        <!-- Pass / Fail pixel distribution -->
+        <div style="font-size:0.76rem;color:var(--text-2);margin-bottom:5px;display:flex;justify-content:space-between">
+            <span>Pixel distribution</span>
+            <span style="color:var(--success)">${passBarW}% pass-zone</span>
+            <span style="color:var(--danger)">${failBarW}% fail-zone</span>
+        </div>
+        <div style="height:6px;border-radius:3px;overflow:hidden;background:var(--border);display:flex">
+            <div style="width:${passBarW}%;background:var(--success);transition:width .4s"></div>
+            <div style="width:${failBarW}%;background:var(--danger);transition:width .4s"></div>
+        </div>
+        <div style="font-size:0.70rem;color:var(--text-3);margin-top:6px">
+            Ref: AWS D18.1/D18.1M:2009 Table 6.1 — Acceptable heat tint: Level 1-3 only
+        </div>
+    </div>`;
+}
+
 // UPLOAD & AI INSPECT
 
 document.getElementById('uploadButton').addEventListener('click', () =>
@@ -3655,7 +3870,7 @@ function pipelineSetStage(id, state, time) {
     if (timeEl && time) timeEl.textContent = time;
 }
 function pipelineReset() {
-    ['psCapture','psDetect','psVerdict'].forEach(id => pipelineSetStage(id, '', '—'));
+    ['psCapture','psDetect','psColor','psVerdict'].forEach(id => pipelineSetStage(id, '', '—'));
     const ct = document.getElementById('psCalibTime');
     if (ct && ct.textContent === '—') ct.textContent = pipelineNow();
 }
@@ -3713,11 +3928,31 @@ document.getElementById('analyzeButton').addEventListener('click', async () => {
         });
         AppState.ai.detections = evaluation.qualified;
         drawBoxes(evaluation.qualified, data.image);
-        renderResults(evaluation.qualified, evaluation);
 
-        AppState.ai.result     = evaluation.verdict;
-        AppState.ai.confidence = evaluation.confidence;
-        InspectionPanel.setResultBadge(evaluation.verdict, evaluation.confidence);
+        // ── Color oxidation analysis (AWS D18.1:2009) ──────────────
+        pipelineSetStage('psColor', 'running', '…');
+        const colorResult = analyzeWeldColor(
+            document.getElementById('previewImg'),
+            evaluation.qualified
+        );
+        pipelineSetStage('psColor', 'done', pipelineNow());
+
+        // ── Merge YOLO + Color verdicts (most severe wins) ──────────
+        let finalVerdict = evaluation.verdict;
+        let finalReason  = evaluation.reason;
+        let finalConf    = evaluation.confidence;
+        if (colorResult && colorResult.verdict === 'FAIL' && finalVerdict !== 'FAIL') {
+            const meta = COLOR_LEVEL_META[colorResult.level];
+            finalVerdict = 'FAIL';
+            finalReason  = `Color oxidation Level ${colorResult.level}/10 (${meta.name}) detected — exceeds AWS D18.1:2009 limit of Level 3.`;
+            finalConf    = `${Math.round(colorResult.failFrac * 100)}% fail-zone pixels`;
+        }
+
+        renderResults(evaluation.qualified, { ...evaluation, verdict: finalVerdict, reason: finalReason, confidence: finalConf }, colorResult);
+
+        AppState.ai.result     = finalVerdict;
+        AppState.ai.confidence = finalConf;
+        InspectionPanel.setResultBadge(finalVerdict, finalConf);
         pipelineSetStage('psVerdict', 'done', pipelineNow());
 
         const names = [...new Set(evaluation.qualified.map(p => p.class))];
@@ -3726,12 +3961,12 @@ document.getElementById('analyzeButton').addEventListener('click', async () => {
         InspectionPanel.setMode(true);
 
         toast(
-            `Analysis complete - ${evaluation.verdict}`,
-            evaluation.verdict === 'PASS' ? 'success' : evaluation.verdict === 'FAIL' ? 'error' : 'warning',
+            `Analysis complete - ${finalVerdict}`,
+            finalVerdict === 'PASS' ? 'success' : finalVerdict === 'FAIL' ? 'error' : 'warning',
             3500
         );
     } catch (err) {
-        ['psCapture','psDetect','psVerdict'].forEach(id => pipelineSetStage(id, '', '—'));
+        ['psCapture','psDetect','psColor','psVerdict'].forEach(id => pipelineSetStage(id, '', '—'));
         document.getElementById('detectResultsPanel').innerHTML =
             `<div class="card" style="padding:20px;color:var(--danger)">
                 <strong>Warning: Analysis failed:</strong> ${err.message}
@@ -3819,7 +4054,7 @@ function drawBoxes(preds, imgMeta) {
 }
 
 // RENDER RESULT LIST (Standard-based)
-function renderResults(preds, evaluation = null) {
+function renderResults(preds, evaluation = null, colorResult = null) {
     const el = document.getElementById('detectResultsPanel');
     const items        = preds.map(p => ({ pred: p, info: getDefectInfo(p.class) }));
     const isDefective  = items.some(d => d.info.verdict === 'FAIL');
@@ -3840,7 +4075,8 @@ function renderResults(preds, evaluation = null) {
                     <div>⚠ Upload a clear weld image or inspect manually.</div>
                     <div>Confidence: ${evaluation.confidence}</div>
                 </div>
-            </div>`;
+            </div>
+            ${renderColorCard(colorResult)}`;
         return;
     }
 
@@ -3859,6 +4095,7 @@ function renderResults(preds, evaluation = null) {
                     <div style="color:var(--success)">✓ Complies with Tetra Pak B 2310.64 Issue 8 - Table 1</div>
                 </div>
             </div>
+            ${renderColorCard(colorResult)}
             <div class="card" style="padding:16px 20px;margin-top:10px">
                 <div style="font-size:0.76rem;color:var(--text-2);line-height:1.9">
                     <div style="font-weight:600;color:var(--text-1);margin-bottom:6px">Standards: Applied Standards</div>
@@ -3922,7 +4159,8 @@ function renderResults(preds, evaluation = null) {
                     Warning: Corrective action required before this weld joint is placed into service.
                 </div>
             </div>
-        </div>`;
+        </div>
+        ${renderColorCard(colorResult)}`;
 }
 
 // EXPORT PDF (placeholder)
