@@ -408,6 +408,92 @@
     }
     .save-indicator.visible { opacity: 1; }
 
+    /* ── right-panel page views ── */
+    .rp-view { display: none; flex-direction: column; }
+    .rp-view.active { display: flex; }
+
+    /* status dot for system info */
+    .rp-status-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+    .rp-status-dot.ok      { background: var(--success); box-shadow: 0 0 0 3px var(--success-soft); }
+    .rp-status-dot.warn    { background: var(--warning); box-shadow: 0 0 0 3px var(--warning-soft); }
+    .rp-status-dot.offline { background: var(--danger);  box-shadow: 0 0 0 3px var(--danger-soft); }
+    .rp-status-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 0.78rem; border-bottom: 1px solid var(--border); }
+    .rp-status-row:last-child { border-bottom: none; }
+    .rp-status-name { flex: 1; color: var(--text-2); }
+    .rp-status-val  { font-weight: 600; color: var(--text-1); font-size: 0.76rem; font-family: "JetBrains Mono", monospace; }
+
+    /* activity feed */
+    .rp-feed-item { display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 0.76rem; }
+    .rp-feed-item:last-child { border-bottom: none; }
+    .rp-feed-dot  { width: 7px; height: 7px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+    .rp-feed-body { flex: 1; min-width: 0; }
+    .rp-feed-id   { font-weight: 600; color: var(--text-1); font-family: "JetBrains Mono", monospace; font-size: 0.72rem; }
+    .rp-feed-meta { color: var(--text-3); font-size: 0.7rem; margin-top: 1px; }
+    .rp-feed-time { color: var(--text-3); font-size: 0.68rem; white-space: nowrap; }
+
+    /* bar chart rows (analytics/reports right panel) */
+    .rp-bar-row { padding: 4px 0; }
+    .rp-bar-label { display: flex; justify-content: space-between; font-size: 0.74rem; margin-bottom: 3px; }
+    .rp-bar-label span:first-child { color: var(--text-2); }
+    .rp-bar-label span:last-child  { color: var(--text-1); font-weight: 600; font-family: "JetBrains Mono",monospace; }
+    .rp-bar-track { height: 5px; background: var(--card-alt); border-radius: 3px; overflow: hidden; }
+    .rp-bar-fill  { height: 100%; border-radius: 3px; transition: width .6s cubic-bezier(.4,0,.2,1); }
+
+    /* filter select in right panel */
+    .rp-filter-row { display: flex; flex-direction: column; gap: 2px; margin-bottom: 6px; }
+    .rp-filter-label { font-size: 0.62rem; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .07em; }
+    .rp-filter-select { background: var(--card-alt); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 4px 8px; color: var(--text-1); font-size: 0.78rem; width: 100%; }
+    .rp-filter-select:focus { outline: none; border-color: var(--accent); }
+    .rp-filter-input { background: var(--card-alt); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 4px 8px; color: var(--text-1); font-size: 0.78rem; width: 100%; }
+    .rp-filter-input:focus { outline: none; border-color: var(--accent); }
+
+    /* version info tag */
+    .rp-sys-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--border); background: var(--card-alt); font-size: 0.65rem; font-family: "JetBrains Mono",monospace; color: var(--text-3); }
+
+    /* ── Inspections page improvements ── */
+    .insp-toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .insp-search  { flex: 1; min-width: 180px; background: var(--card); border: 1px solid var(--border); border-radius: var(--r-md); padding: 7px 12px; color: var(--text-1); font-size: 0.82rem; }
+    .insp-search:focus { outline: none; border-color: var(--accent); }
+    .insp-filter  { background: var(--card); border: 1px solid var(--border); border-radius: var(--r-md); padding: 7px 10px; color: var(--text-1); font-size: 0.8rem; cursor: pointer; }
+    .insp-summary { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .insp-sum-pill { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: var(--r-pill); border: 1px solid var(--border); background: var(--card); font-size: 0.77rem; font-weight: 600; }
+    .insp-sum-pill .dot { width: 7px; height: 7px; border-radius: 50%; }
+
+    /* ── Analytics page improvements ── */
+    .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+    .analytics-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 16px 18px; }
+    .analytics-card h3 { font-size: 0.88rem; font-weight: 700; color: var(--text-1); margin-bottom: 14px; display: flex; align-items: center; gap: 7px; }
+    .analytics-card h3 svg { opacity: 0.6; }
+    .a-bar-row { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+    .a-bar-label { width: 110px; font-size: 0.76rem; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .a-bar-track { flex: 1; height: 8px; background: var(--card-alt); border-radius: 4px; overflow: hidden; }
+    .a-bar-fill  { height: 100%; border-radius: 4px; transition: width .7s cubic-bezier(.4,0,.2,1); }
+    .a-bar-val   { width: 38px; text-align: right; font-size: 0.74rem; font-weight: 700; font-family: "JetBrains Mono",monospace; color: var(--text-1); }
+    .a-kpi-row   { display: flex; gap: 10px; margin-bottom: 14px; }
+    .a-kpi       { flex: 1; padding: 10px 12px; border-radius: var(--r-md); background: var(--bg); border: 1px solid var(--border); text-align: center; }
+    .a-kpi-v     { font-size: 1.4rem; font-weight: 800; line-height: 1; margin-bottom: 3px; font-family: "JetBrains Mono",monospace; }
+    .a-kpi-l     { font-size: 0.65rem; color: var(--text-3); text-transform: uppercase; letter-spacing: .07em; }
+
+    /* ── Reports page improvements ── */
+    .reports-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .report-card2 { background: var(--card); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 16px; display: flex; flex-direction: column; gap: 10px; transition: box-shadow var(--trans), transform var(--trans); }
+    .report-card2:hover { box-shadow: var(--shadow-card); transform: translateY(-1px); }
+    .rc2-icon { width: 36px; height: 36px; border-radius: var(--r-md); display: grid; place-items: center; flex-shrink: 0; }
+    .rc2-hd  { display: flex; align-items: flex-start; gap: 10px; }
+    .rc2-title { font-size: 0.88rem; font-weight: 700; color: var(--text-1); line-height: 1.3; }
+    .rc2-desc  { font-size: 0.74rem; color: var(--text-2); margin-top: 2px; line-height: 1.4; }
+    .rc2-meta  { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .rc2-tag   { font-size: 0.65rem; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text-3); font-family: "JetBrains Mono",monospace; }
+    .rc2-status { font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: var(--r-pill); }
+    .rc2-status.ready    { background: var(--success-soft); color: var(--success); }
+    .rc2-status.pending  { background: var(--warning-soft); color: var(--warning); }
+    .rc2-status.draft    { background: var(--accent-soft);  color: var(--accent);  }
+    .rc2-actions { display: flex; gap: 6px; margin-top: 2px; }
+    .rc2-btn  { flex: 1; padding: 6px 10px; font-size: 0.77rem; border-radius: var(--r-md); border: 1px solid var(--border); background: var(--card); color: var(--text-2); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: background var(--trans), color var(--trans), border-color var(--trans); }
+    .rc2-btn:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-em); }
+    .rc2-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .rc2-btn.primary:hover { filter: brightness(1.1); }
+
     /* saved list items */
     .project-list { display: flex; flex-direction: column; gap: 6px; }
     .project-list-item {
@@ -1633,21 +1719,50 @@
 
             <!-- INSPECTIONS -->
             <div class="page-view" id="page-inspections">
-                <div class="section-hd">
-                    <h2>All Inspections</h2>
-                    <span style="font-size:0.76rem;color:var(--text-2)">7 records found</span>
+                <!-- Toolbar -->
+                <div class="insp-toolbar">
+                    <input class="insp-search" type="text" placeholder="🔍  Search Joint ID, welder, defect…">
+                    <select class="insp-filter"><option>All Results</option><option>Pass</option><option>Fail</option><option>Review</option></select>
+                    <select class="insp-filter"><option>All Processes</option><option>GTAW</option><option>GMAW</option><option>SMAW</option><option>FCAW</option></select>
+                    <button class="btn btn-primary" style="padding:7px 14px;font-size:0.8rem" onclick="Router.navigate('ai-inspect')">+ New Inspection</button>
                 </div>
+                <!-- Summary pills -->
+                <div class="insp-summary">
+                    <div class="insp-sum-pill"><span class="dot" style="background:var(--text-3)"></span>Total: <strong>12</strong></div>
+                    <div class="insp-sum-pill"><span class="dot" style="background:var(--success)"></span>Pass: <strong style="color:var(--success)">7</strong></div>
+                    <div class="insp-sum-pill"><span class="dot" style="background:var(--warning)"></span>Review: <strong style="color:var(--warning)">2</strong></div>
+                    <div class="insp-sum-pill"><span class="dot" style="background:var(--danger)"></span>Fail: <strong style="color:var(--danger)">3</strong></div>
+                    <div class="insp-sum-pill"><span class="dot" style="background:var(--accent)"></span>Avg Conf: <strong style="color:var(--accent)">84%</strong></div>
+                </div>
+                <!-- Table -->
                 <div class="card table-wrap">
                     <table>
-                        <thead><tr><th>#</th><th>Joint ID</th><th>Result</th><th>Defect</th><th>Confidence</th><th>Welder</th><th>Date</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Joint ID</th>
+                                <th>Project</th>
+                                <th>Result</th>
+                                <th>Defect Type</th>
+                                <th>Confidence</th>
+                                <th>Process</th>
+                                <th>Welder</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
                         <tbody>
-                            <tr><td>1</td><td>IMG_0048</td><td><span class="pill pill-pass">PASS</span></td><td>No defect</td><td>92%</td><td>Team 3</td><td>2025-08-25</td></tr>
-                            <tr><td>2</td><td>IMG_0250</td><td><span class="pill pill-fail">FAIL</span></td><td>Porosity</td><td>74%</td><td>Team 5</td><td>2025-08-25</td></tr>
-                            <tr><td>3</td><td>IMG_0252</td><td><span class="pill pill-pass">PASS</span></td><td>Undercut</td><td>89%</td><td>Team 2</td><td>2025-08-24</td></tr>
-                            <tr><td>4</td><td>IMG_0253</td><td><span class="pill pill-pass">PASS</span></td><td>Slag Inclusion</td><td>85%</td><td>Team 1</td><td>2025-08-24</td></tr>
-                            <tr><td>5</td><td>IMG_0251</td><td><span class="pill pill-fail">FAIL</span></td><td>Crack</td><td>68%</td><td>Team 4</td><td>2025-08-23</td></tr>
-                            <tr><td>6</td><td>IMG_0249</td><td><span class="pill pill-warn">WARN</span></td><td>Undercut (minor)</td><td>71%</td><td>Team 5</td><td>2025-08-23</td></tr>
-                            <tr><td>7</td><td>IMG_0248</td><td><span class="pill pill-pass">PASS</span></td><td>No defect</td><td>95%</td><td>Team 1</td><td>2025-08-22</td></tr>
+                            <tr><td class="mono" style="color:var(--text-3)">12</td><td class="mono">JNT-2026-1187</td><td>Synova Line 3</td><td><span class="pill pill-warn">REVIEW</span></td><td>Oxide (Gold)</td><td>81%</td><td>GTAW</td><td>Team 5</td><td>2026-05-13</td></tr>
+                            <tr><td class="mono" style="color:var(--text-3)">11</td><td class="mono">JNT-2026-1186</td><td>Synova Line 3</td><td><span class="pill pill-fail">FAIL</span></td><td>Porosity · Crack</td><td>74%</td><td>GTAW</td><td>Team 5</td><td>2026-05-13</td></tr>
+                            <tr><td class="mono" style="color:var(--text-3)">10</td><td class="mono">JNT-2026-1185</td><td>TPA CIP Station</td><td><span class="pill pill-pass">PASS</span></td><td>No defect</td><td>93%</td><td>GMAW</td><td>Team 2</td><td>2026-05-13</td></tr>
+                            <tr><td class="mono" style="color:var(--text-3)">9</td><td class="mono">JNT-2026-1184</td><td>TPA CIP Station</td><td><span class="pill pill-pass">PASS</span></td><td>No defect</td><td>91%</td><td>FCAW</td><td>Team 7</td><td>2026-05-13</td></tr>
+                            <tr><td class="mono" style="color:var(--text-3)">8</td><td class="mono">JNT-2026-1142</td><td>Aseptic Valve Hub</td><td><span class="pill pill-warn">REVIEW</span></td><td>Undercut (minor)</td><td>71%</td><td>GTAW</td><td>Team 3</td><td>2026-05-12</td></tr>
+                            <tr><td class="mono" style="color:var(--text-3)">7</td><td class="mono">JNT-2026-1141</td><td>Aseptic Valve Hub</td><td><span class="pill pill-fail">FAIL</span></td><td>Incomplete Fusion</td><td>88%</td><td>GMAW</td><td>Team 4</td><td>2026-05-12</td></tr>
+                            <tr><td class="mono" style="color:var(--text-3)">6</td><td class="mono">JNT-2026-1098</td><td>Synova Line 3</td><td><span class="pill pill-pass">PASS</span></td><td>No defect</td><td>97%</td><td>GTAW</td><td>Team 1</td><td>2026-05-10</td></tr>
+                            <tr><td class="mono" style="color:var(--text-3)">5</td><td class="mono">IMG_0253</td><td>Synova Line 3</td><td><span class="pill pill-pass">PASS</span></td><td>Slag (accept.)</td><td>85%</td><td>SMAW</td><td>Team 1</td><td>2025-08-24</td></tr>
+                            <tr><td class="mono" style="color:var(--text-3)">4</td><td class="mono">IMG_0252</td><td>TPA CIP Station</td><td><span class="pill pill-pass">PASS</span></td><td>Undercut (accept.)</td><td>89%</td><td>GTAW</td><td>Team 2</td><td>2025-08-24</td></tr>
+                            <tr><td class="mono" style="color:var(--text-3)">3</td><td class="mono">IMG_0251</td><td>TPA CIP Station</td><td><span class="pill pill-fail">FAIL</span></td><td>Crack</td><td>68%</td><td>SMAW</td><td>Team 4</td><td>2025-08-23</td></tr>
+                            <tr><td class="mono" style="color:var(--text-3)">2</td><td class="mono">IMG_0250</td><td>Synova Line 3</td><td><span class="pill pill-fail">FAIL</span></td><td>Porosity</td><td>74%</td><td>GTAW</td><td>Team 5</td><td>2025-08-23</td></tr>
+                            <tr><td class="mono" style="color:var(--text-3)">1</td><td class="mono">IMG_0048</td><td>Synova Line 3</td><td><span class="pill pill-pass">PASS</span></td><td>No defect</td><td>92%</td><td>GTAW</td><td>Team 3</td><td>2025-08-22</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -1892,58 +2007,169 @@
 
             <!-- ANALYTICS -->
             <div class="page-view" id="page-analytics">
-                <div class="page-grid2">
-                    <div class="card metric-card">
-                        <h3>Defect Summary</h3>
-                        <div class="metric-row"><span class="metric-label">Porosity</span><span class="metric-val" style="color:var(--accent)">112</span></div>
-                        <div class="metric-row"><span class="metric-label">Undercut</span><span class="metric-val" style="color:var(--success)">78</span></div>
-                        <div class="metric-row"><span class="metric-label">Slag Inclusion</span><span class="metric-val">56</span></div>
-                        <div class="metric-row"><span class="metric-label">Crack</span><span class="metric-val" style="color:var(--warning)">34</span></div>
-                        <div class="metric-row"><span class="metric-label">Incomplete Fusion</span><span class="metric-val" style="color:var(--danger)">25</span></div>
+                <!-- KPI row -->
+                <div class="a-kpi-row" style="margin-bottom:16px">
+                    <div class="a-kpi"><div class="a-kpi-v" style="color:var(--text-1)">1,250</div><div class="a-kpi-l">Total</div></div>
+                    <div class="a-kpi"><div class="a-kpi-v" style="color:var(--success)">75%</div><div class="a-kpi-l">Pass Rate</div></div>
+                    <div class="a-kpi"><div class="a-kpi-v" style="color:var(--danger)">25%</div><div class="a-kpi-l">Fail Rate</div></div>
+                    <div class="a-kpi"><div class="a-kpi-v" style="color:var(--accent)">87%</div><div class="a-kpi-l">AI Conf.</div></div>
+                    <div class="a-kpi"><div class="a-kpi-v" style="color:var(--text-1)">1.4 s</div><div class="a-kpi-l">Avg Time</div></div>
+                </div>
+                <div class="analytics-grid">
+                    <!-- Defect frequency -->
+                    <div class="analytics-card">
+                        <h3>
+                            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 17V7M8 17V3M13 17v-6M18 17v-4"/></svg>
+                            Defect Frequency
+                        </h3>
+                        <div class="a-bar-row"><span class="a-bar-label">Porosity</span><div class="a-bar-track"><div class="a-bar-fill" style="width:100%;background:var(--accent)"></div></div><span class="a-bar-val">112</span></div>
+                        <div class="a-bar-row"><span class="a-bar-label">Undercut</span><div class="a-bar-track"><div class="a-bar-fill" style="width:70%;background:var(--success)"></div></div><span class="a-bar-val">78</span></div>
+                        <div class="a-bar-row"><span class="a-bar-label">Slag Inclusion</span><div class="a-bar-track"><div class="a-bar-fill" style="width:50%;background:var(--warning)"></div></div><span class="a-bar-val">56</span></div>
+                        <div class="a-bar-row"><span class="a-bar-label">Crack</span><div class="a-bar-track"><div class="a-bar-fill" style="width:30%;background:var(--danger)"></div></div><span class="a-bar-val">34</span></div>
+                        <div class="a-bar-row"><span class="a-bar-label">Incomplete Fusion</span><div class="a-bar-track"><div class="a-bar-fill" style="width:22%;background:var(--text-3)"></div></div><span class="a-bar-val">25</span></div>
+                        <div class="a-bar-row"><span class="a-bar-label">Overlap</span><div class="a-bar-track"><div class="a-bar-fill" style="width:9%;background:var(--text-3)"></div></div><span class="a-bar-val">10</span></div>
                     </div>
-                    <div class="card metric-card">
-                        <h3>Team Performance</h3>
-                        <div class="metric-row"><span class="metric-label">Team 1</span><span class="metric-val kpi-success">94%</span></div>
-                        <div class="metric-row"><span class="metric-label">Team 2</span><span class="metric-val">88%</span></div>
-                        <div class="metric-row"><span class="metric-label">Team 3</span><span class="metric-val">82%</span></div>
-                        <div class="metric-row"><span class="metric-label">Team 4</span><span class="metric-val kpi-danger">71%</span></div>
-                        <div class="metric-row"><span class="metric-label">Team 5</span><span class="metric-val kpi-danger">65%</span></div>
+                    <!-- Team pass rate -->
+                    <div class="analytics-card">
+                        <h3>
+                            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM5 16a7 7 0 0110 0"/></svg>
+                            Team Pass Rate
+                        </h3>
+                        <div class="a-bar-row"><span class="a-bar-label">Team 1</span><div class="a-bar-track"><div class="a-bar-fill" style="width:94%;background:var(--success)"></div></div><span class="a-bar-val" style="color:var(--success)">94%</span></div>
+                        <div class="a-bar-row"><span class="a-bar-label">Team 2</span><div class="a-bar-track"><div class="a-bar-fill" style="width:88%;background:var(--success)"></div></div><span class="a-bar-val" style="color:var(--success)">88%</span></div>
+                        <div class="a-bar-row"><span class="a-bar-label">Team 3</span><div class="a-bar-track"><div class="a-bar-fill" style="width:82%;background:var(--accent)"></div></div><span class="a-bar-val" style="color:var(--accent)">82%</span></div>
+                        <div class="a-bar-row"><span class="a-bar-label">Team 4</span><div class="a-bar-track"><div class="a-bar-fill" style="width:71%;background:var(--warning)"></div></div><span class="a-bar-val" style="color:var(--warning)">71%</span></div>
+                        <div class="a-bar-row"><span class="a-bar-label">Team 5</span><div class="a-bar-track"><div class="a-bar-fill" style="width:65%;background:var(--danger)"></div></div><span class="a-bar-val" style="color:var(--danger)">65%</span></div>
+                        <div class="a-bar-row"><span class="a-bar-label">Team 7</span><div class="a-bar-track"><div class="a-bar-fill" style="width:79%;background:var(--accent)"></div></div><span class="a-bar-val" style="color:var(--accent)">79%</span></div>
                     </div>
-                    <div class="card metric-card">
-                        <h3>Process Metrics</h3>
-                        <div class="metric-row"><span class="metric-label">Avg Inspection Time</span><span class="metric-val">1.4 s</span></div>
-                        <div class="metric-row"><span class="metric-label">Total Processed</span><span class="metric-val">1,250</span></div>
-                        <div class="metric-row"><span class="metric-label">AI Confidence Avg</span><span class="metric-val">87%</span></div>
-                        <div class="metric-row"><span class="metric-label">False Positive Rate</span><span class="metric-val">3.2%</span></div>
+                    <!-- Severity breakdown -->
+                    <div class="analytics-card">
+                        <h3>
+                            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 3v14M3 10h14"/></svg>
+                            Defect Severity
+                        </h3>
+                        <div class="a-bar-row"><span class="a-bar-label">Critical (crack)</span><div class="a-bar-track"><div class="a-bar-fill" style="width:46%;background:var(--danger)"></div></div><span class="a-bar-val" style="color:var(--danger)">147</span></div>
+                        <div class="a-bar-row"><span class="a-bar-label">Major</span><div class="a-bar-track"><div class="a-bar-fill" style="width:35%;background:var(--warning)"></div></div><span class="a-bar-val" style="color:var(--warning)">112</span></div>
+                        <div class="a-bar-row"><span class="a-bar-label">Minor</span><div class="a-bar-track"><div class="a-bar-fill" style="width:17%;background:var(--accent)"></div></div><span class="a-bar-val">53</span></div>
+                        <div class="a-bar-row"><span class="a-bar-label">Conditional</span><div class="a-bar-track"><div class="a-bar-fill" style="width:6%;background:var(--text-3)"></div></div><span class="a-bar-val">18</span></div>
                     </div>
-                    <div class="card metric-card">
-                        <h3>Defect Severity Breakdown</h3>
-                        <div class="metric-row"><span class="metric-label">Critical</span><span class="metric-val kpi-danger">147</span></div>
-                        <div class="metric-row"><span class="metric-label">Major: Major</span><span class="metric-val kpi-warning" style="color:var(--warning)">112</span></div>
-                        <div class="metric-row"><span class="metric-label">Minor</span><span class="metric-val">53</span></div>
-                        <div class="metric-row"><span class="metric-label">Conditional Accept</span><span class="metric-val">18</span></div>
+                    <!-- Process comparison -->
+                    <div class="analytics-card">
+                        <h3>
+                            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 3"/></svg>
+                            Process Metrics
+                        </h3>
+                        <div class="a-bar-row"><span class="a-bar-label">GTAW (TIG)</span><div class="a-bar-track"><div class="a-bar-fill" style="width:88%;background:var(--success)"></div></div><span class="a-bar-val" style="color:var(--success)">88%</span></div>
+                        <div class="a-bar-row"><span class="a-bar-label">GMAW (MIG)</span><div class="a-bar-track"><div class="a-bar-fill" style="width:80%;background:var(--accent)"></div></div><span class="a-bar-val" style="color:var(--accent)">80%</span></div>
+                        <div class="a-bar-row"><span class="a-bar-label">FCAW</span><div class="a-bar-track"><div class="a-bar-fill" style="width:74%;background:var(--accent)"></div></div><span class="a-bar-val" style="color:var(--accent)">74%</span></div>
+                        <div class="a-bar-row"><span class="a-bar-label">SMAW (Stick)</span><div class="a-bar-track"><div class="a-bar-fill" style="width:65%;background:var(--warning)"></div></div><span class="a-bar-val" style="color:var(--warning)">65%</span></div>
+                        <div class="a-bar-row"><span class="a-bar-label">SAW</span><div class="a-bar-track"><div class="a-bar-fill" style="width:91%;background:var(--success)"></div></div><span class="a-bar-val" style="color:var(--success)">91%</span></div>
                     </div>
                 </div>
             </div><!-- /analytics -->
 
             <!-- REPORTS -->
             <div class="page-view" id="page-reports">
-                <div class="section-hd"><h2>Available Reports</h2></div>
-                <div class="page-grid3">
-                    <div class="card report-card">
-                        <h3>Document: August 2025 Summary</h3>
-                        <p>Full monthly inspection overview with defect analysis and team performance.</p>
-                        <button class="btn btn-ghost" style="width:100%;font-size:0.8rem;padding:7px 12px">Download PDF</button>
+                <div class="section-hd" style="margin-bottom:16px">
+                    <h2>Inspection Reports</h2>
+                    <button class="btn btn-primary" style="padding:7px 16px;font-size:0.8rem">+ Generate New</button>
+                </div>
+                <div class="reports-grid">
+                    <div class="report-card2">
+                        <div class="rc2-hd">
+                            <div class="rc2-icon" style="background:var(--accent-soft)">
+                                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"><path d="M4 2h8l4 4v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z"/><path d="M8 11h6M8 14h4"/></svg>
+                            </div>
+                            <div><div class="rc2-title">Monthly Summary — May 2026</div><div class="rc2-desc">Full monthly inspection overview with defect trend analysis, team performance matrix, and compliance status.</div></div>
+                        </div>
+                        <div class="rc2-meta">
+                            <span class="rc2-tag">Monthly</span><span class="rc2-tag">May 2026</span><span class="rc2-tag">14 pages</span>
+                            <span class="rc2-status ready">Ready</span>
+                        </div>
+                        <div class="rc2-actions">
+                            <button class="rc2-btn primary"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 14V4M6 14l4 4 4-4"/><path d="M3 18h14"/></svg>Download PDF</button>
+                            <button class="rc2-btn">Preview</button>
+                        </div>
                     </div>
-                    <div class="card report-card">
-                        <h3>Document: Weekly Report W34</h3>
-                        <p>Week 34 weld inspection data including trend and defect breakdown.</p>
-                        <button class="btn btn-ghost" style="width:100%;font-size:0.8rem;padding:7px 12px">Download PDF</button>
+                    <div class="report-card2">
+                        <div class="rc2-hd">
+                            <div class="rc2-icon" style="background:var(--success-soft)">
+                                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--success)" stroke-width="1.8" stroke-linecap="round"><path d="M4 2h8l4 4v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z"/><path d="M8 11h6M8 14h4"/></svg>
+                            </div>
+                            <div><div class="rc2-title">Weekly Report — W19 / 2026</div><div class="rc2-desc">Week 19 weld inspection data, defect breakdown by type, and daily inspection volume trend.</div></div>
+                        </div>
+                        <div class="rc2-meta">
+                            <span class="rc2-tag">Weekly</span><span class="rc2-tag">W19 2026</span><span class="rc2-tag">6 pages</span>
+                            <span class="rc2-status ready">Ready</span>
+                        </div>
+                        <div class="rc2-actions">
+                            <button class="rc2-btn primary"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 14V4M6 14l4 4 4-4"/><path d="M3 18h14"/></svg>Download PDF</button>
+                            <button class="rc2-btn">Preview</button>
+                        </div>
                     </div>
-                    <div class="card report-card">
-                        <h3>Document: Team Performance Q3</h3>
-                        <p>Quarterly team-level performance and defect rate comparison.</p>
-                        <button class="btn btn-ghost" style="width:100%;font-size:0.8rem;padding:7px 12px">Download PDF</button>
+                    <div class="report-card2">
+                        <div class="rc2-hd">
+                            <div class="rc2-icon" style="background:var(--warning-soft)">
+                                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--warning)" stroke-width="1.8" stroke-linecap="round"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM5 16a7 7 0 0110 0"/></svg>
+                            </div>
+                            <div><div class="rc2-title">Team Performance — Q1 2026</div><div class="rc2-desc">Quarterly team-level pass rates, defect contribution per welder, and trend vs. Q4 2025.</div></div>
+                        </div>
+                        <div class="rc2-meta">
+                            <span class="rc2-tag">Quarterly</span><span class="rc2-tag">Q1 2026</span><span class="rc2-tag">10 pages</span>
+                            <span class="rc2-status ready">Ready</span>
+                        </div>
+                        <div class="rc2-actions">
+                            <button class="rc2-btn primary"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 14V4M6 14l4 4 4-4"/><path d="M3 18h14"/></svg>Download PDF</button>
+                            <button class="rc2-btn">Preview</button>
+                        </div>
+                    </div>
+                    <div class="report-card2">
+                        <div class="rc2-hd">
+                            <div class="rc2-icon" style="background:var(--accent-soft)">
+                                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 3"/></svg>
+                            </div>
+                            <div><div class="rc2-title">Defect Analysis — Aug 2025</div><div class="rc2-desc">Deep-dive defect analysis with root-cause mapping, oxide discoloration statistics, and corrective actions.</div></div>
+                        </div>
+                        <div class="rc2-meta">
+                            <span class="rc2-tag">Analysis</span><span class="rc2-tag">Aug 2025</span><span class="rc2-tag">18 pages</span>
+                            <span class="rc2-status ready">Ready</span>
+                        </div>
+                        <div class="rc2-actions">
+                            <button class="rc2-btn primary"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 14V4M6 14l4 4 4-4"/><path d="M3 18h14"/></svg>Download PDF</button>
+                            <button class="rc2-btn">Preview</button>
+                        </div>
+                    </div>
+                    <div class="report-card2">
+                        <div class="rc2-hd">
+                            <div class="rc2-icon" style="background:var(--danger-soft)">
+                                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--danger)" stroke-width="1.8" stroke-linecap="round"><path d="M9 3H5a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V9M9 3l6 6M9 3v6h6"/></svg>
+                            </div>
+                            <div><div class="rc2-title">Compliance Report — ISO 5817</div><div class="rc2-desc">ISO 5817 Level C compliance report for Tetra Pak audit trail. Includes joint-level evidence.</div></div>
+                        </div>
+                        <div class="rc2-meta">
+                            <span class="rc2-tag">Compliance</span><span class="rc2-tag">ISO 5817</span><span class="rc2-tag">Generating…</span>
+                            <span class="rc2-status pending">Pending</span>
+                        </div>
+                        <div class="rc2-actions">
+                            <button class="rc2-btn" disabled style="opacity:0.5">Generating…</button>
+                            <button class="rc2-btn">Cancel</button>
+                        </div>
+                    </div>
+                    <div class="report-card2">
+                        <div class="rc2-hd">
+                            <div class="rc2-icon" style="background:var(--surface-2)">
+                                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--text-3)" stroke-width="1.8" stroke-linecap="round"><path d="M4 2h8l4 4v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z"/><path d="M10 8v6M7 11h6"/></svg>
+                            </div>
+                            <div><div class="rc2-title">Custom Report — June 2026</div><div class="rc2-desc">Scheduled auto-generated summary for June 2026. Will be available on Jul 1, 2026.</div></div>
+                        </div>
+                        <div class="rc2-meta">
+                            <span class="rc2-tag">Scheduled</span><span class="rc2-tag">Jun 2026</span>
+                            <span class="rc2-status draft">Scheduled</span>
+                        </div>
+                        <div class="rc2-actions">
+                            <button class="rc2-btn">Edit Schedule</button>
+                            <button class="rc2-btn" style="color:var(--danger)">Cancel</button>
+                        </div>
                     </div>
                 </div>
             </div><!-- /reports -->
@@ -2097,6 +2323,9 @@
     <!-- RIGHT PANEL -->
     <aside class="right-panel" id="detailPanel">
 
+    <!-- ═══ AI INSPECT VIEW ═══ -->
+    <div class="rp-view" id="rp-ai-inspect">
+
         <!-- AI Result -->
         <div class="rp-section">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -2248,6 +2477,240 @@
                 </button>
             </div>
         </div>
+
+    </div><!-- /rp-ai-inspect -->
+
+    <!-- ═══ DASHBOARD VIEW ═══ -->
+    <div class="rp-view" id="rp-dashboard">
+        <div class="rp-section">
+            <div class="rp-section-title">System Status</div>
+            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">AI Model</span><span class="rp-status-val">wq-v3.2 · Online</span></div>
+            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">Database</span><span class="rp-status-val">1,250 records</span></div>
+            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">Roboflow API</span><span class="rp-status-val">Connected</span></div>
+            <div class="rp-status-row"><span class="rp-status-dot warn"></span><span class="rp-status-name">Storage</span><span class="rp-status-val">72% used</span></div>
+            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">Last Sync</span><span class="rp-status-val">09:40 today</span></div>
+        </div>
+        <div class="rp-section">
+            <div class="rp-section-title">Recent Activity</div>
+            <div class="rp-feed-item">
+                <span class="rp-feed-dot" style="background:var(--warning)"></span>
+                <div class="rp-feed-body"><div class="rp-feed-id">JNT-2026-1187</div><div class="rp-feed-meta">Team 5 · GTAW · Review</div></div>
+                <span class="rp-feed-time">09:36</span>
+            </div>
+            <div class="rp-feed-item">
+                <span class="rp-feed-dot" style="background:var(--danger)"></span>
+                <div class="rp-feed-body"><div class="rp-feed-id">JNT-2026-1186</div><div class="rp-feed-meta">Team 5 · GTAW · Fail</div></div>
+                <span class="rp-feed-time">09:35</span>
+            </div>
+            <div class="rp-feed-item">
+                <span class="rp-feed-dot" style="background:var(--success)"></span>
+                <div class="rp-feed-body"><div class="rp-feed-id">JNT-2026-1185</div><div class="rp-feed-meta">Team 2 · GMAW · Pass</div></div>
+                <span class="rp-feed-time">09:35</span>
+            </div>
+            <div class="rp-feed-item">
+                <span class="rp-feed-dot" style="background:var(--success)"></span>
+                <div class="rp-feed-body"><div class="rp-feed-id">JNT-2026-1184</div><div class="rp-feed-meta">Team 7 · FCAW · Pass</div></div>
+                <span class="rp-feed-time">09:34</span>
+            </div>
+        </div>
+        <div class="rp-section">
+            <div class="rp-section-title">Today's Summary</div>
+            <div class="rp-bar-row"><div class="rp-bar-label"><span>Pass</span><span style="color:var(--success)">18</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:72%;background:var(--success)"></div></div></div>
+            <div class="rp-bar-row"><div class="rp-bar-label"><span>Review</span><span style="color:var(--warning)">4</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:16%;background:var(--warning)"></div></div></div>
+            <div class="rp-bar-row"><div class="rp-bar-label"><span>Fail</span><span style="color:var(--danger)">3</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:12%;background:var(--danger)"></div></div></div>
+        </div>
+        <div class="rp-section" style="display:flex;flex-direction:column;gap:5px">
+            <button class="rp-analyze-btn" onclick="Router.navigate('ai-inspect')">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5L17 17"/></svg>
+                Start AI Inspection
+            </button>
+            <button class="btn btn-ghost" style="width:100%;padding:5px 10px;font-size:0.78rem" onclick="Router.navigate('reports')">
+                <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 2h8l4 4v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z"/></svg>
+                View Reports
+            </button>
+        </div>
+    </div><!-- /rp-dashboard -->
+
+    <!-- ═══ INSPECTIONS VIEW ═══ -->
+    <div class="rp-view" id="rp-inspections">
+        <div class="rp-section">
+            <div class="rp-section-title">Quick Filter</div>
+            <div class="rp-filter-row"><label class="rp-filter-label">Result</label>
+                <select class="rp-filter-select"><option>All</option><option>Pass</option><option>Fail</option><option>Review</option></select>
+            </div>
+            <div class="rp-filter-row"><label class="rp-filter-label">Welder / Team</label>
+                <select class="rp-filter-select"><option>All Teams</option><option>Team 1</option><option>Team 2</option><option>Team 3</option><option>Team 4</option><option>Team 5</option><option>Team 7</option></select>
+            </div>
+            <div class="rp-filter-row"><label class="rp-filter-label">Process</label>
+                <select class="rp-filter-select"><option>All Processes</option><option>GTAW</option><option>GMAW</option><option>SMAW</option><option>FCAW</option><option>SAW</option></select>
+            </div>
+            <div class="rp-filter-row"><label class="rp-filter-label">From Date</label>
+                <input class="rp-filter-input" type="date" value="2025-08-01">
+            </div>
+            <div class="rp-filter-row"><label class="rp-filter-label">To Date</label>
+                <input class="rp-filter-input" type="date" value="2026-05-13">
+            </div>
+            <button class="rp-analyze-btn" style="margin-top:6px;background:var(--accent)">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5L17 17"/></svg>
+                Apply Filter
+            </button>
+        </div>
+        <div class="rp-section">
+            <div class="rp-section-title">Result Summary</div>
+            <div class="rp-bar-row"><div class="rp-bar-label"><span>Pass</span><span style="color:var(--success)">4 / 57%</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:57%;background:var(--success)"></div></div></div>
+            <div class="rp-bar-row"><div class="rp-bar-label"><span>Review</span><span style="color:var(--warning)">1 / 14%</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:14%;background:var(--warning)"></div></div></div>
+            <div class="rp-bar-row"><div class="rp-bar-label"><span>Fail</span><span style="color:var(--danger)">2 / 29%</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:29%;background:var(--danger)"></div></div></div>
+        </div>
+        <div class="rp-section" style="display:flex;gap:5px">
+            <button class="btn btn-ghost" style="flex:1;padding:5px 10px;font-size:0.78rem">Export CSV</button>
+            <button class="rp-analyze-btn" style="flex:1;font-size:0.78rem" onclick="Router.navigate('ai-inspect')">+ New</button>
+        </div>
+    </div><!-- /rp-inspections -->
+
+    <!-- ═══ ANALYTICS VIEW ═══ -->
+    <div class="rp-view" id="rp-analytics">
+        <div class="rp-section">
+            <div class="rp-section-title">Date Range</div>
+            <div class="rp-filter-row"><label class="rp-filter-label">From</label>
+                <input class="rp-filter-input" type="date" value="2026-05-01">
+            </div>
+            <div class="rp-filter-row" style="margin-bottom:8px"><label class="rp-filter-label">To</label>
+                <input class="rp-filter-input" type="date" value="2026-05-13">
+            </div>
+            <button class="rp-analyze-btn">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5L17 17"/></svg>
+                Refresh Analytics
+            </button>
+        </div>
+        <div class="rp-section">
+            <div class="rp-section-title">Top Defect Types</div>
+            <div class="rp-bar-row"><div class="rp-bar-label"><span>Porosity</span><span>112</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:100%;background:var(--accent)"></div></div></div>
+            <div class="rp-bar-row"><div class="rp-bar-label"><span>Undercut</span><span>78</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:70%;background:var(--success)"></div></div></div>
+            <div class="rp-bar-row"><div class="rp-bar-label"><span>Slag</span><span>56</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:50%;background:var(--warning)"></div></div></div>
+            <div class="rp-bar-row"><div class="rp-bar-label"><span>Crack</span><span>34</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:30%;background:var(--danger)"></div></div></div>
+            <div class="rp-bar-row"><div class="rp-bar-label"><span>Incomplete Fusion</span><span>25</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:22%;background:var(--text-3)"></div></div></div>
+        </div>
+        <div class="rp-section" style="display:flex;gap:5px">
+            <button class="btn btn-ghost" style="flex:1;padding:5px 10px;font-size:0.78rem" id="exportAnalyticsCsvBtn">Export CSV</button>
+            <button class="btn btn-ghost" style="flex:1;padding:5px 10px;font-size:0.78rem">Export PDF</button>
+        </div>
+    </div><!-- /rp-analytics -->
+
+    <!-- ═══ REPORTS VIEW ═══ -->
+    <div class="rp-view" id="rp-reports">
+        <div class="rp-section">
+            <div class="rp-section-title">Generate Report</div>
+            <div class="rp-filter-row"><label class="rp-filter-label">Type</label>
+                <select class="rp-filter-select"><option>Monthly Summary</option><option>Weekly Report</option><option>Team Performance</option><option>Defect Analysis</option><option>Compliance Report</option></select>
+            </div>
+            <div class="rp-filter-row" style="margin-bottom:8px"><label class="rp-filter-label">Period</label>
+                <input class="rp-filter-input" type="month" value="2026-05">
+            </div>
+            <button class="rp-analyze-btn">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 2h8l4 4v12a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z"/><path d="M8 11h6M8 14h4"/></svg>
+                Generate Report
+            </button>
+        </div>
+        <div class="rp-section">
+            <div class="rp-section-title">Auto Schedule</div>
+            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">Monthly</span><span class="rp-status-val">Active</span></div>
+            <div class="rp-status-row"><span class="rp-status-dot warn"></span><span class="rp-status-name">Weekly</span><span class="rp-status-val">Paused</span></div>
+            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">Next Run</span><span class="rp-status-val">Jun 1, 2026</span></div>
+        </div>
+        <div class="rp-section">
+            <div class="rp-section-title">Storage</div>
+            <div class="rp-bar-row"><div class="rp-bar-label"><span>Reports</span><span>6 files · 14 MB</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:72%;background:var(--accent)"></div></div></div>
+        </div>
+    </div><!-- /rp-reports -->
+
+    <!-- ═══ PROJECTS VIEW ═══ -->
+    <div class="rp-view" id="rp-projects">
+        <div class="rp-section">
+            <div class="rp-section-title">WPS Reference</div>
+            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">WPS-001</span><span class="rp-status-val">GTAW · SUS316L</span></div>
+            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">WPS-002</span><span class="rp-status-val">GMAW · CS A36</span></div>
+            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">WPS-003</span><span class="rp-status-val">GTAW · SUS304</span></div>
+            <div class="rp-status-row"><span class="rp-status-dot warn"></span><span class="rp-status-name">WPS-004</span><span class="rp-status-val">SMAW · P91</span></div>
+        </div>
+        <div class="rp-section">
+            <div class="rp-section-title">PQR Status</div>
+            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">PQR-001</span><span class="rp-status-val">Valid · Dec 2026</span></div>
+            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">PQR-002</span><span class="rp-status-val">Valid · Aug 2026</span></div>
+            <div class="rp-status-row"><span class="rp-status-dot warn"></span><span class="rp-status-name">PQR-003</span><span class="rp-status-val">Exp. Jul 2026</span></div>
+        </div>
+        <div class="rp-section">
+            <div class="rp-section-title">Active Projects</div>
+            <div class="rp-bar-row"><div class="rp-bar-label"><span>Synova Line 3</span><span style="color:var(--success)">87%</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:87%;background:var(--success)"></div></div></div>
+            <div class="rp-bar-row"><div class="rp-bar-label"><span>TPA CIP Station</span><span style="color:var(--accent)">62%</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:62%;background:var(--accent)"></div></div></div>
+            <div class="rp-bar-row"><div class="rp-bar-label"><span>Aseptic Valve Hub</span><span style="color:var(--warning)">34%</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:34%;background:var(--warning)"></div></div></div>
+        </div>
+        <div class="rp-section" style="display:flex;gap:5px">
+            <button class="rp-analyze-btn" style="flex:1;font-size:0.78rem">+ Add WPS</button>
+            <button class="btn btn-ghost" style="flex:1;padding:5px 10px;font-size:0.78rem">View PQR</button>
+        </div>
+    </div><!-- /rp-projects -->
+
+    <!-- ═══ STANDARDS VIEW ═══ -->
+    <div class="rp-view" id="rp-standards">
+        <div class="rp-section">
+            <div class="rp-section-title">Active Standards</div>
+            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">ISO 5817</span><span class="rp-status-val">Level C</span></div>
+            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">AWS D1.1</span><span class="rp-status-val">2020 Ed.</span></div>
+            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">EN 1090-2</span><span class="rp-status-val">EXC 3</span></div>
+            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">B 2310.64</span><span class="rp-status-val">Tetra Pak §4.4</span></div>
+            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">ISO 6520-1</span><span class="rp-status-val">Defect Classes</span></div>
+        </div>
+        <div class="rp-section">
+            <div class="rp-section-title">Acceptance Levels</div>
+            <div class="rp-bar-row"><div class="rp-bar-label"><span>Porosity (max)</span><span>≤ 2%</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:20%;background:var(--accent)"></div></div></div>
+            <div class="rp-bar-row"><div class="rp-bar-label"><span>Undercut (max)</span><span>≤ 0.5 mm</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:15%;background:var(--success)"></div></div></div>
+            <div class="rp-bar-row"><div class="rp-bar-label"><span>Cracks</span><span>Zero tol.</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:5%;background:var(--danger)"></div></div></div>
+        </div>
+        <div class="rp-section">
+            <div class="rp-section-title">Quick Search</div>
+            <input class="rp-filter-input" type="text" placeholder="Search standard or clause…">
+        </div>
+        <div class="rp-section" style="display:flex;gap:5px">
+            <button class="rp-analyze-btn" style="flex:1;font-size:0.78rem">+ Upload Standard</button>
+        </div>
+    </div><!-- /rp-standards -->
+
+    <!-- ═══ SETTINGS VIEW ═══ -->
+    <div class="rp-view" id="rp-settings">
+        <div class="rp-section">
+            <div class="rp-section-title">System Info</div>
+            <div class="rp-status-row"><span class="rp-status-name">Version</span><span class="rp-status-val">v1.0.0-PRO3S</span></div>
+            <div class="rp-status-row"><span class="rp-status-name">AI Model</span><span class="rp-status-val">wq-v3.2</span></div>
+            <div class="rp-status-row"><span class="rp-status-name">Build Date</span><span class="rp-status-val">2026-05-13</span></div>
+            <div class="rp-status-row"><span class="rp-status-name">Storage</span><span class="rp-status-val">localStorage</span></div>
+            <div class="rp-status-row"><span class="rp-status-name">Platform</span><span class="rp-status-val">Web / Electron</span></div>
+        </div>
+        <div class="rp-section">
+            <div class="rp-section-title">Current Session</div>
+            <div class="rp-status-row"><span class="rp-status-dot ok"></span><span class="rp-status-name">Status</span><span class="rp-status-val">Active</span></div>
+            <div class="rp-status-row"><span class="rp-status-name">Role</span><span class="rp-status-val" id="rpSessionRole">—</span></div>
+            <div class="rp-status-row"><span class="rp-status-name">User</span><span class="rp-status-val" id="rpSessionUser">—</span></div>
+            <div class="rp-status-row"><span class="rp-status-name">Expires</span><span class="rp-status-val" id="rpSessionExpiry">—</span></div>
+        </div>
+        <div class="rp-section">
+            <div class="rp-section-title">Quick Actions</div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+                <button class="btn btn-ghost" style="width:100%;padding:5px 10px;font-size:0.78rem" onclick="document.getElementById('settingsModalScrim').style.display='flex'">
+                    Open Settings Modal
+                </button>
+                <button class="btn btn-ghost" style="width:100%;padding:5px 10px;font-size:0.78rem;color:var(--danger)" onclick="try{localStorage.removeItem('wqis_session')}catch(e){}window.location.replace('login.html')">
+                    Sign Out
+                </button>
+            </div>
+        </div>
+        <div class="rp-section">
+            <div style="display:flex;flex-wrap:wrap;gap:5px">
+                <span class="rp-sys-tag">PRO3S WQIS</span>
+                <span class="rp-sys-tag">Tetra Pak</span>
+                <span class="rp-sys-tag">Industrial QA/QC</span>
+            </div>
+        </div>
+    </div><!-- /rp-settings -->
 
     </aside>
 
@@ -2527,10 +2990,38 @@ const Router = {
         document.getElementById('pageTitle').textContent    = m.title;
         document.getElementById('pageSubtitle').textContent = m.subtitle;
         document.getElementById('headerTag').textContent    = m.tag;
+
+        // ── switch right-panel view ──
+        document.querySelectorAll('.rp-view').forEach(v => v.classList.remove('active'));
+        const rpEl = document.getElementById('rp-' + page) || document.getElementById('rp-ai-inspect');
+        if (rpEl) rpEl.classList.add('active');
+
+        // populate settings view session info
+        if (page === 'settings') {
+            const sess = window.Auth?.getSession?.();
+            if (sess) {
+                const el = (id) => document.getElementById(id);
+                if (el('rpSessionRole'))   el('rpSessionRole').textContent   = sess.role   || '—';
+                if (el('rpSessionUser'))   el('rpSessionUser').textContent   = sess.username || '—';
+                if (el('rpSessionExpiry')) {
+                    const mins = Math.max(0, Math.round((sess.expiry - Date.now()) / 60000));
+                    el('rpSessionExpiry').textContent = mins > 60
+                        ? Math.round(mins/60) + 'h remaining'
+                        : mins + ' min remaining';
+                }
+            }
+        }
     }
 };
 document.querySelectorAll('.nav-item').forEach(btn =>
     btn.addEventListener('click', () => Router.navigate(btn.dataset.page)));
+
+// activate initial right-panel view (dashboard on load)
+(function() {
+    const initPage = AppState.page || 'dashboard';
+    const rpEl = document.getElementById('rp-' + initPage) || document.getElementById('rp-dashboard');
+    if (rpEl) rpEl.classList.add('active');
+})();
 
 
 // CLOCK
