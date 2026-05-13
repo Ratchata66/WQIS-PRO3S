@@ -5,8 +5,13 @@
   "author": "PRO3S",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
+    "start": "set ELECTRON_RUN_AS_NODE=&& electron .",
     "build": "electron-builder",
+    "ai:train": "python scripts/train-wqis-acceptance-local.py",
+    "ai:predict": "python scripts/predict-wqis-acceptance-local.py",
+    "ai:detection-set": "powershell -ExecutionPolicy Bypass -File scripts/prepare-roboflow-detection-annotation-set.ps1",
+    "ai:yolo:convert": ".venv-yolo\\Scripts\\python.exe scripts/convert-yolo-polygons-to-boxes.py",
+    "ai:yolo:train": "powershell -ExecutionPolicy Bypass -File scripts/train-yolov8-wqis-local.ps1",
     "users:build": "powershell -ExecutionPolicy Bypass -File scripts/build-users-db.ps1",
     "web:serve": "npx serve .",
     "web:check": "node -e \"const fs=require('fs'); ['index.html','login.html','auth.js','netlify.toml','netlify/functions/auth.js'].forEach(f=>{if(!fs.existsSync(f)){throw new Error('Missing '+f)}}); console.log('Web deploy files OK')\""
@@ -26,6 +31,7 @@
     },
     "files": [
       "main.js",
+      "preload.js",
       "index.html",
       "login.html",
       "auth.js",
@@ -36,6 +42,8 @@
       "assets/**/*",
       "css/**/*",
       "js/**/*",
+      "local-ai/**/*",
+      "scripts/predict-yolo-weld-local.py",
       "node_modules/chart.js/**/*",
       "package.json",
       "!netlify{,/**/*}",

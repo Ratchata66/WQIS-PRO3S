@@ -6,3 +6,32 @@ netlify/functions/generated-users.js
 debug_out.txt
 .claude/
 *.docx
+
+# Python virtualenv (install locally, do not commit)
+.venv-yolo/
+.venv/
+__pycache__/
+*.pyc
+
+# Training datasets & outputs (too large for GitHub)
+datasets/
+runs/
+
+# YOLO pre-trained weights (download separately)
+yolov8n.pt
+yolov8n-seg.pt
+*.pt
+
+# Temp training scripts & logs
+train_run.py
+train_log.txt
+train_err.txt
+
+# Python installers
+*.exe
+
+# Misc data files
+openimages_test_sample.csv
+
+# VS Code workspace extras
+.vscode/

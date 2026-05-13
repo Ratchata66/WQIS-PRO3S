@@ -1,0 +1,708 @@
+{
+  "class_counts": {
+    "fail": 241,
+    "not_a_weld": 200,
+    "pass": 241
+  },
+  "split_counts": {
+    "train": {
+      "fail": 168,
+      "not_a_weld": 140,
+      "pass": 168
+    },
+    "valid": {
+      "fail": 48,
+      "not_a_weld": 40,
+      "pass": 48
+    },
+    "test": {
+      "fail": 25,
+      "not_a_weld": 20,
+      "pass": 25
+    }
+  },
+  "train": {
+    "accuracy": 0.9978991596638656,
+    "count": 476,
+    "confusion_matrix": {
+      "fail": {
+        "fail": 167,
+        "not_a_weld": 0,
+        "pass": 1
+      },
+      "not_a_weld": {
+        "fail": 0,
+        "not_a_weld": 140,
+        "pass": 0
+      },
+      "pass": {
+        "fail": 0,
+        "not_a_weld": 0,
+        "pass": 168
+      }
+    },
+    "misclassified_examples": [
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0072.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.49999986603325586,
+          "not_a_weld": 0.0,
+          "pass": 0.5000001339667441
+        },
+        "distances": {
+          "fail": 0.5000001339667441,
+          "not_a_weld": 1.0,
+          "pass": 0.49999986603325586
+        }
+      }
+    ]
+  },
+  "valid": {
+    "accuracy": 0.5955882352941176,
+    "count": 136,
+    "confusion_matrix": {
+      "fail": {
+        "fail": 34,
+        "not_a_weld": 0,
+        "pass": 14
+      },
+      "not_a_weld": {
+        "fail": 2,
+        "not_a_weld": 31,
+        "pass": 7
+      },
+      "pass": {
+        "fail": 30,
+        "not_a_weld": 2,
+        "pass": 16
+      }
+    },
+    "misclassified_examples": [
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0208.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.3267013808004123,
+          "not_a_weld": 0.0,
+          "pass": 0.6732986191995878
+        },
+        "distances": {
+          "fail": 0.6732986191995878,
+          "not_a_weld": 1.0,
+          "pass": 0.3267013808004122
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0033.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.4245246974594127,
+          "not_a_weld": 0.0,
+          "pass": 0.5754753025405873
+        },
+        "distances": {
+          "fail": 0.5754753025405873,
+          "not_a_weld": 1.0,
+          "pass": 0.4245246974594127
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0124.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.45865074293543223,
+          "not_a_weld": 0.0,
+          "pass": 0.5413492570645677
+        },
+        "distances": {
+          "fail": 0.5413492570645677,
+          "not_a_weld": 1.0,
+          "pass": 0.4586507429354323
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0111.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.23558295510299587,
+          "not_a_weld": 0.0,
+          "pass": 0.7644170448970041
+        },
+        "distances": {
+          "fail": 0.7644170448970041,
+          "not_a_weld": 1.0,
+          "pass": 0.23558295510299587
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0062.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.33889447205317924,
+          "not_a_weld": 0.0,
+          "pass": 0.6611055279468208
+        },
+        "distances": {
+          "fail": 0.6611055279468208,
+          "not_a_weld": 1.0,
+          "pass": 0.33889447205317924
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0216.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.43987728090187195,
+          "not_a_weld": 0.0,
+          "pass": 0.5601227190981279
+        },
+        "distances": {
+          "fail": 0.560122719098128,
+          "not_a_weld": 1.0,
+          "pass": 0.43987728090187206
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0025.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.3625127662096906,
+          "not_a_weld": 0.0,
+          "pass": 0.6374872337903094
+        },
+        "distances": {
+          "fail": 0.6374872337903095,
+          "not_a_weld": 1.0,
+          "pass": 0.36251276620969064
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0070.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.47852687578196734,
+          "not_a_weld": 0.0,
+          "pass": 0.5214731242180326
+        },
+        "distances": {
+          "fail": 0.5214731242180326,
+          "not_a_weld": 1.0,
+          "pass": 0.4785268757819674
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0174.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.4426074390242597,
+          "not_a_weld": 0.0,
+          "pass": 0.5573925609757404
+        },
+        "distances": {
+          "fail": 0.5573925609757403,
+          "not_a_weld": 1.0,
+          "pass": 0.4426074390242596
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0141.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.42270939475606173,
+          "not_a_weld": 0.0,
+          "pass": 0.5772906052439382
+        },
+        "distances": {
+          "fail": 0.5772906052439383,
+          "not_a_weld": 1.0,
+          "pass": 0.42270939475606184
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0077.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.33515004780309643,
+          "not_a_weld": 0.0,
+          "pass": 0.6648499521969036
+        },
+        "distances": {
+          "fail": 0.6648499521969036,
+          "not_a_weld": 1.0,
+          "pass": 0.33515004780309643
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0205.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.3745838893020515,
+          "not_a_weld": 0.0,
+          "pass": 0.6254161106979486
+        },
+        "distances": {
+          "fail": 0.6254161106979486,
+          "not_a_weld": 1.0,
+          "pass": 0.37458388930205144
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0004.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.44668578950520055,
+          "not_a_weld": 0.1059268580092487,
+          "pass": 0.44738735248555067
+        },
+        "distances": {
+          "fail": 0.5533142104947995,
+          "not_a_weld": 0.8940731419907513,
+          "pass": 0.5526126475144493
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0064.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.31777827702545747,
+          "not_a_weld": 0.0,
+          "pass": 0.6822217229745425
+        },
+        "distances": {
+          "fail": 0.6822217229745425,
+          "not_a_weld": 1.0,
+          "pass": 0.31777827702545747
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\not_a_weld\\openimages_98d3cb2054aa8a98_143.jpg",
+        "actual": "not_a_weld",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.4131161587539827,
+          "not_a_weld": 0.0,
+          "pass": 0.5868838412460173
+        },
+        "distances": {
+          "fail": 0.5868838412460173,
+          "not_a_weld": 1.0,
+          "pass": 0.41311615875398267
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\not_a_weld\\openimages_9a94a8fd0e88bf72_172.jpg",
+        "actual": "not_a_weld",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.11955412732916292,
+          "not_a_weld": 0.4401744961690797,
+          "pass": 0.4402713765017574
+        },
+        "distances": {
+          "fail": 0.8804458726708371,
+          "not_a_weld": 0.5598255038309203,
+          "pass": 0.5597286234982426
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\not_a_weld\\openimages_58a62e2945d69fda_055.jpg",
+        "actual": "not_a_weld",
+        "predicted": "fail",
+        "scores": {
+          "fail": 0.7593679817736331,
+          "not_a_weld": 0.24063201822636698,
+          "pass": 0.0
+        },
+        "distances": {
+          "fail": 0.24063201822636693,
+          "not_a_weld": 0.759367981773633,
+          "pass": 1.0
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\not_a_weld\\openimages_1ebccedfb9cfd2d5_094.jpg",
+        "actual": "not_a_weld",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.3374238520456133,
+          "not_a_weld": 0.10026449951522105,
+          "pass": 0.5623116484391657
+        },
+        "distances": {
+          "fail": 0.6625761479543867,
+          "not_a_weld": 0.8997355004847789,
+          "pass": 0.4376883515608343
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\not_a_weld\\openimages_f57c7823fec14487_128.jpg",
+        "actual": "not_a_weld",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.32999588137629815,
+          "not_a_weld": 0.2222561340709173,
+          "pass": 0.4477479845527845
+        },
+        "distances": {
+          "fail": 0.6700041186237018,
+          "not_a_weld": 0.7777438659290827,
+          "pass": 0.5522520154472155
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\not_a_weld\\openimages_88997096c8139ad0_028.jpg",
+        "actual": "not_a_weld",
+        "predicted": "fail",
+        "scores": {
+          "fail": 0.45585633143721965,
+          "not_a_weld": 0.32599385232805267,
+          "pass": 0.2181498162347276
+        },
+        "distances": {
+          "fail": 0.5441436685627803,
+          "not_a_weld": 0.6740061476719473,
+          "pass": 0.7818501837652724
+        }
+      }
+    ]
+  },
+  "test": {
+    "accuracy": 0.6285714285714286,
+    "count": 70,
+    "confusion_matrix": {
+      "fail": {
+        "fail": 17,
+        "not_a_weld": 0,
+        "pass": 8
+      },
+      "not_a_weld": {
+        "fail": 4,
+        "not_a_weld": 14,
+        "pass": 2
+      },
+      "pass": {
+        "fail": 11,
+        "not_a_weld": 1,
+        "pass": 13
+      }
+    },
+    "misclassified_examples": [
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0058.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.4639133378794601,
+          "not_a_weld": 0.0,
+          "pass": 0.5360866621205398
+        },
+        "distances": {
+          "fail": 0.5360866621205399,
+          "not_a_weld": 1.0,
+          "pass": 0.4639133378794602
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0187.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.4468492924528798,
+          "not_a_weld": 0.0,
+          "pass": 0.5531507075471203
+        },
+        "distances": {
+          "fail": 0.5531507075471203,
+          "not_a_weld": 1.0,
+          "pass": 0.44684929245287974
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0149.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.42329763016444516,
+          "not_a_weld": 0.0,
+          "pass": 0.5767023698355548
+        },
+        "distances": {
+          "fail": 0.5767023698355549,
+          "not_a_weld": 1.0,
+          "pass": 0.4232976301644452
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0146.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.43123811599361833,
+          "not_a_weld": 0.0,
+          "pass": 0.5687618840063817
+        },
+        "distances": {
+          "fail": 0.5687618840063817,
+          "not_a_weld": 1.0,
+          "pass": 0.4312381159936183
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0032.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.44605948851875715,
+          "not_a_weld": 0.0,
+          "pass": 0.5539405114812429
+        },
+        "distances": {
+          "fail": 0.5539405114812428,
+          "not_a_weld": 1.0,
+          "pass": 0.4460594885187571
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0023.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.3399299867817351,
+          "not_a_weld": 0.0,
+          "pass": 0.660070013218265
+        },
+        "distances": {
+          "fail": 0.6600700132182649,
+          "not_a_weld": 1.0,
+          "pass": 0.339929986781735
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0159.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.23150791281449806,
+          "not_a_weld": 0.0,
+          "pass": 0.768492087185502
+        },
+        "distances": {
+          "fail": 0.7684920871855019,
+          "not_a_weld": 1.0,
+          "pass": 0.231507912814498
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\fail\\fail_0166.jpg",
+        "actual": "fail",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.2235373442616124,
+          "not_a_weld": 0.0,
+          "pass": 0.7764626557383876
+        },
+        "distances": {
+          "fail": 0.7764626557383876,
+          "not_a_weld": 1.0,
+          "pass": 0.22353734426161243
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\not_a_weld\\openimages_462310172ce75d3f_141.jpg",
+        "actual": "not_a_weld",
+        "predicted": "fail",
+        "scores": {
+          "fail": 0.5445396352531892,
+          "not_a_weld": 0.2355468793548627,
+          "pass": 0.21991348539194813
+        },
+        "distances": {
+          "fail": 0.45546036474681084,
+          "not_a_weld": 0.7644531206451373,
+          "pass": 0.7800865146080519
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\not_a_weld\\openimages_b036c8bd59386c28_104.jpg",
+        "actual": "not_a_weld",
+        "predicted": "fail",
+        "scores": {
+          "fail": 0.562056342561184,
+          "not_a_weld": 0.11027021246126573,
+          "pass": 0.32767344497755035
+        },
+        "distances": {
+          "fail": 0.437943657438816,
+          "not_a_weld": 0.8897297875387342,
+          "pass": 0.6723265550224496
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\not_a_weld\\openimages_15ea332f384ea1b3_118.jpg",
+        "actual": "not_a_weld",
+        "predicted": "fail",
+        "scores": {
+          "fail": 0.452587382636464,
+          "not_a_weld": 0.3250730080953993,
+          "pass": 0.2223396092681367
+        },
+        "distances": {
+          "fail": 0.5474126173635361,
+          "not_a_weld": 0.6749269919046007,
+          "pass": 0.7776603907318633
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\not_a_weld\\openimages_f2e15cd9f7070e3e_031.jpg",
+        "actual": "not_a_weld",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.4437197516234231,
+          "not_a_weld": 0.10710157306124492,
+          "pass": 0.44917867531533207
+        },
+        "distances": {
+          "fail": 0.556280248376577,
+          "not_a_weld": 0.8928984269387551,
+          "pass": 0.5508213246846679
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\not_a_weld\\openimages_671b6dff28ea8e65_101.jpg",
+        "actual": "not_a_weld",
+        "predicted": "pass",
+        "scores": {
+          "fail": 0.09895547230458433,
+          "not_a_weld": 0.19467853200579657,
+          "pass": 0.7063659956896192
+        },
+        "distances": {
+          "fail": 0.9010445276954157,
+          "not_a_weld": 0.8053214679942035,
+          "pass": 0.2936340043103808
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\not_a_weld\\openimages_38c4dec4544f6aa4_059.jpg",
+        "actual": "not_a_weld",
+        "predicted": "fail",
+        "scores": {
+          "fail": 0.6630599037015739,
+          "not_a_weld": 0.22820317291607461,
+          "pass": 0.1087369233823516
+        },
+        "distances": {
+          "fail": 0.33694009629842614,
+          "not_a_weld": 0.7717968270839254,
+          "pass": 0.8912630766176484
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\pass\\pass_0224.jpg",
+        "actual": "pass",
+        "predicted": "fail",
+        "scores": {
+          "fail": 0.5591303206030201,
+          "not_a_weld": 0.0,
+          "pass": 0.4408696793969798
+        },
+        "distances": {
+          "fail": 0.44086967939697985,
+          "not_a_weld": 1.0,
+          "pass": 0.5591303206030203
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\pass\\pass_0187.jpg",
+        "actual": "pass",
+        "predicted": "fail",
+        "scores": {
+          "fail": 0.7763980143535593,
+          "not_a_weld": 0.0,
+          "pass": 0.22360198564644077
+        },
+        "distances": {
+          "fail": 0.22360198564644074,
+          "not_a_weld": 1.0,
+          "pass": 0.7763980143535593
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\pass\\pass_0032.jpg",
+        "actual": "pass",
+        "predicted": "fail",
+        "scores": {
+          "fail": 0.5463800733926609,
+          "not_a_weld": 0.0,
+          "pass": 0.453619926607339
+        },
+        "distances": {
+          "fail": 0.4536199266073391,
+          "not_a_weld": 1.0,
+          "pass": 0.5463800733926609
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\pass\\pass_0023.jpg",
+        "actual": "pass",
+        "predicted": "not_a_weld",
+        "scores": {
+          "fail": 0.3129359793697173,
+          "not_a_weld": 0.3464374253131621,
+          "pass": 0.3406265953171207
+        },
+        "distances": {
+          "fail": 0.6870640206302827,
+          "not_a_weld": 0.6535625746868379,
+          "pass": 0.6593734046828793
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\pass\\pass_0098.jpg",
+        "actual": "pass",
+        "predicted": "fail",
+        "scores": {
+          "fail": 0.7837954186827809,
+          "not_a_weld": 0.0,
+          "pass": 0.21620458131721923
+        },
+        "distances": {
+          "fail": 0.2162045813172191,
+          "not_a_weld": 1.0,
+          "pass": 0.7837954186827808
+        }
+      },
+      {
+        "file": "C:\\Users\\Dell\\Desktop\\Roboflow_WQIS_Acceptance\\pass\\pass_0177.jpg",
+        "actual": "pass",
+        "predicted": "fail",
+        "scores": {
+          "fail": 0.7599998303773867,
+          "not_a_weld": 0.0,
+          "pass": 0.24000016962261328
+        },
+        "distances": {
+          "fail": 0.24000016962261328,
+          "not_a_weld": 1.0,
+          "pass": 0.7599998303773867
+        }
+      }
+    ]
+  }
+}
