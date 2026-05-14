@@ -25,7 +25,6 @@ const Splash = ({ onDone }) => {
     <div className="splash">
       <div className="bg-grid" style={{ opacity: 0.5 }}/>
       <div className="scan-line"/>
-      {/* corner brackets */}
       <div className="bracket tl" style={{ position: "absolute", top: 24, left: 24, width: 32, height: 32 }}/>
       <div className="bracket tr" style={{ position: "absolute", top: 24, right: 24, width: 32, height: 32 }}/>
       <div className="bracket bl" style={{ position: "absolute", bottom: 24, left: 24, width: 32, height: 32 }}/>
@@ -71,10 +70,10 @@ const Splash = ({ onDone }) => {
 };
 
 // ============== Brand mark (logo + wordmark) ========================
-const BrandHero = ({ animate }) => (
+const BrandHero = ({ animate, size = 92 }) => (
   <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
-    <div style={{ position: "relative", width: 92, height: 92 }}>
-      <svg width="92" height="92" viewBox="0 0 92 92" style={{ filter: "drop-shadow(0 0 22px var(--amber-glow))" }}>
+    <div style={{ position: "relative", width: size, height: size }}>
+      <svg width={size} height={size} viewBox="0 0 92 92" style={{ filter: "drop-shadow(0 0 22px var(--amber-glow))" }}>
         <defs>
           <linearGradient id="brandGrad" x1="0" x2="0" y1="0" y2="1">
             <stop offset="0%" stopColor="#ffc176"/>
@@ -82,12 +81,10 @@ const BrandHero = ({ animate }) => (
             <stop offset="100%" stopColor="#c75300"/>
           </linearGradient>
         </defs>
-        {/* outer hex ring */}
         <polygon points="46,4 84,26 84,66 46,88 8,66 8,26"
                  fill="none" stroke="url(#brandGrad)" strokeWidth="1.4" opacity="0.8"/>
         <polygon points="46,12 78,30 78,62 46,80 14,62 14,30"
                  fill="rgba(255,140,26,0.08)" stroke="url(#brandGrad)" strokeWidth="1.2"/>
-        {/* inner mark — stylized P3S monogram with weld dots */}
         <g fill="url(#brandGrad)">
           <rect x="32" y="30" width="4" height="32" rx="1"/>
           <path d="M36 30 h12 a8 8 0 0 1 0 16 h-12" fill="none" stroke="url(#brandGrad)" strokeWidth="4"/>
@@ -95,7 +92,6 @@ const BrandHero = ({ animate }) => (
           <circle cx="54" cy="53" r="2.5"/>
           <circle cx="62" cy="53" r="2.5"/>
         </g>
-        {/* targeting ticks */}
         <line x1="46" y1="0" x2="46" y2="6" stroke="var(--amber)" strokeWidth="1.2"/>
         <line x1="46" y1="86" x2="46" y2="92" stroke="var(--amber)" strokeWidth="1.2"/>
         <line x1="0" y1="46" x2="6" y2="46" stroke="var(--amber)" strokeWidth="1.2"/>
@@ -119,23 +115,24 @@ const BrandHero = ({ animate }) => (
 );
 
 // ============== Login screen ========================================
-const Login = ({ onLogin }) => {
+const Login = ({ onLogin, theme, onToggleTheme }) => {
   const [user, setUser] = React.useState("manop.k@pro3s.co.th");
-  const [pwd, setPwd] = React.useState("••••••••••");
-  const [scan, setScan] = React.useState(true);
+  const [pwd, setPwd] = React.useState("");
+  const [showPwd, setShowPwd] = React.useState(false);
+  const [remember, setRemember] = React.useState(true);
 
   return (
     <div className="login">
+      {/* Left panel — branding */}
       <div className="left">
         <div className="bg-grid"/>
-        {/* corner brackets */}
         <div className="bracket tl" style={{ top: 18, left: 18, width: 28, height: 28 }}/>
         <div className="bracket tr" style={{ top: 18, right: 18, width: 28, height: 28 }}/>
         <div className="bracket bl" style={{ bottom: 18, left: 18, width: 28, height: 28 }}/>
         <div className="bracket br" style={{ bottom: 18, right: 18, width: 28, height: 28 }}/>
 
-        <div style={{ position: "absolute", top: 28, left: 28, display: "flex", alignItems: "center", gap: 12 }}>
-          <span className="kicker" style={{ color: "var(--amber-2)" }}>AI INSPECTION ENGINE</span>
+        <div style={{ position: "absolute", top: 28, left: 28 }}>
+          <span className="kicker" style={{ color: "var(--amber-2)" }}>AI INSPECTION ENGINE · CLOUD-V2</span>
         </div>
         <div style={{ position: "absolute", top: 28, right: 28, display: "flex", alignItems: "center", gap: 10 }}>
           <span className="live-dot"/>
@@ -144,106 +141,135 @@ const Login = ({ onLogin }) => {
           </span>
         </div>
 
-        {/* hero weld viewer with scan */}
-        <div style={{ position: "absolute", inset: "16% 12% 22%", borderRadius: "var(--r-lg)", overflow: "hidden",
-                      border: "1px solid var(--border-2)", boxShadow: "var(--shadow-2), 0 0 60px -20px var(--amber-glow)" }}>
-          <WeldImage variant="tig-review" showBoxes showHeatmap={false} showScan={scan} />
-          {/* HUD readout */}
-          <div style={{ position: "absolute", left: 12, bottom: 12, display: "flex", gap: 8, alignItems: "center" }}>
-            <span className="chip ok solid"><span className="dot"/>AI ONLINE</span>
-            <span className="chip amber"><span className="dot"/>SCANNING</span>
-            <span className="chip info">cloud-v2</span>
-          </div>
-          <div style={{ position: "absolute", right: 12, top: 12, display: "flex", gap: 6 }}>
-            {["BOX","HEAT","SCAN"].map((s, i) => (
-              <span key={s} className="chip" style={{ background: "rgba(8,12,18,0.7)" }}>{s}</span>
-            ))}
+        {/* Centered branding */}
+        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 60px" }}>
+          <BrandHero animate size={120}/>
+
+          <div style={{ marginTop: 40, textAlign: "center", maxWidth: 480 }}>
+            <h2 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 600, letterSpacing: "-0.01em", lineHeight: 1.2, color: "var(--t-1)" }}>
+              AI‑driven weld inspection<br/>
+              for <span style={{ color: "var(--amber)" }}>Industry 4.0</span>
+            </h2>
+            <div style={{ marginTop: 12, fontSize: 13.5, color: "var(--t-3)", lineHeight: 1.6 }}>
+              ระบบตรวจสอบคุณภาพงานเชื่อมด้วย AI
+            </div>
+
+            <div style={{ marginTop: 28, display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+              {["F&B", "Pharma", "Oil & Gas", "Hygienic Piping"].map(p => (
+                <span key={p} className="chip amber" style={{ fontSize: 11 }}>{p}</span>
+              ))}
+            </div>
+
+            <div style={{ marginTop: 32, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+              {[
+                { l: "Total Welds", v: "18,742", c: "var(--amber)" },
+                { l: "Pass Rate",   v: "96.8%",  c: "var(--ok)" },
+                { l: "AI Accuracy", v: "99.24%", c: "var(--info)" },
+              ].map(s => (
+                <div key={s.l} style={{ padding: "12px 14px", background: "var(--bg-glass)", backdropFilter: "blur(12px)",
+                                        border: "1px solid var(--border-2)", borderRadius: 10 }}>
+                  <div className="mono" style={{ fontSize: 9.5, color: "var(--t-5)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 4 }}>{s.l}</div>
+                  <div style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 600, color: s.c }}>{s.v}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div style={{ position: "absolute", left: 28, bottom: 28, maxWidth: 480 }}>
-          <h2 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 600, letterSpacing: "-0.01em", lineHeight: 1.15 }}>
-            AI‑driven weld inspection<br/>
-            for <span style={{ color: "var(--amber)" }}>Industry 4.0</span> fabrication.
-          </h2>
-          <div style={{ marginTop: 14, fontSize: 13.5, color: "var(--t-3)", lineHeight: 1.55 }}>
-            ตรวจสอบคุณภาพงานเชื่อมอัตโนมัติด้วย AI — Porosity · Undercut · Crack · Incomplete Fusion · Burn Through · Oxide Discoloration · พร้อม Traceability เต็มรูปแบบตามมาตรฐาน ASME IX · ISO 5817 · BPE 2024.
-          </div>
-          <div style={{ marginTop: 18, display: "flex", gap: 18, fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.1em", color: "var(--t-4)", textTransform: "uppercase" }}>
-            <span>F&B</span><span>·</span>
-            <span>Pharma</span><span>·</span>
-            <span>Oil & Gas</span><span>·</span>
-            <span>Hygienic Piping</span><span>·</span>
-            <span>Process Plant</span>
-          </div>
+        {/* Standards pills bottom */}
+        <div style={{ position: "absolute", bottom: 28, left: 28, right: 28, display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+          {["ASME IX · 2023", "ISO 5817 · Level B", "ASME BPE · 2024", "AWS D18.2", "ISO 9606-1", "API 1104"].map(s => (
+            <span key={s} className="chip" style={{ fontSize: 9.5, background: "rgba(8,12,18,0.6)" }}>{s}</span>
+          ))}
         </div>
       </div>
 
+      {/* Right panel — login form */}
       <div className="right">
         <div className="bg-grid"/>
-        <form className="login-card" onSubmit={(e) => { e.preventDefault(); onLogin(); }}>
+
+        {/* Theme toggle top-right */}
+        <div style={{ position: "absolute", top: 20, right: 20 }}>
+          <div className="bell" title={theme === "light" ? "Switch to dark" : "Switch to light"} onClick={onToggleTheme}>
+            {theme === "light" ? <Icons.Moon size={17}/> : <Icons.Sun size={17}/>}
+          </div>
+        </div>
+
+        <form className="login-card" onSubmit={e => { e.preventDefault(); onLogin(); }}>
           <div className="bracket tl"/>
           <div className="bracket tr"/>
           <div className="bracket bl"/>
           <div className="bracket br"/>
 
-          <BrandHero/>
-          <div style={{ height: 24 }}/>
+          {/* Small logo mark */}
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
+            <div className="brand-mark" style={{ width: 48, height: 48, borderRadius: 12 }}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                <polygon points="12,2 21,7 21,17 12,22 3,17 3,7" stroke="rgba(0,0,0,0.5)" strokeWidth="1.2"/>
+                <path d="M9 8h3a3 3 0 0 1 0 6h-3v4" stroke="#1a0d00" strokeWidth="2" fill="none" strokeLinecap="round"/>
+              </svg>
+            </div>
+          </div>
 
-          <div style={{ textAlign: "center", marginBottom: 22 }}>
-            <h3 style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>Sign in to your workspace</h3>
+          <div style={{ textAlign: "center", marginBottom: 24 }}>
+            <h3 style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>Sign in to PRO3S WQIS</h3>
             <div style={{ marginTop: 6, fontSize: 12.5, color: "var(--t-3)" }}>
-              ลงชื่อเข้าใช้บัญชี PRO3S WQIS ของคุณ
+              ลงชื่อเข้าใช้บัญชีของคุณ
             </div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div>
-              <div className="label-row"><span>Username / Email</span><span style={{ color: "var(--t-5)" }}>SSO</span></div>
+              <div className="label-row"><span>Email</span></div>
               <div style={{ position: "relative" }}>
-                <input className="input" style={{ paddingLeft: 38 }} value={user} onChange={e => setUser(e.target.value)}/>
+                <input className="input" type="email" style={{ paddingLeft: 38, width: "100%" }}
+                       value={user} onChange={e => setUser(e.target.value)}/>
                 <div style={{ position: "absolute", left: 12, top: 9, color: "var(--t-4)" }}>
                   <Icons.Mail size={16}/>
                 </div>
               </div>
             </div>
             <div>
-              <div className="label-row"><span>Password</span><a style={{ color: "var(--t-3)", textDecoration: "none", fontSize: 11 }}>FORGOT?</a></div>
+              <div className="label-row">
+                <span>Password</span>
+                <a href="#" style={{ color: "var(--t-3)", textDecoration: "none", fontSize: 11 }}>Forgot password?</a>
+              </div>
               <div style={{ position: "relative" }}>
-                <input className="input" type="password" style={{ paddingLeft: 38 }} value={pwd} onChange={e => setPwd(e.target.value)}/>
+                <input className="input" type={showPwd ? "text" : "password"} style={{ paddingLeft: 38, paddingRight: 36, width: "100%" }}
+                       value={pwd} onChange={e => setPwd(e.target.value)} placeholder="••••••••"/>
                 <div style={{ position: "absolute", left: 12, top: 9, color: "var(--t-4)" }}>
                   <Icons.Lock size={16}/>
+                </div>
+                <div style={{ position: "absolute", right: 10, top: 9, color: "var(--t-4)", cursor: "pointer" }}
+                     onClick={() => setShowPwd(s => !s)}>
+                  <Icons.Eye size={16}/>
                 </div>
               </div>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 4 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <label style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 12, color: "var(--t-3)", cursor: "pointer" }}>
-                <input type="checkbox" defaultChecked style={{ accentColor: "var(--amber)" }}/> Keep me signed in
+                <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} style={{ accentColor: "var(--amber)" }}/>
+                Remember me
               </label>
               <span className="mono" style={{ fontSize: 10, letterSpacing: "0.12em", color: "var(--t-4)" }}>2FA · ACTIVE</span>
             </div>
 
-            <button type="submit" className="btn primary lg" style={{ width: "100%", justifyContent: "center", marginTop: 6 }}>
-              <Icons.Shield size={16}/> Sign In Securely
+            <button type="submit" className="btn primary lg" style={{ width: "100%", justifyContent: "center", marginTop: 4 }}>
+              <Icons.Shield size={16}/> Sign In
               <Icons.ChevR size={14} style={{ marginLeft: "auto" }}/>
             </button>
 
             <div style={{ position: "relative", textAlign: "center", margin: "8px 0" }}>
               <div className="divider" style={{ margin: 0 }}/>
-              <span className="mono" style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)", background: "var(--bg-glass-strong)", padding: "0 10px", fontSize: 10, letterSpacing: "0.14em", color: "var(--t-4)" }}>
-                OR
-              </span>
+              <span className="mono" style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)",
+                                              background: "var(--bg-glass-strong)", padding: "0 10px",
+                                              fontSize: 10, letterSpacing: "0.14em", color: "var(--t-4)" }}>OR</span>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-              <button type="button" className="btn ghost sm" style={{ justifyContent: "center" }}>
-                <Icons.Shield size={14}/> SSO · Azure AD
-              </button>
-              <button type="button" className="btn ghost sm" style={{ justifyContent: "center" }}>
-                <Icons.User size={14}/> Guest Inspector
-              </button>
-            </div>
+            <button type="button" className="btn ghost sm" style={{ justifyContent: "center", width: "100%" }}>
+              <Icons.Shield size={14}/> SSO · Azure AD
+            </button>
           </div>
 
           <div style={{ marginTop: 22, paddingTop: 16, borderTop: "1px solid var(--border-1)",
@@ -260,22 +286,23 @@ const Login = ({ onLogin }) => {
 
 // ============== Sidebar ==============================================
 const NAV = [
-  { section: "Main", items: [
-    { id: "dashboard", label: "Dashboard",    icon: "Dashboard" },
-    { id: "inspect",   label: "AI Inspect",   icon: "Inspect", badge: 3 },
+  { section: "MAIN", items: [
+    { id: "dashboard",   label: "Dashboard",       icon: "Dashboard" },
+    { id: "inspect",     label: "AI Inspect",      icon: "Inspect",  badge: 3 },
+    { id: "inspections", label: "Inspections",     icon: "Rows",     count: 1842 },
+    { id: "projects",    label: "Projects",        icon: "Project",  count: 23 },
   ]},
-  { section: "Operations", items: [
-    { id: "projects",  label: "Projects",     icon: "Project",  count: 23 },
-    { id: "welders",   label: "Welders",      icon: "Welder",   count: 142 },
-    { id: "wps",       label: "WPS / PQR",    icon: "Doc",      count: 6 },
-    { id: "workflow",  label: "Approvals",    icon: "Workflow", count: 5, hot: true },
+  { section: "DATA", items: [
+    { id: "reports",     label: "Reports",         icon: "Report" },
+    { id: "analytics",   label: "Analytics",       icon: "Chart" },
   ]},
-  { section: "Insights", items: [
-    { id: "reports",   label: "Reports",      icon: "Report" },
-    { id: "standards", label: "Standards",    icon: "Standard" },
+  { section: "REFERENCE", items: [
+    { id: "standards",   label: "Standard Ref.",   icon: "Standard" },
   ]},
-  { section: "System", items: [
-    { id: "settings",  label: "Admin · Settings", icon: "Settings" },
+  { section: "SYSTEM", items: [
+    { id: "users",       label: "Users & Teams",   icon: "Users" },
+    { id: "settings",    label: "Settings",        icon: "Settings" },
+    { id: "info",        label: "Information",     icon: "Info" },
   ]},
 ];
 
@@ -309,9 +336,8 @@ const Sidebar = ({ active, onNav, collapsed, onToggle }) => {
                      title={collapsed ? it.label : ""}>
                   <span className="ico"><Ico size={17}/></span>
                   <span>{it.label}</span>
-                  {it.count != null && <span className="count">{it.count}</span>}
+                  {it.count != null && <span className="count">{it.count.toLocaleString()}</span>}
                   {it.badge != null && <span className="count" style={{ background: "var(--amber)", color: "#1a0d00" }}>{it.badge}</span>}
-                  {it.hot && !it.count && <span className="live-dot" style={{ marginLeft: "auto" }}/>}
                 </div>
               );
             })}
@@ -339,7 +365,7 @@ const Sidebar = ({ active, onNav, collapsed, onToggle }) => {
           <Icons.Logout size={14} style={{ color: "var(--t-4)", cursor: "pointer" }}/>
         </div>
         <button className="btn ghost sm" style={{ width: "100%", marginTop: 8, justifyContent: "center" }} onClick={onToggle}>
-          <Icons.ChevL size={14}/> Collapse
+          <Icons.ChevL size={14}/> {collapsed ? "" : "Collapse"}
         </button>
       </div>
     </aside>
@@ -356,22 +382,26 @@ const useClock = () => {
   return now;
 };
 
-const Topbar = ({ active, theme, onToggleTheme, onNotifications }) => {
+const ACCENT_COLORS = ["#ff8c1a", "#4fa8ff", "#a06bff", "#2dd4a4"];
+
+const Topbar = ({ active, theme, onToggleTheme, onNotifications, onProfile, accent, onAccentChange }) => {
   const now = useClock();
   const titles = {
-    dashboard: ["Main", "Dashboard"],
-    inspect:   ["AI", "Inspection"],
-    projects:  ["Operations", "Projects"],
-    welders:   ["Operations", "Welder Management"],
-    wps:       ["Operations", "WPS / PQR"],
-    workflow:  ["Operations", "Approval Workflow"],
-    reports:   ["Insights", "Reports & Analytics"],
-    standards: ["Insights", "Standards Library"],
-    settings:  ["System", "Admin · Settings"],
+    dashboard:   ["Main",      "Dashboard"],
+    inspect:     ["AI",        "Inspection"],
+    inspections: ["Records",   "Inspections"],
+    projects:    ["Operations","Projects"],
+    reports:     ["Data",      "Reports"],
+    analytics:   ["Data",      "Analytics"],
+    standards:   ["Reference", "Standard Ref."],
+    users:       ["System",    "Users & Teams"],
+    settings:    ["System",    "Settings"],
+    info:        ["System",    "Information"],
+    profile:     ["Account",   "Profile"],
   };
   const [a, b] = titles[active] || ["Main", "Dashboard"];
 
-  const timeStr = now.toISOString().slice(11,19);
+  const timeStr = now.toLocaleTimeString("en-GB");
   const dateStr = now.toISOString().slice(0,10);
 
   return (
@@ -389,11 +419,21 @@ const Topbar = ({ active, theme, onToggleTheme, onNotifications }) => {
       </div>
 
       <div className="right">
+        {/* Accent color dots */}
+        <div style={{ display: "flex", gap: 6, alignItems: "center", paddingRight: 10, borderRight: "1px solid var(--border-1)" }}>
+          {ACCENT_COLORS.map(c => (
+            <div key={c} onClick={() => onAccentChange && onAccentChange(c)}
+                 style={{ width: 14, height: 14, borderRadius: "50%", background: c, cursor: "pointer",
+                          outline: accent === c ? `2px solid ${c}` : "none",
+                          outlineOffset: 2, transition: "outline 0.12s" }}/>
+          ))}
+        </div>
+
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 12px", height: 30,
                       background: "var(--ok-soft)", border: "1px solid var(--ok-line)", borderRadius: 99 }}>
           <span className="live-dot"/>
           <span className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: "#5af0c4", textTransform: "uppercase" }}>
-            AI · Online · cloud-v2
+            AI · Online
           </span>
         </div>
 
@@ -410,7 +450,7 @@ const Topbar = ({ active, theme, onToggleTheme, onNotifications }) => {
           {theme === "light" ? <Icons.Moon size={17}/> : <Icons.Sun size={17}/>}
         </div>
 
-        <div className="user-card">
+        <div className="user-card" onClick={onProfile}>
           <div className="avatar" style={{ background: "linear-gradient(135deg, var(--ok), #1c8763)" }}>MK</div>
           <div className="who">
             <span className="n">Manop K.</span>
@@ -432,7 +472,7 @@ const NotificationsDrawer = ({ open, onClose }) => {
              style={{ position: "absolute", top: 64, right: 20, width: 380, maxHeight: "calc(100vh - 88px)",
                       display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <div className="panel-header">
-          <h3><span className="live-dot"/>Notifications</h3>
+          <h3><span className="live-dot" style={{ marginRight: 8 }}/>Notifications</h3>
           <span className="sub">{WQIS_DATA.notifications.length} new</span>
         </div>
         <div className="scroll-y">

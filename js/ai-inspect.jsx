@@ -27,40 +27,34 @@ const LeftPanel = ({ selected, onSelect, onAnalyze, scanning }) => {
       </div>
 
       <div style={{ padding: 12 }}>
+        {/* Upload zone — compact */}
         <div style={{
           border: "1.5px dashed var(--amber-line)",
           borderRadius: 10,
-          padding: 18,
+          padding: "12px 14px",
           textAlign: "center",
           background: "linear-gradient(180deg, var(--amber-soft), transparent)",
-          position: "relative",
-          overflow: "hidden",
+          maxHeight: 120,
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
         }}>
-          <div style={{ width: 44, height: 44, borderRadius: "50%",
-                        background: "var(--amber-soft)",
-                        border: "1px solid var(--amber-line)",
-                        display: "grid", placeItems: "center", margin: "0 auto 10px",
-                        color: "var(--amber-2)" }}>
-            <Icons.Upload size={20}/>
-          </div>
-          <div style={{ fontSize: 13, fontWeight: 600 }}>Drop weld images here</div>
-          <div style={{ fontSize: 11.5, color: "var(--t-3)", marginTop: 4 }}>
-            JPG · PNG · BMP · TIFF · ≤ 24 MB · ≥ 1024×768
-          </div>
-          <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 12 }}>
-            <span className="chip">JPG</span>
-            <span className="chip">PNG</span>
-            <span className="chip">BMP</span>
-            <span className="chip amber">RAW</span>
-          </div>
+          <Icons.Upload size={22} stroke="var(--amber-2)"/>
+          <div style={{ fontSize: 12.5, fontWeight: 600 }}>Drop weld images here</div>
+          <div style={{ fontSize: 11, color: "var(--t-3)" }}>JPG · PNG · BMP · TIFF · ≤ 24 MB</div>
         </div>
 
+        {/* 2×2 button grid */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
           <button className="btn sm ghost" style={{ justifyContent: "center" }}>
-            <Icons.Folder size={14}/> Folder
+            <Icons.Upload size={13}/> Upload File
           </button>
           <button className="btn sm ghost" style={{ justifyContent: "center" }}>
-            <Icons.Camera size={14}/> Camera
+            <Icons.Folder size={13}/> Upload Folder
+          </button>
+          <button className="btn sm ghost" style={{ justifyContent: "center" }}>
+            <Icons.Camera size={13}/> Use Camera
+          </button>
+          <button className="btn sm ghost" style={{ justifyContent: "center" }}>
+            <Icons.Trash size={13}/> Clear Queue
           </button>
         </div>
       </div>
@@ -118,20 +112,11 @@ const LeftPanel = ({ selected, onSelect, onAnalyze, scanning }) => {
         })}
       </div>
 
-      <div style={{ padding: 12, borderTop: "1px solid var(--border-1)", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-        <button className="btn primary sm" style={{ justifyContent: "center" }}
+      <div style={{ padding: 12, borderTop: "1px solid var(--border-1)" }}>
+        <button className="btn primary sm" style={{ justifyContent: "center", width: "100%" }}
                 onClick={onAnalyze}
                 disabled={scanning}>
           {scanning ? <><span className="live-dot"/> Analyzing…</> : <><Icons.Zap size={14}/> Analyze</>}
-        </button>
-        <button className="btn sm" style={{ justifyContent: "center" }}>
-          <Icons.Compare size={14}/> Compare
-        </button>
-        <button className="btn ghost sm" style={{ justifyContent: "center" }}>
-          <Icons.Trash size={14}/> Clear
-        </button>
-        <button className="btn ghost sm" style={{ justifyContent: "center" }}>
-          <Icons.Download size={14}/> Export
         </button>
       </div>
     </div>

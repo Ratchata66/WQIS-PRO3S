@@ -176,97 +176,6 @@ const ReportsScreen = () => {
   );
 };
 
-// ============== STANDARDS LIBRARY ===================================
-const StandardsScreen = () => (
-  <div className="page">
-    <div className="bg-grid"/>
-    <div className="page-head">
-      <div>
-        <span className="kicker">REFERENCE LIBRARY</span>
-        <h1 style={{ marginTop: 8 }}>Standards & acceptance criteria</h1>
-        <div className="sub">Governing codes referenced by AI grading and human review.</div>
-      </div>
-      <div className="row" style={{ gap: 8 }}>
-        <button className="btn ghost sm"><Icons.Upload size={14}/> Import standard</button>
-      </div>
-    </div>
-
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
-      {[
-        { code: "ASME IX",    title: "Welding & Brazing Qualifications", desc: "Procedure (PQR) and performance (WPQ) qualification rules.", rev: "2023 Ed.", color: "var(--amber)", scope: "F&B · Pharma · O&G" },
-        { code: "ISO 5817",   title: "Quality Levels for Imperfections", desc: "Acceptance levels B (strict), C (intermediate), D (low).", rev: "Level B", color: "var(--info)", scope: "All industries" },
-        { code: "ASME BPE",   title: "Bioprocessing Equipment",          desc: "Hygienic tubing, surface finish (Ra ≤ 0.4 µm), oxide grading.", rev: "2024 Ed.", color: "var(--ok)", scope: "Pharma · F&B" },
-        { code: "AWS D18.2",  title: "Stainless Discoloration Guide",    desc: "Visual sample chart for oxide acceptance (silver → black).", rev: "2009 R23", color: "var(--purple)", scope: "Stainless" },
-        { code: "ISO 9606-1", title: "Welder Qualification — Steels",    desc: "Test piece + acceptance criteria for performance qualification.", rev: "2017", color: "var(--warn)", scope: "Welder cert." },
-        { code: "API 1104",   title: "Welding of Pipelines",             desc: "Mainly Oil & Gas — radiographic examination acceptance limits.", rev: "22nd Ed.", color: "var(--bad)", scope: "Oil & Gas" },
-      ].map(s => (
-        <div key={s.code} className="panel glass"
-             style={{ borderTop: `2px solid ${s.color}44`, transition: "all 0.16s" }}
-             onMouseEnter={e => { e.currentTarget.style.boxShadow = `0 0 0 1px ${s.color}33, 0 14px 30px -14px ${s.color}44`; e.currentTarget.style.transform = "translateY(-2px)"; }}
-             onMouseLeave={e => { e.currentTarget.style.boxShadow = ""; e.currentTarget.style.transform = ""; }}>
-          <div className="panel-body">
-            <div className="row" style={{ marginBottom: 12 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: `${s.color}18`,
-                            border: `1px solid ${s.color}44`, display: "grid", placeItems: "center", color: s.color }}>
-                <Icons.Standard size={19}/>
-              </div>
-              <div style={{ flex: 1, marginLeft: 10 }}>
-                <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 15, color: s.color }}>{s.code}</div>
-                <div className="mono" style={{ fontSize: 9.5, color: "var(--t-5)", letterSpacing: "0.1em", marginTop: 1 }}>{s.rev}</div>
-              </div>
-              <span className="chip ok" style={{ fontSize: 9.5 }}><span className="dot"/>ACTIVE</span>
-            </div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--t-1)" }}>{s.title}</div>
-            <div style={{ fontSize: 12, color: "var(--t-3)", marginTop: 5, lineHeight: 1.5 }}>{s.desc}</div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12,
-                          paddingTop: 10, borderTop: "1px solid var(--border-1)" }}>
-              <span className="mono" style={{ fontSize: 9.5, color: "var(--t-5)", letterSpacing: "0.06em" }}>
-                <span style={{ color: s.color }}>◈</span> {s.scope}
-              </span>
-              <div style={{ display: "flex", gap: 4 }}>
-                <button className="btn ghost sm" style={{ fontSize: 11 }}>Criteria</button>
-                <button className="btn ghost sm icon"><Icons.Download size={13}/></button>
-              </div>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-
-    <div className="panel glass" style={{ marginTop: 14 }}>
-      <div className="panel-header">
-        <h3>Oxide discoloration scale · BPE 2024 / AWS D18.2</h3>
-        <span className="sub">REFERENCE STRIP</span>
-      </div>
-      <div className="panel-body">
-        <div style={{ height: 80, background: "linear-gradient(90deg, #d8d8c4, #b8c8d0, #d8b870, #a07020, #4a2c10, #1f1208)",
-                      borderRadius: 6, border: "1px solid var(--border-2)" }}/>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", marginTop: 12, gap: 8 }}>
-          {[
-            { lvl: "A", label: "Silver", v: "0–2 ppm O₂", ok: true },
-            { lvl: "B", label: "Light straw", v: "≤ 5 ppm", ok: true },
-            { lvl: "C", label: "Straw / blue", v: "≤ 12 ppm", ok: true },
-            { lvl: "D", label: "Gold", v: "≤ 32 ppm", ok: "review" },
-            { lvl: "E", label: "Dark blue / brown", v: "≤ 100 ppm", ok: false },
-            { lvl: "F", label: "Black", v: "> 100 ppm", ok: false },
-          ].map(s => (
-            <div key={s.lvl} style={{ padding: 12, background: "var(--bg-2)", borderRadius: 6, border: "1px solid var(--border-1)" }}>
-              <div className="row" style={{ marginBottom: 6 }}>
-                <span className="mono" style={{ fontSize: 11, color: "var(--amber-2)", fontWeight: 700 }}>LVL {s.lvl}</span>
-                {s.ok === true   && <span className="chip ok" style={{ marginLeft: "auto" }}>PASS</span>}
-                {s.ok === "review" && <span className="chip warn" style={{ marginLeft: "auto" }}>REVIEW</span>}
-                {s.ok === false  && <span className="chip bad" style={{ marginLeft: "auto" }}>REJECT</span>}
-              </div>
-              <div style={{ fontSize: 12, fontWeight: 500 }}>{s.label}</div>
-              <div className="mono" style={{ fontSize: 10.5, color: "var(--t-4)", marginTop: 3 }}>{s.v}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
 // ============== SETTINGS / ADMIN ====================================
 const SettingsScreen = () => {
   const [tab, setTab] = React.useState("ai");
@@ -597,4 +506,47 @@ const SystemSettings = () => (
   </div>
 );
 
-Object.assign(window, { ReportsScreen, StandardsScreen, SettingsScreen });
+// ============== INFORMATION =========================================
+const InfoScreen = () => (
+  <div className="page">
+    <div className="bg-grid"/>
+    <div className="page-head">
+      <div>
+        <span className="kicker">SYSTEM · INFORMATION</span>
+        <h1 style={{ marginTop: 8 }}>Information</h1>
+      </div>
+    </div>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+      <div className="panel glass">
+        <div className="panel-header"><h3>App Version</h3></div>
+        <div className="panel-body" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {[["Version","1.0.0"],["Build","2026-05-14"],["AI Model","cloud-v2 · YOLOv8-x"],["Accuracy","99.24%"],["Environment","Production · TH-1"]].map(([k,v]) => (
+            <div key={k} style={{ display: "flex", justifyContent: "space-between" }}>
+              <span style={{ color: "var(--t-3)" }}>{k}</span>
+              <span className="mono" style={{ color: "var(--t-1)" }}>{v}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="panel glass">
+        <div className="panel-header"><h3>Support & Documentation</h3></div>
+        <div className="panel-body" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {[
+            { l: "Documentation", u: "#" },
+            { l: "API Reference", u: "#" },
+            { l: "Support Email", u: "mailto:support@pro3s.co.th" },
+            { l: "Release Notes", u: "#" },
+          ].map(item => (
+            <a key={item.l} href={item.u} style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
+                                                    color: "var(--info)", textDecoration: "none", fontSize: 13 }}>
+              <span>{item.l}</span>
+              <Icons.ChevR size={14}/>
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+Object.assign(window, { ReportsScreen, SettingsScreen, InfoScreen });

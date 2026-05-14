@@ -9,6 +9,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 
+  <script>
+    (function(){
+      var t = localStorage.getItem('wqis-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+
   <link rel="stylesheet" href="css/styles.css"/>
 </head>
 <body>
@@ -37,6 +44,11 @@
   <script type="text/babel" data-presets="react" src="js/projects.jsx"></script>
   <script type="text/babel" data-presets="react" src="js/operations.jsx"></script>
   <script type="text/babel" data-presets="react" src="js/insights.jsx"></script>
+  <script type="text/babel" data-presets="react" src="js/inspections.jsx"></script>
+  <script type="text/babel" data-presets="react" src="js/analytics.jsx"></script>
+  <script type="text/babel" data-presets="react" src="js/standards.jsx"></script>
+  <script type="text/babel" data-presets="react" src="js/users-teams.jsx"></script>
+  <script type="text/babel" data-presets="react" src="js/profile.jsx"></script>
 
   <!-- App entry -->
   <script type="text/babel" data-presets="react" src="js/app.jsx"></script>

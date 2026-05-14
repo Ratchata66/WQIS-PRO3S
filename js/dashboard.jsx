@@ -417,24 +417,23 @@ const DashboardScreen = () => {
         {WQIS_DATA.kpis.map(k => <KpiCard key={k.id} k={k}/>)}
       </div>
 
-      {/* Row 2 — charts */}
-      <div style={{ display: "grid", gridTemplateColumns: "1.05fr 1.25fr 1fr", gap: 14, marginBottom: 14 }}>
-        <PassDistribution/>
-        <DefectMix/>
+      {/* Row 2 — charts + welder ranking */}
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14, marginBottom: 14 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <PassDistribution/>
+          <DefectMix/>
+        </div>
         <WelderRanking/>
       </div>
 
-      {/* Row 3 */}
-      <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 14, marginBottom: 14 }}>
+      {/* Row 3 — timeline + activity */}
+      <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: 14, marginBottom: 14 }}>
         <InspectionTimeline/>
         <ActivityFeed/>
       </div>
 
-      {/* Row 4 */}
-      <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 14 }}>
-        <DefectHeatmap/>
-        <ApprovalsCompact/>
-      </div>
+      {/* Row 4 — approvals compact full width */}
+      <ApprovalsCompact/>
     </div>
   );
 };
