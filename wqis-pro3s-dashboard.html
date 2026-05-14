@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WQIS-PRO3S · Enterprise Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════════ */
+:root {
+  --cyan:        #38bdf8;
+  --cyan-dim:    #0ea5e9;
+  --cyan-glow:   rgba(56,189,248,0.18);
+  --green:       #22c55e;
+  --red:         #ef4444;
+  --amber:       #f59e0b;
+  --violet:      #8b5cf6;
+
+  --sidebar-w:   240px;
+  --sidebar-c:   64px;
+  --topbar-h:    60px;
+  --radius:      10px;
+  --radius-lg:   14px;
+  --trans:       0.22s ease;
+}
+
+[data-theme="dark"] {
+  --bg:          #070b14;
+  --bg2:         #0d1526;
+  --bg3:         #111d35;
+  --bg4:         #1a2744;
+  --border:      rgba(255,255,255,0.07);
+  --border-em:   rgba(56,189,248,0.25);
+  --text:        #e2e8f0;
+  --text2:       #94a3b8;
+  --text3:       #64748b;
+  --sidebar-bg:  #0a1120;
+  --topbar-bg:   rgba(7,11,20,0.92);
+  --card-bg:     #0d1526;
+  --card-bg2:    #111d35;
+  --shadow:      0 4px 24px rgba(0,0,0,0.45);
+  --shadow-lg:   0 8px 40px rgba(0,0,0,0.6);
+  --scrollbar:   #1a2744;
+}
+
+[data-theme="light"] {
+  --bg:          #f0f4f8;
+  --bg2:         #ffffff;
+  --bg3:         #f8fafc;
+  --bg4:         #e2e8f0;
+  --border:      rgba(0,0,0,0.08);
+  --border-em:   rgba(14,165,233,0.35);
+  --text:        #0f172a;
+  --text2:       #475569;
+  --text3:       #94a3b8;
+  --sidebar-bg:  #0f172a;
+  --topbar-bg:   rgba(240,244,248,0.92);
+  --card-bg:     #ffffff;
+  --card-bg2:    #f8fafc;
+  --shadow:      0 2px 16px rgba(0,0,0,0.09);
+  --shadow-lg:   0 6px 32px rgba(0,0,0,0.13);
+  --scrollbar:   #cbd5e1;
+}
+
+/* ═══════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════ */
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { font-size:14px; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius:3px; }
+
+button { cursor:pointer; border:none; background:none; font:inherit; color:inherit; }
+input, select { font:inherit; color:inherit; }
+a { color:inherit; text-decoration:none; }
+
+/* ═══════════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: width var(--trans);
+  position: fixed;
+  left:0; top:0; bottom:0;
+  z-index: 100;
+  overflow: hidden;
+}
+.sidebar.collapsed { width: var(--sidebar-c); }
+
+/* Brand */
+.sb-brand {
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.sb-brand-icon {
+  width:32px; height:32px; flex-shrink:0;
+  background: linear-gradient(135deg, var(--cyan), var(--cyan-dim));
+  border-radius: 8px;
+  display: grid; place-items:center;
+  font-size:16px; font-weight:700; color:#fff;
+  box-shadow: 0 0 12px var(--cyan-glow);
+}
+.sb-brand-text { overflow:hidden; }
+.sb-brand-name { font-size:13px; font-weight:700; color:var(--text); white-space:nowrap; }
+.sb-brand-sub  { font-size:10px; color:var(--text3); white-space:nowrap; }
+
+/* Search */
+.sb-search {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.sb-search-inner {
+  display:flex; align-items:center; gap:8px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius:7px;
+  padding: 6px 10px;
+  transition: border-color var(--trans);
+}
+.sb-search-inner:focus-within { border-color: var(--border-em); }
+.sb-search-inner svg { color:var(--text3); flex-shrink:0; }
+.sb-search-inner input {
+  background:none; border:none; outline:none;
+  font-size:12px; color:var(--text); width:100%;
+}
+.sb-search-inner input::placeholder { color:var(--text3); }
+
+/* Nav */
+.sb-nav { flex:1; overflow-y:auto; padding:8px 0; }
+.sb-section { font-size:9px; font-weight:700; letter-spacing:0.08em; color:var(--text3); text-transform:uppercase; padding:10px 18px 4px; white-space:nowrap; overflow:hidden; }
+.sidebar.collapsed .sb-section { opacity:0; }
+
+.sb-item {
+  display:flex; align-items:center; gap:12px;
+  padding: 9px 18px;
+  border-radius: 0;
+  transition: background var(--trans), color var(--trans);
+  position:relative;
+  color: var(--text2);
+  white-space:nowrap;
+  overflow:hidden;
+  cursor:pointer;
+}
+.sb-item:hover { background:var(--bg3); color:var(--text); }
+.sb-item.active {
+  background: var(--cyan-glow);
+  color: var(--cyan);
+}
+.sb-item.active::before {
+  content:'';
+  position:absolute; left:0; top:4px; bottom:4px;
+  width:3px; background:var(--cyan);
+  border-radius:0 3px 3px 0;
+}
+.sb-item svg { flex-shrink:0; }
+.sb-item-label { font-size:13px; font-weight:500; }
+.sb-badge {
+  margin-left:auto; font-size:10px; font-weight:700;
+  background:var(--red); color:#fff;
+  padding:1px 6px; border-radius:10px; flex-shrink:0;
+}
+
+/* Toggle */
+.sb-toggle {
+  padding:12px 14px;
+  border-top:1px solid var(--border);
+  flex-shrink:0;
+}
+.sb-toggle-btn {
+  width:100%; display:flex; align-items:center; justify-content:center;
+  gap:8px; padding:8px; border-radius:7px;
+  background:var(--bg3); border:1px solid var(--border);
+  color:var(--text2); font-size:12px;
+  transition: all var(--trans);
+}
+.sb-toggle-btn:hover { border-color:var(--border-em); color:var(--cyan); }
+.sb-toggle-icon { transition: transform 0.3s ease; }
+.sidebar.collapsed .sb-toggle-icon { transform: rotate(180deg); }
+.sidebar.collapsed .sb-toggle-text { display:none; }
+
+/* ═══════════════════════════════════════════════
+   MAIN AREA
+═══════════════════════════════════════════════ */
+.main {
+  margin-left: var(--sidebar-w);
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+  transition: margin-left var(--trans);
+}
+.main.expanded { margin-left: var(--sidebar-c); }
+
+/* ═══════════════════════════════════════════════
+   TOPBAR
+═══════════════════════════════════════════════ */
+.topbar {
+  height: var(--topbar-h);
+  background: var(--topbar-bg);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display:flex; align-items:center;
+  padding: 0 20px;
+  gap:12px;
+  position:sticky; top:0; z-index:50;
+}
+.topbar-title { font-size:15px; font-weight:600; color:var(--text); flex-shrink:0; }
+.topbar-search {
+  display:flex; align-items:center; gap:8px;
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:8px; padding:7px 12px;
+  width:240px; flex-shrink:0;
+  transition: border-color var(--trans), width var(--trans);
+}
+.topbar-search:focus-within { border-color:var(--border-em); width:280px; }
+.topbar-search svg { color:var(--text3); flex-shrink:0; }
+.topbar-search input { background:none; border:none; outline:none; font-size:12px; color:var(--text); width:100%; }
+.topbar-search input::placeholder { color:var(--text3); }
+.topbar-gap { flex:1; }
+
+/* AI Status */
+.ai-status {
+  display:flex; align-items:center; gap:7px;
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:8px; padding:6px 12px;
+  font-size:11px; color:var(--text2);
+}
+.ai-dot { width:7px; height:7px; border-radius:50%; background:var(--green); flex-shrink:0; box-shadow:0 0 6px var(--green); animation: pulse-green 2s infinite; }
+@keyframes pulse-green { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+/* Topbar icon buttons */
+.tb-btn {
+  width:36px; height:36px; border-radius:8px;
+  display:grid; place-items:center;
+  background:var(--bg3); border:1px solid var(--border);
+  color:var(--text2); position:relative;
+  transition: all var(--trans);
+  flex-shrink:0;
+}
+.tb-btn:hover { border-color:var(--border-em); color:var(--cyan); }
+.tb-notif-badge {
+  position:absolute; top:4px; right:4px;
+  width:8px; height:8px; border-radius:50%;
+  background:var(--red); border:1.5px solid var(--bg);
+}
+
+/* Theme pill */
+.theme-pill {
+  display:flex; border-radius:8px;
+  background:var(--bg3); border:1px solid var(--border);
+  overflow:hidden; flex-shrink:0;
+}
+.theme-seg {
+  padding:6px 12px; font-size:11px; font-weight:600;
+  color:var(--text3); transition: all var(--trans);
+  display:flex; align-items:center; gap:5px;
+}
+.theme-seg.active { background:var(--cyan); color:#fff; }
+
+/* User avatar */
+.tb-user {
+  display:flex; align-items:center; gap:8px;
+  padding:4px 10px 4px 4px;
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:8px; cursor:pointer;
+  transition: border-color var(--trans);
+  flex-shrink:0;
+}
+.tb-user:hover { border-color:var(--border-em); }
+.tb-avatar {
+  width:28px; height:28px; border-radius:7px;
+  background: linear-gradient(135deg, var(--cyan), var(--violet));
+  display:grid; place-items:center;
+  font-size:11px; font-weight:700; color:#fff;
+}
+.tb-uname { font-size:12px; font-weight:600; color:var(--text); }
+.tb-urole { font-size:10px; color:var(--text3); }
+
+/* Datetime */
+.tb-datetime { font-size:11px; color:var(--text3); text-align:right; flex-shrink:0; line-height:1.4; }
+
+/* ═══════════════════════════════════════════════
+   PAGE CONTENT
+═══════════════════════════════════════════════ */
+.page { padding:24px; overflow-y:auto; flex:1; }
+
+/* Section heading */
+.section-head {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:16px;
+}
+.section-title {
+  font-size:14px; font-weight:700; color:var(--text);
+  display:flex; align-items:center; gap:8px;
+}
+.section-title span { color:var(--cyan); }
+
+/* ═══════════════════════════════════════════════
+   WELCOME BANNER
+═══════════════════════════════════════════════ */
+.welcome-card {
+  background: linear-gradient(120deg, #0a1a3a 0%, #0d1e3e 60%, #0f2050 100%);
+  border: 1px solid var(--border-em);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  margin-bottom: 20px;
+  display:flex; align-items:center; justify-content:space-between;
+  position:relative; overflow:hidden;
+}
+.welcome-card::before {
+  content:'';
+  position:absolute; top:-60px; right:-60px;
+  width:220px; height:220px;
+  background: radial-gradient(circle, rgba(56,189,248,0.12) 0%, transparent 70%);
+  pointer-events:none;
+}
+.welcome-card::after {
+  content:'';
+  position:absolute; bottom:-40px; left:40%;
+  width:160px; height:160px;
+  background: radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%);
+  pointer-events:none;
+}
+.welcome-text h1 { font-size:20px; font-weight:700; color:var(--text); margin-bottom:4px; }
+.welcome-text p  { font-size:13px; color:var(--text2); }
+.welcome-stats {
+  display:flex; gap:28px;
+}
+.wstat { text-align:center; }
+.wstat-val { font-size:22px; font-weight:800; color:var(--cyan); line-height:1; }
+.wstat-lbl { font-size:10px; color:var(--text3); margin-top:2px; text-transform:uppercase; letter-spacing:0.05em; }
+
+/* ═══════════════════════════════════════════════
+   KPI GRID
+═══════════════════════════════════════════════ */
+.kpi-grid {
+  display:grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap:14px;
+  margin-bottom:24px;
+}
+@media(max-width:1400px){ .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.kpi-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  position:relative; overflow:hidden;
+  transition: box-shadow var(--trans), border-color var(--trans), transform var(--trans);
+  cursor:default;
+}
+.kpi-card:hover { box-shadow:var(--shadow); border-color:var(--border-em); transform:translateY(-2px); }
+.kpi-card::before {
+  content:''; position:absolute;
+  top:0; left:0; right:0; height:2px;
+}
+.kpi-card.c-cyan::before   { background: var(--cyan); }
+.kpi-card.c-green::before  { background: var(--green); }
+.kpi-card.c-red::before    { background: var(--red); }
+.kpi-card.c-amber::before  { background: var(--amber); }
+.kpi-card.c-violet::before { background: var(--violet); }
+.kpi-card.c-blue::before   { background: #3b82f6; }
+
+.kpi-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:12px; }
+.kpi-icon {
+  width:36px; height:36px; border-radius:8px;
+  display:grid; place-items:center; flex-shrink:0;
+}
+.kpi-card.c-cyan   .kpi-icon { background:rgba(56,189,248,0.12);  color:var(--cyan); }
+.kpi-card.c-green  .kpi-icon { background:rgba(34,197,94,0.12);   color:var(--green); }
+.kpi-card.c-red    .kpi-icon { background:rgba(239,68,68,0.12);   color:var(--red); }
+.kpi-card.c-amber  .kpi-icon { background:rgba(245,158,11,0.12);  color:var(--amber); }
+.kpi-card.c-violet .kpi-icon { background:rgba(139,92,246,0.12);  color:var(--violet); }
+.kpi-card.c-blue   .kpi-icon { background:rgba(59,130,246,0.12);  color:#3b82f6; }
+
+.kpi-trend { font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px; }
+.kpi-trend.up   { background:rgba(34,197,94,0.12);  color:var(--green); }
+.kpi-trend.down { background:rgba(239,68,68,0.12);  color:var(--red); }
+.kpi-trend.flat { background:rgba(100,116,139,0.12); color:var(--text3); }
+
+.kpi-val  { font-size:26px; font-weight:800; color:var(--text); line-height:1; margin-bottom:4px; }
+.kpi-lbl  { font-size:11px; color:var(--text3); }
+.kpi-sub  { font-size:10px; color:var(--text3); margin-top:6px; }
+.kpi-bar  { height:3px; background:var(--bg4); border-radius:2px; margin-top:10px; overflow:hidden; }
+.kpi-bar-fill { height:100%; border-radius:2px; }
+.c-cyan   .kpi-bar-fill { background:var(--cyan); }
+.c-green  .kpi-bar-fill { background:var(--green); }
+.c-red    .kpi-bar-fill { background:var(--red); }
+.c-amber  .kpi-bar-fill { background:var(--amber); }
+.c-violet .kpi-bar-fill { background:var(--violet); }
+.c-blue   .kpi-bar-fill { background:#3b82f6; }
+
+/* ═══════════════════════════════════════════════
+   SECTION ROWS
+═══════════════════════════════════════════════ */
+.row-2col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
+.row-3col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:24px; }
+.row-3col-wide { display:grid; grid-template-columns:1.2fr 1fr 0.8fr; gap:16px; margin-bottom:24px; }
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow:hidden;
+}
+.card-header {
+  padding:16px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.card-title { font-size:13px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:8px; }
+.card-body  { padding:20px; }
+
+/* Pill badge */
+.pill {
+  font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px;
+  background:var(--bg4); color:var(--text2);
+}
+.pill.green  { background:rgba(34,197,94,0.12);  color:var(--green); }
+.pill.red    { background:rgba(239,68,68,0.12);  color:var(--red); }
+.pill.amber  { background:rgba(245,158,11,0.12); color:var(--amber); }
+.pill.cyan   { background:rgba(56,189,248,0.12); color:var(--cyan); }
+.pill.violet { background:rgba(139,92,246,0.12); color:var(--violet); }
+
+/* ═══════════════════════════════════════════════
+   AI INSPECTION PANEL
+═══════════════════════════════════════════════ */
+.inspect-grid { display:grid; grid-template-columns:1fr 1.1fr 0.9fr; gap:16px; margin-bottom:24px; }
+
+/* Upload zone */
+.upload-zone {
+  border:2px dashed var(--border-em);
+  border-radius:var(--radius);
+  padding:32px 20px;
+  text-align:center;
+  cursor:pointer;
+  transition: all var(--trans);
+  background: rgba(56,189,248,0.03);
+}
+.upload-zone:hover { border-color:var(--cyan); background:var(--cyan-glow); }
+.upload-icon { width:48px; height:48px; margin:0 auto 12px; color:var(--cyan); opacity:0.6; }
+.upload-title { font-size:13px; font-weight:600; color:var(--text); margin-bottom:4px; }
+.upload-sub   { font-size:11px; color:var(--text3); line-height:1.6; }
+.upload-types { display:flex; gap:6px; justify-content:center; margin-top:14px; flex-wrap:wrap; }
+.upload-type  { font-size:10px; background:var(--bg4); color:var(--text3); padding:2px 8px; border-radius:4px; }
+
+.upload-btn {
+  width:100%; margin-top:16px;
+  padding:10px; border-radius:8px;
+  background:linear-gradient(90deg, var(--cyan), var(--cyan-dim));
+  color:#fff; font-size:12px; font-weight:700;
+  transition: opacity var(--trans);
+}
+.upload-btn:hover { opacity:0.88; }
+
+/* Image preview */
+.img-preview {
+  background:var(--bg3); border-radius:var(--radius);
+  position:relative; overflow:hidden;
+  min-height:240px; display:flex; flex-direction:column;
+}
+.img-canvas-wrap {
+  flex:1; position:relative;
+  background: #0a0f1e;
+  display:flex; align-items:center; justify-content:center;
+  min-height:200px;
+}
+.img-canvas-wrap canvas { max-width:100%; max-height:100%; }
+.detect-overlay {
+  position:absolute; inset:0;
+  pointer-events:none;
+}
+.detect-box {
+  position:absolute;
+  border:2px solid;
+  border-radius:4px;
+}
+.detect-box.pass { border-color:var(--green); }
+.detect-box.fail { border-color:var(--red); }
+.detect-box-label {
+  position:absolute; top:-18px; left:0;
+  font-size:9px; font-weight:700; padding:1px 6px;
+  border-radius:3px; color:#fff; white-space:nowrap;
+}
+.detect-box.pass .detect-box-label { background:var(--green); }
+.detect-box.fail .detect-box-label { background:var(--red); }
+
+.img-preview-toolbar {
+  padding:10px 14px;
+  border-top:1px solid var(--border);
+  display:flex; align-items:center; gap:8px;
+}
+.img-tool-btn {
+  width:28px; height:28px; border-radius:6px;
+  background:var(--bg4); color:var(--text2);
+  display:grid; place-items:center;
+  transition: all var(--trans);
+}
+.img-tool-btn:hover { color:var(--cyan); background:var(--cyan-glow); }
+
+/* Result card */
+.result-status {
+  text-align:center; padding:20px 16px 16px;
+  border-bottom:1px solid var(--border);
+}
+.result-verdict {
+  font-size:24px; font-weight:800; letter-spacing:-0.5px;
+  margin-bottom:4px;
+}
+.result-verdict.pass { color:var(--green); }
+.result-verdict.fail { color:var(--red); }
+.result-verdict.idle { color:var(--text3); }
+.result-sub { font-size:11px; color:var(--text2); }
+.result-conf {
+  display:flex; align-items:center; gap:8px;
+  margin-top:12px; padding:0 8px;
+}
+.result-conf-label { font-size:10px; color:var(--text3); flex-shrink:0; }
+.result-conf-bar { flex:1; height:6px; background:var(--bg4); border-radius:3px; overflow:hidden; }
+.result-conf-fill { height:100%; border-radius:3px; background:linear-gradient(90deg, var(--green), #86efac); }
+.result-conf-val { font-size:11px; font-weight:700; color:var(--green); flex-shrink:0; }
+
+.result-details { padding:16px; display:flex; flex-direction:column; gap:8px; }
+.rd-row {
+  display:flex; align-items:center; justify-content:space-between;
+  font-size:11px;
+}
+.rd-label { color:var(--text3); }
+.rd-val { font-weight:700; color:var(--text); }
+.rd-val.ok   { color:var(--green); }
+.rd-val.warn { color:var(--amber); }
+.rd-val.err  { color:var(--red); }
+
+/* ═══════════════════════════════════════════════
+   PROJECTS
+═══════════════════════════════════════════════ */
+.proj-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+.proj-card {
+  background:var(--card-bg); border:1px solid var(--border);
+  border-radius:var(--radius); padding:16px;
+  transition: box-shadow var(--trans), border-color var(--trans), transform var(--trans);
+  cursor:default;
+}
+.proj-card:hover { box-shadow:var(--shadow); border-color:var(--border-em); transform:translateY(-2px); }
+.proj-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.proj-icon {
+  width:36px; height:36px; border-radius:8px;
+  background:linear-gradient(135deg, var(--cyan-glow), rgba(139,92,246,0.12));
+  border:1px solid var(--border-em);
+  display:grid; place-items:center; color:var(--cyan);
+}
+.proj-name { font-size:13px; font-weight:700; color:var(--text); margin-bottom:2px; }
+.proj-client { font-size:10px; color:var(--text3); }
+.proj-meta { display:flex; gap:10px; margin:10px 0; }
+.proj-m { font-size:10px; color:var(--text3); display:flex; align-items:center; gap:4px; }
+.proj-m strong { color:var(--text2); font-weight:600; }
+.proj-prog-label { display:flex; justify-content:space-between; font-size:10px; margin-bottom:4px; }
+.proj-prog-label span { color:var(--text3); }
+.proj-prog-label strong { color:var(--cyan); font-size:11px; }
+.proj-prog-bar { height:4px; background:var(--bg4); border-radius:2px; overflow:hidden; }
+.proj-prog-fill { height:100%; border-radius:2px; background:linear-gradient(90deg, var(--cyan), var(--cyan-dim)); }
+
+/* ═══════════════════════════════════════════════
+   ANALYTICS
+═══════════════════════════════════════════════ */
+.analytics-grid { display:grid; grid-template-columns:0.8fr 1.2fr 0.8fr; gap:16px; margin-bottom:24px; }
+
+.chart-wrap { position:relative; }
+.chart-wrap canvas { max-height:220px; }
+
+/* Welder ranking */
+.rank-list { display:flex; flex-direction:column; gap:10px; }
+.rank-item { display:flex; align-items:center; gap:10px; }
+.rank-num { font-size:11px; font-weight:800; color:var(--text3); width:16px; flex-shrink:0; }
+.rank-avatar {
+  width:28px; height:28px; border-radius:7px; flex-shrink:0;
+  display:grid; place-items:center; font-size:11px; font-weight:700; color:#fff;
+}
+.rank-info { flex:1; min-width:0; }
+.rank-name { font-size:12px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rank-spec { font-size:10px; color:var(--text3); }
+.rank-bar-wrap { width:80px; }
+.rank-bar-bg { height:4px; background:var(--bg4); border-radius:2px; overflow:hidden; }
+.rank-bar-fill { height:100%; border-radius:2px; }
+.rank-score { font-size:11px; font-weight:700; width:32px; text-align:right; flex-shrink:0; }
+
+/* ═══════════════════════════════════════════════
+   AI MODEL PANEL
+═══════════════════════════════════════════════ */
+.model-grid { display:grid; grid-template-columns:1.2fr 0.8fr; gap:16px; margin-bottom:24px; }
+.model-info { display:flex; flex-direction:column; gap:12px; }
+.model-card-inner {
+  display:flex; align-items:center; gap:14px;
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:var(--radius); padding:14px 16px;
+}
+.model-card-icon {
+  width:44px; height:44px; border-radius:10px;
+  background:linear-gradient(135deg, rgba(56,189,248,0.2), rgba(139,92,246,0.2));
+  border:1px solid var(--border-em);
+  display:grid; place-items:center; color:var(--cyan); flex-shrink:0;
+}
+.model-name  { font-size:13px; font-weight:700; color:var(--text); margin-bottom:2px; }
+.model-meta  { font-size:11px; color:var(--text3); }
+.model-stats { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.mstat { background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:10px 12px; }
+.mstat-lbl { font-size:10px; color:var(--text3); margin-bottom:2px; }
+.mstat-val { font-size:16px; font-weight:800; color:var(--text); }
+.mstat-val.c-cyan   { color:var(--cyan); }
+.mstat-val.c-green  { color:var(--green); }
+.mstat-val.c-amber  { color:var(--amber); }
+
+/* Storage */
+.storage-bars { display:flex; flex-direction:column; gap:12px; }
+.sto-item {}
+.sto-top { display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px; }
+.sto-label { color:var(--text2); font-weight:600; }
+.sto-size  { color:var(--text3); }
+.sto-bar-bg { height:6px; background:var(--bg4); border-radius:3px; overflow:hidden; }
+.sto-bar-fill { height:100%; border-radius:3px; }
+
+/* ═══════════════════════════════════════════════
+   WELD DATABASE TABLE
+═══════════════════════════════════════════════ */
+.table-controls {
+  padding:14px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+}
+.tbl-search {
+  display:flex; align-items:center; gap:8px;
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:7px; padding:6px 10px;
+  flex:1; min-width:180px;
+}
+.tbl-search svg { color:var(--text3); flex-shrink:0; }
+.tbl-search input { background:none; border:none; outline:none; font-size:12px; color:var(--text); width:100%; }
+.tbl-filter {
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:7px; padding:6px 10px;
+  font-size:12px; color:var(--text2); outline:none;
+  cursor:pointer;
+}
+.tbl-btn {
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:7px; padding:6px 12px;
+  font-size:11px; color:var(--text2); font-weight:600;
+  display:flex; align-items:center; gap:6px;
+  transition: all var(--trans);
+}
+.tbl-btn:hover { border-color:var(--border-em); color:var(--cyan); }
+.tbl-btn.primary {
+  background:linear-gradient(90deg, var(--cyan), var(--cyan-dim));
+  border-color:transparent; color:#fff;
+}
+.tbl-btn.primary:hover { opacity:0.88; color:#fff; }
+
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; }
+thead th {
+  padding:10px 14px; text-align:left;
+  font-size:10px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+  color:var(--text3); background:var(--bg3);
+  border-bottom:1px solid var(--border);
+  white-space:nowrap; cursor:pointer;
+  user-select:none;
+  transition: color var(--trans);
+}
+thead th:hover { color:var(--cyan); }
+thead th .sort-icon { display:inline; margin-left:4px; opacity:0.4; }
+thead th.sorted .sort-icon { opacity:1; color:var(--cyan); }
+
+tbody tr {
+  border-bottom:1px solid var(--border);
+  transition: background var(--trans);
+}
+tbody tr:hover { background:var(--bg3); }
+tbody tr:last-child { border-bottom:none; }
+tbody td {
+  padding:11px 14px; font-size:12px; color:var(--text2);
+  white-space:nowrap;
+}
+.td-id { font-family:monospace; font-size:11px; color:var(--text3); }
+.td-weld { font-weight:600; color:var(--text); }
+
+.status-dot { display:inline-flex; align-items:center; gap:5px; }
+.status-dot::before {
+  content:''; display:inline-block;
+  width:6px; height:6px; border-radius:50%; flex-shrink:0;
+}
+.status-pass::before  { background:var(--green); }
+.status-fail::before  { background:var(--red); }
+.status-warn::before  { background:var(--amber); }
+.status-pend::before  { background:var(--text3); }
+
+/* Pagination */
+.table-footer {
+  padding:12px 16px;
+  border-top:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.page-info { font-size:11px; color:var(--text3); }
+.page-btns { display:flex; gap:4px; }
+.page-btn {
+  width:28px; height:28px; border-radius:6px;
+  background:var(--bg3); border:1px solid var(--border);
+  display:grid; place-items:center;
+  font-size:11px; color:var(--text2);
+  transition: all var(--trans);
+}
+.page-btn:hover { border-color:var(--border-em); color:var(--cyan); }
+.page-btn.active { background:var(--cyan); border-color:var(--cyan); color:#fff; font-weight:700; }
+
+/* ═══════════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════════ */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.fade-up { animation: fadeUp 0.4s ease both; }
+.delay-1 { animation-delay:0.05s; }
+.delay-2 { animation-delay:0.1s; }
+.delay-3 { animation-delay:0.15s; }
+.delay-4 { animation-delay:0.2s; }
+.delay-5 { animation-delay:0.25s; }
+.delay-6 { animation-delay:0.3s; }
+
+/* ═══════════════════════════════════════════════
+   MISC
+═══════════════════════════════════════════════ */
+.divider { border:none; border-top:1px solid var(--border); margin:4px 0; }
+.mt-24 { margin-top:24px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     SIDEBAR
+═══════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <!-- Brand -->
+  <div class="sb-brand">
+    <div class="sb-brand-icon">W</div>
+    <div class="sb-brand-text">
+      <div class="sb-brand-name">WQIS-PRO3S</div>
+      <div class="sb-brand-sub">Enterprise AI Platform</div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="sb-search">
+    <div class="sb-search-inner">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Quick search…">
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="sb-nav">
+    <div class="sb-section">MAIN</div>
+
+    <div class="sb-item active" data-page="dashboard">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span class="sb-item-label">Dashboard</span>
+    </div>
+
+    <div class="sb-item" data-page="projects">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"/></svg>
+      <span class="sb-item-label">Projects</span>
+    </div>
+
+    <div class="sb-item" data-page="inspection">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6m-3-3h6"/></svg>
+      <span class="sb-item-label">AI Inspection</span>
+      <div class="sb-badge">3</div>
+    </div>
+
+    <div class="sb-item" data-page="records">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span class="sb-item-label">Weld Records</span>
+    </div>
+
+    <div class="sb-section">STANDARDS</div>
+
+    <div class="sb-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span class="sb-item-label">WPS / PQR</span>
+    </div>
+
+    <div class="sb-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="sb-item-label">Welders</span>
+    </div>
+
+    <div class="sb-section">REPORTS</div>
+
+    <div class="sb-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span class="sb-item-label">Reports</span>
+    </div>
+
+    <div class="sb-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span class="sb-item-label">Analytics</span>
+    </div>
+
+    <div class="sb-section">SYSTEM</div>
+
+    <div class="sb-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      <span class="sb-item-label">Settings</span>
+    </div>
+  </nav>
+
+  <!-- Toggle -->
+  <div class="sb-toggle">
+    <button class="sb-toggle-btn" id="sidebarToggle">
+      <svg class="sb-toggle-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      <span class="sb-toggle-text">Collapse</span>
+    </button>
+  </div>
+</aside>
+
+<!-- ═══════════════════════════════════════
+     MAIN
+═══════════════════════════════════════ -->
+<div class="main" id="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-title">Dashboard</div>
+
+    <div class="topbar-search">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Search joints, welders, defects…">
+    </div>
+
+    <div class="topbar-gap"></div>
+
+    <!-- AI Status -->
+    <div class="ai-status">
+      <div class="ai-dot"></div>
+      <span>YOLOv8n · Online</span>
+    </div>
+
+    <!-- Notifications -->
+    <button class="tb-btn" title="Notifications">
+      <div class="tb-notif-badge"></div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </button>
+
+    <!-- Theme -->
+    <div class="theme-pill">
+      <button class="theme-seg" id="segDark">🌙 Dark</button>
+      <button class="theme-seg" id="segLight">☀ Light</button>
+    </div>
+
+    <!-- User -->
+    <div class="tb-user">
+      <div class="tb-avatar">RC</div>
+      <div>
+        <div class="tb-uname">Ratchata</div>
+        <div class="tb-urole">QA Engineer</div>
+      </div>
+    </div>
+
+    <!-- Datetime -->
+    <div class="tb-datetime" id="clock">
+      <div id="clkDate">—</div>
+      <div id="clkTime" style="font-weight:700;color:var(--cyan)">—</div>
+    </div>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <div class="page" id="page">
+
+    <!-- ── WELCOME ── -->
+    <div class="welcome-card fade-up">
+      <div class="welcome-text">
+        <h1>Good morning, Ratchata 👋</h1>
+        <p>Weld Quality Inspection System · PRO3S Platform · <span style="color:var(--cyan)">Live Monitoring Active</span></p>
+      </div>
+      <div class="welcome-stats">
+        <div class="wstat"><div class="wstat-val">1,247</div><div class="wstat-lbl">Joints Today</div></div>
+        <div class="wstat"><div class="wstat-val" style="color:var(--green)">97.2%</div><div class="wstat-lbl">Pass Rate</div></div>
+        <div class="wstat"><div class="wstat-val" style="color:var(--amber)">34</div><div class="wstat-lbl">Pending</div></div>
+        <div class="wstat"><div class="wstat-val" style="color:var(--violet)">4</div><div class="wstat-lbl">Projects</div></div>
+      </div>
+    </div>
+
+    <!-- ── KPI CARDS ── -->
+    <div class="section-head fade-up delay-1">
+      <div class="section-title"><span>■</span> Key Performance Indicators</div>
+      <div class="pill">This Month</div>
+    </div>
+    <div class="kpi-grid fade-up delay-2">
+      <div class="kpi-card c-cyan">
+        <div class="kpi-card-top"></div>
+        <div class="kpi-top">
+          <div class="kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+          <div class="kpi-trend up">▲ 12%</div>
+        </div>
+        <div class="kpi-val">24,816</div>
+        <div class="kpi-lbl">Total Joints</div>
+        <div class="kpi-sub">+2,348 vs last month</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:78%"></div></div>
+      </div>
+      <div class="kpi-card c-violet">
+        <div class="kpi-top">
+          <div class="kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+          <div class="kpi-trend up">▲ 8%</div>
+        </div>
+        <div class="kpi-val">22,104</div>
+        <div class="kpi-lbl">AI Inspected</div>
+        <div class="kpi-sub">89.1% coverage</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:89%"></div></div>
+      </div>
+      <div class="kpi-card c-green">
+        <div class="kpi-top">
+          <div class="kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="kpi-trend up">▲ 3%</div>
+        </div>
+        <div class="kpi-val">21,489</div>
+        <div class="kpi-lbl">Passed</div>
+        <div class="kpi-sub">97.2% pass rate</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:97%"></div></div>
+      </div>
+      <div class="kpi-card c-red">
+        <div class="kpi-top">
+          <div class="kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+          <div class="kpi-trend down">▼ 5%</div>
+        </div>
+        <div class="kpi-val">615</div>
+        <div class="kpi-lbl">Rejected</div>
+        <div class="kpi-sub">2.8% reject rate</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:28%"></div></div>
+      </div>
+      <div class="kpi-card c-amber">
+        <div class="kpi-top">
+          <div class="kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+          <div class="kpi-trend flat">– 0%</div>
+        </div>
+        <div class="kpi-val">188</div>
+        <div class="kpi-lbl">Repair Required</div>
+        <div class="kpi-sub">0.85% repair rate</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:9%"></div></div>
+      </div>
+      <div class="kpi-card c-blue">
+        <div class="kpi-top">
+          <div class="kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"/></svg></div>
+          <div class="kpi-trend up">▲ 1</div>
+        </div>
+        <div class="kpi-val">4</div>
+        <div class="kpi-lbl">Active Projects</div>
+        <div class="kpi-sub">12 welders assigned</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:40%"></div></div>
+      </div>
+    </div>
+
+    <!-- ── AI INSPECTION ── -->
+    <div class="section-head fade-up delay-3">
+      <div class="section-title"><span>■</span> AI Inspection Panel</div>
+      <div style="display:flex;gap:8px;">
+        <div class="pill cyan">YOLOv8n Active</div>
+        <div class="pill green">mAP 94.6%</div>
+      </div>
+    </div>
+    <div class="inspect-grid fade-up delay-3">
+      <!-- Upload Zone -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload Image
+          </div>
+          <div class="pill">Batch mode</div>
+        </div>
+        <div class="card-body">
+          <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 16l4-4 4 4 4-8 4 4"/><rect x="2" y="3" width="20" height="18" rx="2"/></svg>
+            </div>
+            <div class="upload-title">Drop weld image here</div>
+            <div class="upload-sub">or click to browse from your device<br>Supports single or batch upload</div>
+            <div class="upload-types">
+              <span class="upload-type">JPG</span>
+              <span class="upload-type">PNG</span>
+              <span class="upload-type">BMP</span>
+              <span class="upload-type">TIFF</span>
+            </div>
+            <button class="upload-btn">📁 Choose Files</button>
+          </div>
+
+          <div style="margin-top:16px; display:flex; flex-direction:column; gap:8px;">
+            <div class="rd-row">
+              <span class="rd-label">Model</span>
+              <span class="rd-val" style="font-family:monospace;font-size:11px">yolo-weld-best.pt</span>
+            </div>
+            <div class="rd-row">
+              <span class="rd-label">Confidence threshold</span>
+              <span class="rd-val ok">0.65</span>
+            </div>
+            <div class="rd-row">
+              <span class="rd-label">IoU threshold</span>
+              <span class="rd-val">0.45</span>
+            </div>
+            <div class="rd-row">
+              <span class="rd-label">Inference device</span>
+              <span class="rd-val ok">CPU</span>
+            </div>
+            <div class="rd-row">
+              <span class="rd-label">Queue</span>
+              <span class="rd-val warn">3 pending</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Image Preview -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Detection Preview
+          </div>
+          <div class="pill amber">Demo</div>
+        </div>
+        <div class="img-preview">
+          <div class="img-canvas-wrap" id="canvasWrap">
+            <canvas id="weldCanvas" width="400" height="260"></canvas>
+            <div class="detect-overlay" id="detectOverlay">
+              <div class="detect-box pass" style="left:18%;top:28%;width:26%;height:28%">
+                <span class="detect-box-label">Weld Bead 98%</span>
+              </div>
+              <div class="detect-box fail" style="left:52%;top:20%;width:22%;height:24%">
+                <span class="detect-box-label">Porosity 87%</span>
+              </div>
+              <div class="detect-box fail" style="left:62%;top:52%;width:18%;height:20%">
+                <span class="detect-box-label">Undercut 79%</span>
+              </div>
+            </div>
+          </div>
+          <div class="img-preview-toolbar">
+            <button class="img-tool-btn" title="Zoom in"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg></button>
+            <button class="img-tool-btn" title="Zoom out"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="8" y1="11" x2="14" y2="11"/></svg></button>
+            <button class="img-tool-btn" title="Toggle boxes"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></button>
+            <button class="img-tool-btn" title="Download"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+            <span style="flex:1"></span>
+            <span style="font-size:10px;color:var(--text3)">WJ-2026-0471 · Joint #14</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result Card -->
+      <div class="card">
+        <div class="result-status">
+          <div class="result-verdict fail">⚠ REJECTED</div>
+          <div class="result-sub">2 defects detected</div>
+          <div class="result-conf">
+            <span class="result-conf-label">Confidence</span>
+            <div class="result-conf-bar"><div class="result-conf-fill" style="width:87%;background:linear-gradient(90deg,var(--amber),#fcd34d)"></div></div>
+            <span class="result-conf-val" style="color:var(--amber)">87%</span>
+          </div>
+        </div>
+        <div class="result-details">
+          <div class="rd-row"><span class="rd-label">Joint ID</span><span class="rd-val" style="font-family:monospace;font-size:11px">WJ-2026-0471</span></div>
+          <div class="rd-row"><span class="rd-label">Process</span><span class="rd-val">GMAW (MIG)</span></div>
+          <div class="rd-row"><span class="rd-label">Material</span><span class="rd-val">SS316L / 3mm</span></div>
+          <div class="rd-row"><span class="rd-label">Standard</span><span class="rd-val">AWS D1.1</span></div>
+          <hr class="divider">
+          <div class="rd-row"><span class="rd-label">Porosity</span><span class="rd-val err">Detected · 87%</span></div>
+          <div class="rd-row"><span class="rd-label">Undercut</span><span class="rd-val warn">Detected · 79%</span></div>
+          <div class="rd-row"><span class="rd-label">Crack</span><span class="rd-val ok">Not Found</span></div>
+          <div class="rd-row"><span class="rd-label">Incomplete Fusion</span><span class="rd-val ok">Not Found</span></div>
+          <hr class="divider">
+          <div class="rd-row"><span class="rd-label">Inference time</span><span class="rd-val">38 ms</span></div>
+          <div class="rd-row"><span class="rd-label">Welder</span><span class="rd-val">W-012 · Somchai K.</span></div>
+          <hr class="divider">
+          <button style="width:100%;padding:8px;border-radius:7px;background:var(--red);color:#fff;font-size:12px;font-weight:700;transition:opacity 0.2s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">Send for Re-inspection</button>
+          <button style="width:100%;padding:8px;border-radius:7px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:12px;font-weight:600;margin-top:6px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--border-em)'" onmouseout="this.style.borderColor='var(--border)'">Export Report PDF</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PROJECTS ── -->
+    <div class="section-head fade-up delay-4">
+      <div class="section-title"><span>■</span> Active Projects</div>
+      <button class="tbl-btn primary" style="padding:6px 14px;font-size:11px">+ New Project</button>
+    </div>
+    <div class="proj-grid fade-up delay-4">
+      <div class="proj-card">
+        <div class="proj-top">
+          <div class="proj-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"/></svg></div>
+          <div class="pill green">Active</div>
+        </div>
+        <div class="proj-name">Dairy Line Upgrade</div>
+        <div class="proj-client">Thai Union · Samut Sakhon</div>
+        <div class="proj-meta">
+          <div class="proj-m"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <strong>4</strong> welders</div>
+          <div class="proj-m"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> <strong>2d</strong> left</div>
+        </div>
+        <div class="proj-prog-label"><span>Progress</span><strong>76%</strong></div>
+        <div class="proj-prog-bar"><div class="proj-prog-fill" style="width:76%"></div></div>
+      </div>
+      <div class="proj-card">
+        <div class="proj-top">
+          <div class="proj-icon" style="background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(245,158,11,0.05));border-color:rgba(245,158,11,0.3);color:var(--amber)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"/></svg></div>
+          <div class="pill amber">On Hold</div>
+        </div>
+        <div class="proj-name">Beverage Tank Farm</div>
+        <div class="proj-client">ThaiBev · Ayutthaya</div>
+        <div class="proj-meta">
+          <div class="proj-m"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <strong>3</strong> welders</div>
+          <div class="proj-m"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> <strong>8d</strong> left</div>
+        </div>
+        <div class="proj-prog-label"><span>Progress</span><strong>43%</strong></div>
+        <div class="proj-prog-bar"><div class="proj-prog-fill" style="width:43%;background:linear-gradient(90deg,var(--amber),#fcd34d)"></div></div>
+      </div>
+      <div class="proj-card">
+        <div class="proj-top">
+          <div class="proj-icon" style="background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(139,92,246,0.05));border-color:rgba(139,92,246,0.3);color:var(--violet)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"/></svg></div>
+          <div class="pill green">Active</div>
+        </div>
+        <div class="proj-name">CIP System Install</div>
+        <div class="proj-client">Tetra Pak · Chonburi</div>
+        <div class="proj-meta">
+          <div class="proj-m"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <strong>3</strong> welders</div>
+          <div class="proj-m"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> <strong>14d</strong> left</div>
+        </div>
+        <div class="proj-prog-label"><span>Progress</span><strong>62%</strong></div>
+        <div class="proj-prog-bar"><div class="proj-prog-fill" style="width:62%;background:linear-gradient(90deg,var(--violet),#a78bfa)"></div></div>
+      </div>
+      <div class="proj-card">
+        <div class="proj-top">
+          <div class="proj-icon" style="background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(59,130,246,0.05));border-color:rgba(59,130,246,0.3);color:#3b82f6"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"/></svg></div>
+          <div class="pill">Upcoming</div>
+        </div>
+        <div class="proj-name">Pasteurizer Loop</div>
+        <div class="proj-client">Nestlé · Nakhon Pathom</div>
+        <div class="proj-meta">
+          <div class="proj-m"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <strong>2</strong> welders</div>
+          <div class="proj-m"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> <strong>21d</strong> left</div>
+        </div>
+        <div class="proj-prog-label"><span>Progress</span><strong>8%</strong></div>
+        <div class="proj-prog-bar"><div class="proj-prog-fill" style="width:8%;background:linear-gradient(90deg,#3b82f6,#60a5fa)"></div></div>
+      </div>
+    </div>
+
+    <!-- ── ANALYTICS ── -->
+    <div class="section-head fade-up delay-5">
+      <div class="section-title"><span>■</span> Analytics</div>
+      <div class="pill">May 2026</div>
+    </div>
+    <div class="analytics-grid fade-up delay-5">
+      <!-- Defect distribution donut -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Defect Distribution</div>
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+          <div class="chart-wrap" style="width:180px;height:180px;position:relative">
+            <canvas id="donutChart"></canvas>
+            <div style="position:absolute;inset:0;display:grid;place-items:center;text-align:center;pointer-events:none">
+              <div>
+                <div style="font-size:22px;font-weight:800;color:var(--text)">615</div>
+                <div style="font-size:10px;color:var(--text3)">Defects</div>
+              </div>
+            </div>
+          </div>
+          <div style="width:100%;display:flex;flex-direction:column;gap:7px;">
+            <div style="display:flex;align-items:center;gap:8px;font-size:11px;">
+              <div style="width:8px;height:8px;border-radius:2px;background:#ef4444;flex-shrink:0"></div>
+              <span style="color:var(--text2);flex:1">Porosity</span>
+              <span style="font-weight:700;color:var(--text)">38%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:11px;">
+              <div style="width:8px;height:8px;border-radius:2px;background:#f59e0b;flex-shrink:0"></div>
+              <span style="color:var(--text2);flex:1">Undercut</span>
+              <span style="font-weight:700;color:var(--text)">24%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:11px;">
+              <div style="width:8px;height:8px;border-radius:2px;background:#8b5cf6;flex-shrink:0"></div>
+              <span style="color:var(--text2);flex:1">Incomplete Fusion</span>
+              <span style="font-weight:700;color:var(--text)">19%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:11px;">
+              <div style="width:8px;height:8px;border-radius:2px;background:#3b82f6;flex-shrink:0"></div>
+              <span style="color:var(--text2);flex:1">Crack</span>
+              <span style="font-weight:700;color:var(--text)">11%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:11px;">
+              <div style="width:8px;height:8px;border-radius:2px;background:#64748b;flex-shrink:0"></div>
+              <span style="color:var(--text2);flex:1">Other</span>
+              <span style="font-weight:700;color:var(--text)">8%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pass rate timeline -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Pass Rate Timeline</div>
+          <div class="pill green">+3.2% MTD</div>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap" style="height:220px">
+            <canvas id="lineChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Welder ranking -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Welder Rankings</div>
+          <div class="pill cyan">Top 5</div>
+        </div>
+        <div class="card-body">
+          <div class="rank-list">
+            <div class="rank-item">
+              <div class="rank-num">1</div>
+              <div class="rank-avatar" style="background:linear-gradient(135deg,#f59e0b,#fcd34d)">SK</div>
+              <div class="rank-info">
+                <div class="rank-name">Somchai K.</div>
+                <div class="rank-spec">GMAW · SS</div>
+              </div>
+              <div class="rank-bar-wrap">
+                <div class="rank-bar-bg"><div class="rank-bar-fill" style="width:98%;background:var(--green)"></div></div>
+              </div>
+              <div class="rank-score" style="color:var(--green)">98.4</div>
+            </div>
+            <div class="rank-item">
+              <div class="rank-num">2</div>
+              <div class="rank-avatar" style="background:linear-gradient(135deg,var(--cyan),var(--cyan-dim))">AP</div>
+              <div class="rank-info">
+                <div class="rank-name">Anuchit P.</div>
+                <div class="rank-spec">GTAW · CS</div>
+              </div>
+              <div class="rank-bar-wrap">
+                <div class="rank-bar-bg"><div class="rank-bar-fill" style="width:96%;background:var(--cyan)"></div></div>
+              </div>
+              <div class="rank-score" style="color:var(--cyan)">96.1</div>
+            </div>
+            <div class="rank-item">
+              <div class="rank-num">3</div>
+              <div class="rank-avatar" style="background:linear-gradient(135deg,var(--violet),#a78bfa)">WN</div>
+              <div class="rank-info">
+                <div class="rank-name">Wanchai N.</div>
+                <div class="rank-spec">SMAW · SS</div>
+              </div>
+              <div class="rank-bar-wrap">
+                <div class="rank-bar-bg"><div class="rank-bar-fill" style="width:94%;background:var(--violet)"></div></div>
+              </div>
+              <div class="rank-score" style="color:var(--violet)">94.8</div>
+            </div>
+            <div class="rank-item">
+              <div class="rank-num">4</div>
+              <div class="rank-avatar" style="background:linear-gradient(135deg,#3b82f6,#60a5fa)">TC</div>
+              <div class="rank-info">
+                <div class="rank-name">Thanchanok C.</div>
+                <div class="rank-spec">GMAW · CS</div>
+              </div>
+              <div class="rank-bar-wrap">
+                <div class="rank-bar-bg"><div class="rank-bar-fill" style="width:91%;background:#3b82f6"></div></div>
+              </div>
+              <div class="rank-score" style="color:#3b82f6">91.3</div>
+            </div>
+            <div class="rank-item">
+              <div class="rank-num">5</div>
+              <div class="rank-avatar" style="background:linear-gradient(135deg,#64748b,#94a3b8)">PP</div>
+              <div class="rank-info">
+                <div class="rank-name">Praphat P.</div>
+                <div class="rank-spec">FCAW · CS</div>
+              </div>
+              <div class="rank-bar-wrap">
+                <div class="rank-bar-bg"><div class="rank-bar-fill" style="width:87%;background:var(--text3)"></div></div>
+              </div>
+              <div class="rank-score" style="color:var(--text3)">87.6</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── AI MODEL PANEL ── -->
+    <div class="section-head fade-up delay-6">
+      <div class="section-title"><span>■</span> AI Model & Storage</div>
+    </div>
+    <div class="model-grid fade-up delay-6">
+      <!-- Model info + stats -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            Deployed Model
+          </div>
+          <div class="pill green">● Live</div>
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:14px;">
+          <div class="model-card-inner">
+            <div class="model-card-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
+            <div>
+              <div class="model-name">yolo-weld-best.pt</div>
+              <div class="model-meta">YOLOv8n · v1.0.0 · Roboflow Hosted · 6.12 MB</div>
+            </div>
+          </div>
+          <div class="model-stats">
+            <div class="mstat"><div class="mstat-lbl">mAP@50</div><div class="mstat-val c-cyan">94.6%</div></div>
+            <div class="mstat"><div class="mstat-lbl">Precision</div><div class="mstat-val c-green">96.2%</div></div>
+            <div class="mstat"><div class="mstat-lbl">Recall</div><div class="mstat-val c-green">93.8%</div></div>
+            <div class="mstat"><div class="mstat-lbl">Inference</div><div class="mstat-val">~38ms</div></div>
+            <div class="mstat"><div class="mstat-lbl">Classes</div><div class="mstat-val">6</div></div>
+            <div class="mstat"><div class="mstat-lbl">Images</div><div class="mstat-val c-amber">2,840</div></div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span class="pill cyan">Porosity</span>
+            <span class="pill red">Crack</span>
+            <span class="pill amber">Undercut</span>
+            <span class="pill violet">Incomplete Fusion</span>
+            <span class="pill">Spatter</span>
+            <span class="pill green">Weld Bead</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Storage -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            Storage Usage
+          </div>
+          <div class="pill">68.4 GB / 200 GB</div>
+        </div>
+        <div class="card-body">
+          <div style="margin-bottom:20px;">
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px;">
+              <span style="color:var(--text2);font-weight:600">Total Used</span>
+              <span style="color:var(--amber);font-weight:700">34.2%</span>
+            </div>
+            <div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;">
+              <div style="width:34.2%;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--cyan),var(--amber))"></div>
+            </div>
+          </div>
+          <div class="storage-bars">
+            <div class="sto-item">
+              <div class="sto-top"><span class="sto-label">📷 Weld Images</span><span class="sto-size">42.1 GB</span></div>
+              <div class="sto-bar-bg"><div class="sto-bar-fill" style="width:61%;background:var(--cyan)"></div></div>
+            </div>
+            <div class="sto-item">
+              <div class="sto-top"><span class="sto-label">📊 Inspection Reports</span><span class="sto-size">14.8 GB</span></div>
+              <div class="sto-bar-bg"><div class="sto-bar-fill" style="width:22%;background:var(--violet)"></div></div>
+            </div>
+            <div class="sto-item">
+              <div class="sto-top"><span class="sto-label">🤖 Model Weights</span><span class="sto-size">6.2 GB</span></div>
+              <div class="sto-bar-bg"><div class="sto-bar-fill" style="width:9%;background:var(--green)"></div></div>
+            </div>
+            <div class="sto-item">
+              <div class="sto-top"><span class="sto-label">📋 WPS/PQR Docs</span><span class="sto-size">5.3 GB</span></div>
+              <div class="sto-bar-bg"><div class="sto-bar-fill" style="width:8%;background:var(--amber)"></div></div>
+            </div>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:8px;">
+            <button class="tbl-btn" style="flex:1;justify-content:center;font-size:11px;">Manage Storage</button>
+            <button class="tbl-btn primary" style="flex:1;justify-content:center;font-size:11px;">Upgrade Plan</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── WELD DATABASE ── -->
+    <div class="section-head fade-up">
+      <div class="section-title"><span>■</span> Weld Database</div>
+      <div style="display:flex;gap:8px">
+        <div class="pill">24,816 records</div>
+        <button class="tbl-btn primary" style="font-size:11px">Export CSV</button>
+      </div>
+    </div>
+    <div class="card fade-up" style="margin-bottom:40px;">
+      <div class="table-controls">
+        <div class="tbl-search">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" placeholder="Search joint ID, welder, project…" id="tblSearch" oninput="filterTable()">
+        </div>
+        <select class="tbl-filter" id="tblStatus" onchange="filterTable()">
+          <option value="">All Status</option>
+          <option value="Pass">Pass</option>
+          <option value="Reject">Reject</option>
+          <option value="Repair">Repair</option>
+          <option value="Pending">Pending</option>
+        </select>
+        <select class="tbl-filter" id="tblProcess" onchange="filterTable()">
+          <option value="">All Process</option>
+          <option value="GMAW">GMAW</option>
+          <option value="GTAW">GTAW</option>
+          <option value="SMAW">SMAW</option>
+          <option value="FCAW">FCAW</option>
+        </select>
+        <button class="tbl-btn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+          Filter
+        </button>
+        <button class="tbl-btn primary">+ Add Record</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortTable(0)">Joint ID <span class="sort-icon">↕</span></th>
+              <th onclick="sortTable(1)">Date <span class="sort-icon">↕</span></th>
+              <th onclick="sortTable(2)">Project <span class="sort-icon">↕</span></th>
+              <th onclick="sortTable(3)">Welder <span class="sort-icon">↕</span></th>
+              <th onclick="sortTable(4)">Process <span class="sort-icon">↕</span></th>
+              <th onclick="sortTable(5)">Material <span class="sort-icon">↕</span></th>
+              <th onclick="sortTable(6)">Standard <span class="sort-icon">↕</span></th>
+              <th onclick="sortTable(7)">AI Result <span class="sort-icon">↕</span></th>
+              <th onclick="sortTable(8)">Status <span class="sort-icon">↕</span></th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <div class="page-info" id="pageInfo">Showing 1–15 of 15</div>
+        <div class="page-btns">
+          <button class="page-btn" onclick="changePage(-1)">‹</button>
+          <button class="page-btn active" id="pgBtn1">1</button>
+          <button class="page-btn" id="pgBtn2">2</button>
+          <button class="page-btn" id="pgBtn3">3</button>
+          <button class="page-btn" onclick="changePage(1)">›</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page -->
+</div><!-- /main -->
+
+<script>
+// ═══════════════════════════════════════════════
+//  THEME
+// ═══════════════════════════════════════════════
+const THEME_KEY = 'wqis-theme';
+const html = document.documentElement;
+
+function applyTheme(t) {
+  html.setAttribute('data-theme', t);
+  document.getElementById('segDark').classList.toggle('active', t === 'dark');
+  document.getElementById('segLight').classList.toggle('active', t === 'light');
+  localStorage.setItem(THEME_KEY, t);
+  updateChartColors();
+}
+
+document.getElementById('segDark').addEventListener('click', () => applyTheme('dark'));
+document.getElementById('segLight').addEventListener('click', () => applyTheme('light'));
+
+const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
+applyTheme(savedTheme);
+
+// ═══════════════════════════════════════════════
+//  SIDEBAR TOGGLE
+// ═══════════════════════════════════════════════
+const sidebar = document.getElementById('sidebar');
+const main    = document.getElementById('main');
+let sidebarOpen = true;
+
+document.getElementById('sidebarToggle').addEventListener('click', () => {
+  sidebarOpen = !sidebarOpen;
+  sidebar.classList.toggle('collapsed', !sidebarOpen);
+  main.classList.toggle('expanded', !sidebarOpen);
+  document.querySelector('.sb-toggle-text').textContent = sidebarOpen ? 'Collapse' : 'Expand';
+});
+
+// Nav active
+document.querySelectorAll('.sb-item').forEach(item => {
+  item.addEventListener('click', function() {
+    document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+// ═══════════════════════════════════════════════
+//  CLOCK
+// ═══════════════════════════════════════════════
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clkDate').textContent = now.toLocaleDateString('th-TH', { weekday:'short', day:'numeric', month:'short' });
+  document.getElementById('clkTime').textContent = now.toLocaleTimeString('th-TH', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ═══════════════════════════════════════════════
+//  WELD CANVAS DEMO
+// ═══════════════════════════════════════════════
+(function() {
+  const canvas = document.getElementById('weldCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    // dark background
+    ctx.fillStyle = '#050a18';
+    ctx.fillRect(0, 0, W, H);
+    // grid
+    ctx.strokeStyle = 'rgba(56,189,248,0.06)';
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x < W; x += 20) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+    for (let y = 0; y < H; y += 20) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+    // welding pipe
+    ctx.fillStyle = 'rgba(255,255,255,0.04)';
+    ctx.fillRect(30, 80, 340, 100);
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(30, 80, 340, 100);
+    // weld bead
+    const grad = ctx.createLinearGradient(60, 115, 320, 145);
+    grad.addColorStop(0,   'rgba(245,158,11,0.1)');
+    grad.addColorStop(0.2, 'rgba(251,191,36,0.8)');
+    grad.addColorStop(0.5, 'rgba(245,158,11,0.9)');
+    grad.addColorStop(0.8, 'rgba(251,191,36,0.8)');
+    grad.addColorStop(1,   'rgba(245,158,11,0.1)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.ellipse(190, 130, 130, 14, 0, 0, Math.PI*2);
+    ctx.fill();
+    // glow
+    ctx.fillStyle = 'rgba(245,158,11,0.05)';
+    ctx.beginPath();
+    ctx.ellipse(190, 130, 150, 24, 0, 0, Math.PI*2);
+    ctx.fill();
+    // scanlines
+    for (let y2 = 0; y2 < H; y2 += 3) {
+      ctx.fillStyle = 'rgba(0,0,0,0.04)';
+      ctx.fillRect(0, y2, W, 1);
+    }
+  }
+  draw();
+})();
+
+// ═══════════════════════════════════════════════
+//  CHARTS
+// ═══════════════════════════════════════════════
+let donutChart, lineChart;
+
+function getChartColors() {
+  const dark = html.getAttribute('data-theme') === 'dark';
+  return {
+    grid:  dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
+    text:  dark ? '#94a3b8' : '#64748b',
+    text2: dark ? '#e2e8f0' : '#0f172a',
+  };
+}
+
+function initCharts() {
+  const c = getChartColors();
+
+  // Donut
+  const donutCtx = document.getElementById('donutChart');
+  if (donutCtx) {
+    donutChart = new Chart(donutCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Porosity', 'Undercut', 'Incomplete Fusion', 'Crack', 'Other'],
+        datasets: [{
+          data: [38, 24, 19, 11, 8],
+          backgroundColor: ['#ef4444','#f59e0b','#8b5cf6','#3b82f6','#64748b'],
+          borderWidth: 0,
+          hoverOffset: 4,
+        }]
+      },
+      options: {
+        cutout: '70%',
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw}%` } } },
+        animation: { animateRotate: true, duration: 800 }
+      }
+    });
+  }
+
+  // Line
+  const lineCtx = document.getElementById('lineChart');
+  if (lineCtx) {
+    const labels = ['May 1','5','8','11','14','17','20','23','26','29','May 31'];
+    lineChart = new Chart(lineCtx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Pass Rate %',
+          data: [94.1, 95.3, 96.0, 94.8, 96.8, 97.1, 96.5, 97.4, 97.8, 97.2, 97.2],
+          borderColor: '#38bdf8',
+          backgroundColor: 'rgba(56,189,248,0.08)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3,
+          pointBackgroundColor: '#38bdf8',
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: c.grid }, ticks: { color: c.text, font: { size: 10 } } },
+          y: {
+            min: 92, max: 100,
+            grid: { color: c.grid },
+            ticks: { color: c.text, font: { size: 10 }, callback: v => v + '%' }
+          }
+        }
+      }
+    });
+  }
+}
+
+function updateChartColors() {
+  if (!lineChart) return;
+  const c = getChartColors();
+  lineChart.options.scales.x.grid.color = c.grid;
+  lineChart.options.scales.x.ticks.color = c.text;
+  lineChart.options.scales.y.grid.color = c.grid;
+  lineChart.options.scales.y.ticks.color = c.text;
+  lineChart.update();
+}
+
+initCharts();
+
+// ═══════════════════════════════════════════════
+//  TABLE DATA
+// ═══════════════════════════════════════════════
+const TABLE_DATA = [
+  ['WJ-2026-0501','14 May 2026','Dairy Line Upgrade','Somchai K.','GMAW','SS316L / 3mm','AWS D1.1','98.2%','Pass'],
+  ['WJ-2026-0500','14 May 2026','Dairy Line Upgrade','Somchai K.','GMAW','SS316L / 3mm','AWS D1.1','96.1%','Pass'],
+  ['WJ-2026-0499','14 May 2026','CIP System Install','Anuchit P.','GTAW','SS304 / 2mm','EN ISO 5817','91.4%','Pass'],
+  ['WJ-2026-0498','14 May 2026','Beverage Tank Farm','Wanchai N.','SMAW','CS A36 / 6mm','AWS D1.1','87.3%','Repair'],
+  ['WJ-2026-0497','14 May 2026','CIP System Install','Anuchit P.','GTAW','SS304 / 2mm','EN ISO 5817','52.8%','Reject'],
+  ['WJ-2026-0496','13 May 2026','Dairy Line Upgrade','Thanchanok C.','GMAW','SS316L / 3mm','AWS D1.1','97.6%','Pass'],
+  ['WJ-2026-0495','13 May 2026','Pasteurizer Loop','Praphat P.','FCAW','CS A36 / 8mm','AWS D1.1','95.2%','Pass'],
+  ['WJ-2026-0494','13 May 2026','Beverage Tank Farm','Wanchai N.','SMAW','CS A36 / 6mm','AWS D1.1','88.9%','Pass'],
+  ['WJ-2026-0493','13 May 2026','CIP System Install','Somchai K.','GMAW','SS304 / 2mm','EN ISO 5817','96.8%','Pass'],
+  ['WJ-2026-0492','13 May 2026','Dairy Line Upgrade','Anuchit P.','GTAW','SS316L / 3mm','AWS D1.1','94.4%','Pass'],
+  ['WJ-2026-0491','12 May 2026','Dairy Line Upgrade','Thanchanok C.','GMAW','SS316L / 3mm','AWS D1.1','45.2%','Reject'],
+  ['WJ-2026-0490','12 May 2026','Pasteurizer Loop','Praphat P.','FCAW','CS A36 / 8mm','AWS D1.1','—','Pending'],
+  ['WJ-2026-0489','12 May 2026','CIP System Install','Wanchai N.','SMAW','SS304 / 2mm','EN ISO 5817','93.1%','Pass'],
+  ['WJ-2026-0488','12 May 2026','Beverage Tank Farm','Somchai K.','GMAW','CS A36 / 6mm','AWS D1.1','91.7%','Pass'],
+  ['WJ-2026-0487','11 May 2026','Dairy Line Upgrade','Anuchit P.','GTAW','SS316L / 3mm','AWS D1.1','97.9%','Pass'],
+];
+
+let filteredData = [...TABLE_DATA];
+let currentPage  = 1;
+const PAGE_SIZE  = 10;
+
+function statusClass(s) {
+  if (s === 'Pass')    return 'status-dot status-pass';
+  if (s === 'Reject')  return 'status-dot status-fail';
+  if (s === 'Repair')  return 'status-dot status-warn';
+  return 'status-dot status-pend';
+}
+
+function renderTable() {
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const rows  = filteredData.slice(start, start + PAGE_SIZE);
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td class="td-id">${r[0]}</td>
+      <td>${r[1]}</td>
+      <td class="td-weld">${r[2]}</td>
+      <td>${r[3]}</td>
+      <td>${r[4]}</td>
+      <td style="font-size:11px">${r[5]}</td>
+      <td style="font-size:11px">${r[6]}</td>
+      <td style="font-weight:700;color:${r[7]==='—'?'var(--text3)':parseFloat(r[7])>90?'var(--green)':parseFloat(r[7])>75?'var(--amber)':'var(--red)'}">${r[7]}</td>
+      <td><span class="${statusClass(r[8])}">${r[8]}</span></td>
+    </tr>
+  `).join('');
+  const total = filteredData.length;
+  document.getElementById('pageInfo').textContent = `Showing ${start+1}–${Math.min(start+PAGE_SIZE,total)} of ${total}`;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  for (let i = 1; i <= 3; i++) {
+    const btn = document.getElementById('pgBtn'+i);
+    if (!btn) continue;
+    btn.textContent = i;
+    btn.classList.toggle('active', i === currentPage);
+    btn.style.display = i <= totalPages ? '' : 'none';
+  }
+}
+
+function filterTable() {
+  const q  = document.getElementById('tblSearch').value.toLowerCase();
+  const st = document.getElementById('tblStatus').value;
+  const pr = document.getElementById('tblProcess').value;
+  filteredData = TABLE_DATA.filter(r =>
+    (!q  || r.join(' ').toLowerCase().includes(q)) &&
+    (!st || r[8] === st) &&
+    (!pr || r[4] === pr)
+  );
+  currentPage = 1;
+  renderTable();
+}
+
+function changePage(dir) {
+  const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
+  currentPage = Math.max(1, Math.min(totalPages, currentPage + dir));
+  renderTable();
+}
+
+function sortTable(col) {
+  filteredData.sort((a, b) => a[col].localeCompare(b[col]));
+  renderTable();
+}
+
+// Page buttons
+for (let i = 1; i <= 3; i++) {
+  const btn = document.getElementById('pgBtn'+i);
+  if (btn) btn.addEventListener('click', () => { currentPage = i; renderTable(); });
+}
+
+renderTable();
+</script>
+</body>
+</html>

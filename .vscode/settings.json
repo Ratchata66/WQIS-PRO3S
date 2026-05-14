@@ -1,16 +1,13 @@
 {
-    "liveServer.settings.port": 5501,
-    "python.testing.unittestArgs": [
-        "-v",
-        "-s",
-        "./WEB1 WQIS",
-        "-p",
-        "*test.py"
-    ],
-    "python.testing.pytestEnabled": false,
-    "python.testing.unittestEnabled": true,
-    "files.autoSave": "afterDelay",
-    "files.autoSaveDelay": 1000,
-    "git.confirmSync": false,
-    "git.enableSmartCommit": true
+  "liveServer.settings.root": "/",
+  "liveServer.settings.port": 5501,
+  "liveServer.settings.CustomBrowser": "chrome",
+  "liveServer.settings.donotShowInfoMsg": true,
+  "liveServer.settings.donotVerifyTags": true,
+  "liveServer.settings.ignoreFiles": [
+    ".vscode/**",
+    "**/*.py",
+    "node_modules/**",
+    "local-ai/**"
+  ]
 }
