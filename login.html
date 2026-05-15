@@ -10,265 +10,421 @@
     <script>
     (function () {
         const host = window.location.hostname;
-        const isLocal =
-            window.location.protocol === 'file:' ||
-            host === 'localhost' ||
-            host === '127.0.0.1' ||
-            host === '';
-        if (isLocal) {
-            document.write('<script src="generated-users.js"><\/script>');
-        }
+        const isLocal = window.location.protocol === 'file:' || host === 'localhost' || host === '127.0.0.1' || host === '';
+        if (isLocal) document.write('<script src="generated-users.js"><\/script>');
     })();
     </script>
     <script src="auth.js"></script>
     <style>
+    /* ══════════════════════════════════════════════════════════
+       TOKENS
+    ══════════════════════════════════════════════════════════ */
     :root {
         --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
-        --trans: 0.22s cubic-bezier(.4,0,.2,1);
-        --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px; --r-2xl: 24px; --r-pill: 999px;
+        --ease: 0.18s cubic-bezier(.4,0,.2,1);
+        --r: 8px; --r-lg: 12px; --r-xl: 16px; --r-pill: 999px;
     }
+
     [data-theme="dark"] {
         color-scheme: dark;
-        --bg:          #111215;
-        --surface:     #1a1c20;
-        --card:        #22252c;
-        --card-alt:    #1e2128;
-        --border:      rgba(255,255,255,0.07);
-        --border-em:   rgba(255,255,255,0.12);
-        --text-1:      #e9e6e2;
-        --text-2:      rgba(233,230,226,0.55);
-        --text-3:      rgba(233,230,226,0.32);
-        --accent:      #4f8ef7;
-        --accent-soft: rgba(79,142,247,0.14);
-        --accent-em:   rgba(79,142,247,0.25);
-        --success:     #34d399;
-        --success-soft:rgba(52,211,153,0.13);
-        --danger:      #f87171;
-        --danger-soft: rgba(248,113,113,0.13);
-        --shadow:      rgba(0,0,0,0.5);
-        --shadow-card: 0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.25);
+        --bg:         #0d1117;
+        --bg-subtle:  #161b22;
+        --surface:    #1c2128;
+        --card:       #1c2128;
+        --card-alt:   #252c36;
+        --border:     #30363d;
+        --border-em:  #444c56;
+        --text-1:     #e6edf3;
+        --text-2:     #8b949e;
+        --text-3:     #484f58;
+        --blue:       #2f81f7;
+        --blue-hover: #388bfd;
+        --blue-soft:  rgba(47,129,247,0.10);
+        --blue-em:    rgba(47,129,247,0.22);
+        --green:      #3fb950;
+        --green-soft: rgba(63,185,80,0.12);
+        --red:        #f85149;
+        --red-soft:   rgba(248,81,73,0.12);
+        --shadow-sm:  0 1px 3px rgba(0,0,0,0.4);
+        --shadow-md:  0 4px 20px rgba(0,0,0,0.5);
+        --shadow-lg:  0 8px 40px rgba(0,0,0,0.6);
+        --grid-line:  rgba(255,255,255,0.025);
     }
     [data-theme="light"] {
         color-scheme: light;
-        --bg:          #f4f2ef;
-        --surface:     #fdfcfb;
-        --card:        #ffffff;
-        --card-alt:    #f8f7f5;
-        --border:      rgba(0,0,0,0.07);
-        --border-em:   rgba(0,0,0,0.13);
-        --text-1:      #1a1917;
-        --text-2:      #6b6760;
-        --text-3:      #a8a49e;
-        --accent:      #2563eb;
-        --accent-soft: rgba(37,99,235,0.09);
-        --accent-em:   rgba(37,99,235,0.18);
-        --success:     #059669;
-        --success-soft:rgba(5,150,105,0.1);
-        --danger:      #dc2626;
-        --danger-soft: rgba(220,38,38,0.09);
-        --shadow:      rgba(0,0,0,0.1);
-        --shadow-card: 0 1px 3px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.06);
+        --bg:         #f0f2f5;
+        --bg-subtle:  #e8eaed;
+        --surface:    #ffffff;
+        --card:       #ffffff;
+        --card-alt:   #f6f8fa;
+        --border:     #d0d7de;
+        --border-em:  #b1bac4;
+        --text-1:     #1f2328;
+        --text-2:     #636c76;
+        --text-3:     #b1bac4;
+        --blue:       #0969da;
+        --blue-hover: #0a58ca;
+        --blue-soft:  rgba(9,105,218,0.08);
+        --blue-em:    rgba(9,105,218,0.18);
+        --green:      #1a7f37;
+        --green-soft: rgba(26,127,55,0.10);
+        --red:        #cf222e;
+        --red-soft:   rgba(207,34,46,0.08);
+        --shadow-sm:  0 1px 3px rgba(0,0,0,0.08);
+        --shadow-md:  0 4px 20px rgba(0,0,0,0.10);
+        --shadow-lg:  0 8px 40px rgba(0,0,0,0.12);
+        --grid-line:  rgba(0,0,0,0.04);
     }
 
+    /* ══════════════════════════════════════════════════════════
+       RESET & BASE
+    ══════════════════════════════════════════════════════════ */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
         width: 100%; height: 100%; overflow: hidden;
-        font-family: var(--font);
+        font-family: var(--font); font-size: 14px; line-height: 1.5;
         background: var(--bg); color: var(--text-1);
-        font-size: 14px; line-height: 1.5;
         -webkit-font-smoothing: antialiased;
     }
-    button, input, select { font: inherit; }
+    button, input { font: inherit; }
 
-    /* ── BACKGROUND ── */
+    /* ══════════════════════════════════════════════════════════
+       BACKGROUND — faint engineering grid
+    ══════════════════════════════════════════════════════════ */
     .bg-grid {
         position: fixed; inset: 0; z-index: 0; pointer-events: none;
         background-image:
-            linear-gradient(var(--border) 1px, transparent 1px),
-            linear-gradient(90deg, var(--border) 1px, transparent 1px);
-        background-size: 48px 48px;
-        -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
-        mask-image:         radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
-    }
-    .bg-glow {
-        position: fixed; z-index: 0; pointer-events: none;
-        width: 700px; height: 700px; border-radius: 50%;
-        top: 50%; left: 50%; transform: translate(-50%, -50%);
-        background: radial-gradient(circle, var(--accent-soft) 0%, transparent 68%);
+            linear-gradient(var(--grid-line) 1px, transparent 1px),
+            linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+            linear-gradient(var(--grid-line) 1px, transparent 1px),
+            linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+        background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
+        -webkit-mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 30%, transparent 100%);
+        mask-image:         radial-gradient(ellipse 90% 90% at 50% 50%, black 30%, transparent 100%);
     }
 
-    /* ── THEME TOGGLE ── */
-    .theme-btn {
-        position: fixed; top: 18px; right: 18px; z-index: 100;
-        width: 36px; height: 36px; border-radius: var(--r-md);
-        background: var(--card); border: 1px solid var(--border-em);
-        color: var(--text-2); cursor: pointer; display: grid; place-items: center;
-        box-shadow: var(--shadow-card);
-        transition: background var(--trans), color var(--trans), border-color var(--trans);
+    /* ══════════════════════════════════════════════════════════
+       THEME PILL
+    ══════════════════════════════════════════════════════════ */
+    .theme-pill {
+        position: fixed; top: 16px; right: 16px; z-index: 200;
+        display: flex; align-items: center;
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: var(--r-pill); padding: 3px; gap: 2px;
+        box-shadow: var(--shadow-sm);
     }
-    .theme-btn:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-em); }
+    .theme-seg {
+        display: flex; align-items: center; gap: 5px;
+        padding: 5px 12px; border-radius: var(--r-pill);
+        font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em;
+        color: var(--text-2); cursor: pointer; border: none;
+        background: transparent;
+        transition: background var(--ease), color var(--ease);
+        white-space: nowrap;
+    }
+    .theme-seg:hover { color: var(--text-1); }
+    .theme-seg.active {
+        background: var(--blue);
+        color: #fff !important;
+        box-shadow: 0 1px 4px rgba(47,129,247,0.30);
+    }
+    [data-theme="light"] .theme-seg.active {
+        background: var(--blue);
+        color: #fff !important;
+    }
 
-    /* ── OUTER LAYOUT ── */
-    .login-outer {
+    /* ══════════════════════════════════════════════════════════
+       LAYOUT
+    ══════════════════════════════════════════════════════════ */
+    .page {
         position: relative; z-index: 1;
         width: 100%; height: 100%;
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
+        display: flex; align-items: center; justify-content: center;
         padding: 24px; overflow-y: auto;
     }
 
-    /* ── CARD ── */
-    .login-card {
-        width: 100%; max-width: 420px;
-        background: var(--card); border: 1px solid var(--border-em);
-        border-radius: var(--r-2xl);
-        box-shadow: 0 0 0 1px var(--border), 0 32px 80px var(--shadow);
-        padding: 40px 40px 36px;
-        animation: cardIn 0.5s cubic-bezier(.34,1.35,.64,1) both;
+    /* ══════════════════════════════════════════════════════════
+       CARD
+    ══════════════════════════════════════════════════════════ */
+    .card {
+        width: 100%; max-width: 400px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--r-xl);
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        animation: fadeUp 0.35s cubic-bezier(.22,1,.36,1) both;
     }
-    @keyframes cardIn {
-        from { opacity: 0; transform: translateY(28px) scale(.96); }
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
         to   { opacity: 1; transform: none; }
     }
-    @media (max-width: 480px) {
-        .login-card { padding: 32px 24px 28px; }
+
+    /* card top accent bar */
+    .card-accent {
+        height: 3px;
+        background: linear-gradient(90deg, var(--blue) 0%, #388bfd 50%, #58a6ff 100%);
     }
 
-    /* ── BRAND ── */
-    .login-brand {
-        display: flex; flex-direction: column; align-items: center; gap: 14px;
-        margin-bottom: 30px; text-align: center;
+    .card-body { padding: 36px 36px 28px; }
+
+    /* ── Brand ── */
+    .brand {
+        display: flex; flex-direction: column; align-items: center;
+        gap: 10px; margin-bottom: 32px; text-align: center;
     }
-    .login-logo {
-        width: 58px; height: 58px; object-fit: contain;
-        filter: drop-shadow(0 0 18px var(--accent));
-        animation: logoIn 0.6s 0.08s cubic-bezier(.34,1.4,.64,1) both;
+    .brand-logo {
+        width: 44px; height: 44px; object-fit: contain;
+        filter: drop-shadow(0 2px 8px rgba(47,129,247,0.20));
     }
-    @keyframes logoIn {
-        from { opacity: 0; transform: scale(.65) translateY(4px); }
-        to   { opacity: 1; transform: none; }
+    .brand-logo-ph {
+        width: 44px; height: 44px; border-radius: var(--r-lg);
+        background: var(--blue-soft); border: 1px solid var(--blue-em);
+        display: grid; place-items: center;
+        font-size: 1rem; font-weight: 800; color: var(--blue);
     }
-    .login-title { font-size: 1.55rem; font-weight: 800; letter-spacing: 0.025em; color: var(--text-1); }
-    .login-sub   { font-size: 0.8rem; color: var(--text-2); line-height: 1.65; }
+    .brand-name {
+        font-size: 1.1rem; font-weight: 700; color: var(--text-1);
+        letter-spacing: 0.01em;
+    }
+    .brand-desc {
+        font-size: 0.74rem; color: var(--text-3); margin-top: -4px;
+    }
 
-    /* ── DIVIDER ── */
-    .divider { height: 1px; background: var(--border); margin-bottom: 26px; }
+    /* ── Form ── */
 
-    /* ── FORM ── */
-    .login-form { display: flex; flex-direction: column; gap: 14px; }
-
-    .field { display: flex; flex-direction: column; gap: 6px; }
-    .field-label { font-size: 0.7rem; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.09em; }
-
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field-label {
+        font-size: 0.74rem; font-weight: 500; color: var(--text-2);
+    }
     .field-wrap { position: relative; display: flex; align-items: center; }
     .field-icon {
-        position: absolute; left: 11px; pointer-events: none;
+        position: absolute; left: 10px; pointer-events: none;
         color: var(--text-3); display: flex; align-items: center;
-        transition: color var(--trans);
+        transition: color var(--ease);
     }
-    .field-wrap:focus-within .field-icon { color: var(--accent); }
+    .field-wrap:focus-within .field-icon { color: var(--blue); }
 
     .field-input {
         width: 100%; background: var(--card-alt); border: 1px solid var(--border);
-        border-radius: var(--r-md); padding: 10px 12px 10px 36px;
-        color: var(--text-1); font-size: 0.88rem;
-        transition: border-color var(--trans), background var(--trans), box-shadow var(--trans);
+        border-radius: var(--r); padding: 9px 12px 9px 34px;
+        color: var(--text-1); font-size: 0.875rem;
+        transition: border-color var(--ease), box-shadow var(--ease);
     }
     .field-input:focus {
-        outline: none; border-color: var(--accent);
-        background: var(--card); box-shadow: 0 0 0 3px var(--accent-soft);
+        outline: none; border-color: var(--blue);
+        box-shadow: 0 0 0 3px var(--blue-soft);
     }
     .field-input::placeholder { color: var(--text-3); }
 
-    /* Password show/hide */
     .pw-eye {
-        position: absolute; right: 10px;
+        position: absolute; right: 9px;
         background: none; border: none; cursor: pointer; padding: 4px;
-        color: var(--text-3); border-radius: var(--r-sm); display: flex; align-items: center;
-        transition: color var(--trans);
+        color: var(--text-3); border-radius: var(--r); display: flex;
+        transition: color var(--ease);
     }
     .pw-eye:hover { color: var(--text-1); }
 
-    /* Remember me */
-    .remember-row {
-        display: flex; align-items: center; gap: 9px; user-select: none;
+    /* row for remember / forgot */
+    .row-space {
+        display: flex; align-items: center; justify-content: space-between;
     }
-    .remember-check { width: 15px; height: 15px; cursor: pointer; accent-color: var(--accent); flex-shrink: 0; }
-    .remember-label { font-size: 0.82rem; color: var(--text-2); cursor: pointer; }
+    .remember-row { display: flex; align-items: center; gap: 7px; user-select: none; }
+    .remember-check { width: 14px; height: 14px; cursor: pointer; accent-color: var(--blue); flex-shrink: 0; }
+    .remember-label { font-size: 0.80rem; color: var(--text-2); cursor: pointer; }
 
-    /* Error banner */
-    .login-error {
-        display: none; align-items: center; gap: 9px;
-        padding: 10px 14px; border-radius: var(--r-md);
-        background: var(--danger-soft); border: 1px solid rgba(248,113,113,0.22);
-        color: var(--danger); font-size: 0.82rem; font-weight: 500;
-        animation: shake 0.38s ease;
+    /* Error / Info banners */
+    .banner {
+        display: none; align-items: center; gap: 8px;
+        padding: 9px 12px; border-radius: var(--r);
+        font-size: 0.80rem; font-weight: 500;
     }
-    .login-error.visible { display: flex; }
+    .banner.visible { display: flex; animation: shake 0.32s ease; }
+    .banner-error {
+        background: var(--red-soft); border: 1px solid rgba(248,81,73,0.20);
+        color: var(--red);
+    }
+    .banner-success {
+        background: var(--green-soft); border: 1px solid rgba(63,185,80,0.20);
+        color: var(--green);
+    }
     @keyframes shake {
-        0%,100% { transform: translateX(0); }
-        20%,60%  { transform: translateX(-5px); }
-        40%,80%  { transform: translateX(5px); }
+        0%,100%{transform:translateX(0)} 25%,75%{transform:translateX(-4px)} 50%{transform:translateX(4px)}
     }
 
-    /* Submit button */
-    .login-btn {
-        width: 100%; padding: 11px 16px; border-radius: var(--r-md); border: none;
-        background: var(--accent); color: #fff;
-        font-size: 0.9rem; font-weight: 700; cursor: pointer;
-        display: flex; align-items: center; justify-content: center; gap: 8px;
-        transition: opacity var(--trans), transform var(--trans), box-shadow var(--trans), background var(--trans);
-        box-shadow: 0 2px 10px rgba(79,142,247,0.35);
-        margin-top: 4px;
+    /* Primary button */
+    .btn-primary {
+        width: 100%; padding: 10px 16px; border-radius: var(--r); border: none;
+        background: var(--blue); color: #fff;
+        font-size: 0.875rem; font-weight: 600; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 7px;
+        transition: background var(--ease), transform var(--ease), box-shadow var(--ease);
+        box-shadow: 0 1px 4px rgba(47,129,247,0.25);
+        margin-top: 2px;
     }
-    .login-btn:hover:not(:disabled) { opacity: .92; transform: translateY(-1px); box-shadow: 0 4px 18px rgba(79,142,247,0.45); }
-    .login-btn:active:not(:disabled) { transform: translateY(0); }
-    .login-btn:disabled { opacity: .6; cursor: default; }
-    .login-btn.success-state { background: var(--success); box-shadow: 0 2px 10px rgba(52,211,153,0.35); }
+    .btn-primary:hover:not(:disabled) {
+        background: var(--blue-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(47,129,247,0.35);
+    }
+    .btn-primary:active:not(:disabled) { transform: none; }
+    .btn-primary:disabled { opacity: .55; cursor: default; }
+    .btn-primary.success-state { background: var(--green); box-shadow: 0 1px 4px rgba(63,185,80,0.25); }
 
     .btn-spinner {
-        width: 16px; height: 16px; border: 2.5px solid rgba(255,255,255,0.3);
+        width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.28);
         border-top-color: #fff; border-radius: 50%;
-        animation: spin 0.65s linear infinite; display: none;
+        animation: spin 0.6s linear infinite; display: none;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Demo credentials */
-    .demo-wrap { margin-top: 22px; border-top: 1px solid var(--border); padding-top: 18px; }
+    /* Demo credentials — minimal text link style */
+    .demo-wrap { margin-top: 20px; text-align: center; }
     .demo-hd {
-        display: flex; align-items: center; justify-content: space-between;
-        background: none; border: none; width: 100%; cursor: pointer;
-        padding: 0; color: var(--text-3); font-size: 0.7rem; font-weight: 700;
-        text-transform: uppercase; letter-spacing: 0.1em;
-        transition: color var(--trans);
+        background: none; border: none; cursor: pointer; padding: 0;
+        font-size: 0.72rem; font-weight: 500; color: var(--text-3);
+        transition: color var(--ease);
+        display: inline-flex; align-items: center; gap: 4px;
     }
-    .demo-hd:hover { color: var(--text-2); }
-    .demo-chevron { transition: transform var(--trans); }
+    .demo-hd:hover { color: var(--blue); }
+    .demo-chevron { transition: transform var(--ease); }
     .demo-wrap.open .demo-chevron { transform: rotate(180deg); }
-
-    .demo-list { display: none; margin-top: 11px; flex-direction: column; gap: 6px; }
+    .demo-list {
+        display: none; margin-top: 10px; flex-direction: column; gap: 4px;
+        text-align: left;
+    }
     .demo-wrap.open .demo-list { display: flex; }
-
     .demo-row {
         display: flex; align-items: center; justify-content: space-between;
-        padding: 8px 11px; border-radius: var(--r-md);
-        background: var(--card-alt); border: 1px solid var(--border);
+        padding: 7px 10px; border-radius: var(--r);
+        background: var(--card-alt); border: 1px solid transparent;
         cursor: pointer; gap: 10px;
-        transition: border-color var(--trans), background var(--trans);
+        transition: border-color var(--ease), background var(--ease);
     }
-    .demo-row:hover { border-color: var(--accent-em); background: var(--accent-soft); }
-    .demo-row-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-    .demo-row-user { font-size: 0.8rem; font-weight: 600; color: var(--text-1); }
-    .demo-row-pass { font-size: 0.72rem; color: var(--text-3); font-weight: 400; }
+    .demo-row:hover { border-color: var(--blue-em); background: var(--blue-soft); }
+    .demo-row-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+    .demo-row-user { font-size: 0.78rem; font-weight: 600; color: var(--text-1); }
+    .demo-row-pass { font-size: 0.68rem; color: var(--text-3); }
     .role-pill {
-        flex-shrink: 0; font-size: 0.62rem; font-weight: 700; padding: 2px 9px;
-        border-radius: var(--r-pill); text-transform: uppercase; letter-spacing: 0.07em;
+        flex-shrink: 0; font-size: 0.60rem; font-weight: 600; padding: 2px 7px;
+        border-radius: var(--r-pill); text-transform: uppercase; letter-spacing: 0.05em;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       INTERACTION EFFECTS
+    ══════════════════════════════════════════════════════════ */
+
+    /* Logo float */
+    .brand-logo, .brand-logo-ph {
+        animation: logoFloat 3.5s ease-in-out infinite;
+    }
+    @keyframes logoFloat {
+        0%,100% { transform: translateY(0);    filter: drop-shadow(0 2px 8px rgba(47,129,247,0.20)); }
+        50%      { transform: translateY(-5px); filter: drop-shadow(0 8px 16px rgba(47,129,247,0.35)); }
+    }
+
+    /* Input field — lift on focus */
+    .field-wrap {
+        transition: transform var(--ease);
+    }
+    .field-wrap:focus-within {
+        transform: translateY(-1px);
+    }
+    .field-input {
+        transition: border-color var(--ease), box-shadow var(--ease), background var(--ease);
+    }
+    .field-wrap:focus-within .field-input {
+        background: var(--surface);
+    }
+
+    /* Label slide-up on focus */
+    .field-label {
+        transition: color var(--ease), transform var(--ease);
+        display: block;
+    }
+    .field:focus-within .field-label {
+        color: var(--blue);
+    }
+
+    /* Custom animated checkbox */
+    .remember-check { display: none; }
+    .remember-box {
+        width: 16px; height: 16px; flex-shrink: 0;
+        border: 1.5px solid var(--border-em); border-radius: 4px;
+        background: var(--card-alt); cursor: pointer;
+        display: grid; place-items: center;
+        transition: border-color var(--ease), background var(--ease), transform 0.12s ease;
+        position: relative; overflow: hidden;
+    }
+    .remember-check:checked + .remember-box {
+        background: var(--blue); border-color: var(--blue);
+        transform: scale(1.08);
+    }
+    .remember-box svg {
+        opacity: 0; transform: scale(0.4) rotate(-10deg);
+        transition: opacity 0.15s ease, transform 0.18s cubic-bezier(.34,1.56,.64,1);
+    }
+    .remember-check:checked + .remember-box svg {
+        opacity: 1; transform: scale(1) rotate(0deg);
+    }
+    /* ripple inside checkbox */
+    .remember-box::after {
+        content: ''; position: absolute; inset: 0; border-radius: 3px;
+        background: var(--blue); transform: scale(0); opacity: 0.4;
+        transition: transform 0.25s ease, opacity 0.25s ease;
+    }
+    .remember-check:checked + .remember-box::after {
+        transform: scale(2.5); opacity: 0;
+    }
+
+    /* Button — ripple container */
+    .btn-primary {
+        position: relative; overflow: hidden;
+    }
+    .btn-primary:active:not(:disabled) {
+        transform: scale(0.985);
+    }
+    /* ripple element (injected by JS) */
+    .ripple {
+        position: absolute; border-radius: 50%;
+        background: rgba(255,255,255,0.30);
+        transform: scale(0);
+        animation: rippleAnim 0.55s linear;
+        pointer-events: none;
+    }
+    @keyframes rippleAnim {
+        to { transform: scale(4); opacity: 0; }
+    }
+
+    /* Theme pill — press effect */
+    .theme-seg:active { transform: scale(0.94); }
+
+    /* Demo wrap expand */
+    .demo-list {
+        animation: none;
+    }
+    .demo-wrap.open .demo-list {
+        animation: listIn 0.22s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes listIn {
+        from { opacity: 0; transform: translateY(-6px); }
+        to   { opacity: 1; transform: none; }
+    }
+
+    /* Success burst on card */
+    .card.success-burst {
+        animation: successBurst 0.5s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes successBurst {
+        0%   { box-shadow: var(--shadow-lg); }
+        50%  { box-shadow: 0 0 0 6px rgba(63,185,80,0.20), var(--shadow-lg); }
+        100% { box-shadow: var(--shadow-lg); }
     }
 
     /* Footer */
     .login-footer {
-        position: fixed; bottom: 18px; left: 0; right: 0;
-        font-size: 0.69rem; color: var(--text-3); text-align: center; z-index: 1;
+        position: fixed; bottom: 14px; left: 0; right: 0;
+        font-size: 0.67rem; color: var(--text-3); text-align: center; z-index: 1;
         pointer-events: none;
     }
     </style>
@@ -276,110 +432,130 @@
 <body>
 
 <div class="bg-grid"></div>
-<div class="bg-glow"></div>
 
-<!-- Theme toggle -->
-<button class="theme-btn" id="themeToggle" title="Toggle theme">
-    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"
-         stroke-linecap="round" stroke-linejoin="round" id="themeIcon">
-        <path d="M17 12A7 7 0 119 4a5 5 0 108 8z"/>
-    </svg>
-</button>
+<!-- Theme pill -->
+<div class="theme-pill">
+    <button class="theme-seg" id="segDark">
+        <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 12A7 7 0 119 4a5 5 0 108 8z"/>
+        </svg>
+        Dark
+    </button>
+    <button class="theme-seg" id="segLight">
+        <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="10" cy="10" r="4"/>
+            <path d="M10 2v2M10 18v2M2 10h2M18 10h2M4.93 4.93l1.41 1.41M13.66 13.66l1.41 1.41M4.93 15.07l1.41-1.41M13.66 6.34l1.41-1.41"/>
+        </svg>
+        Light
+    </button>
+</div>
 
-<!-- Login card -->
-<div class="login-outer">
-<div class="login-card">
+<div class="page">
+<div class="card">
 
-    <!-- Brand -->
-    <div class="login-brand">
-        <img class="login-logo" src="PRO3S_Logo_001.png" alt="PRO3S" onerror="this.style.display='none'">
-        <div class="login-title">PRO3S WQIS</div>
-        <p class="login-sub">Weld Quality Inspection System<br>Sign in to your account to continue.</p>
-    </div>
+    <div class="card-accent"></div>
 
-    <div class="divider"></div>
+    <div class="card-body">
 
-    <!-- Form -->
-    <form class="login-form" id="loginForm" autocomplete="on">
-
-        <!-- Error -->
-        <div class="login-error" id="loginError">
-            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"
-                 stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
-                <circle cx="10" cy="10" r="8"/><path d="M10 7v4M10 14h.01"/>
-            </svg>
-            <span id="loginErrorText">Invalid username or password.</span>
+        <!-- Brand -->
+        <div class="brand">
+            <img class="brand-logo" src="PRO3S_Logo_001.png" alt="PRO3S"
+                 onerror="this.style.display='none';document.getElementById('logoPh').style.display='grid'">
+            <div class="brand-logo-ph" id="logoPh" style="display:none">P3</div>
+            <div class="brand-name">PRO3S WQIS</div>
+            <div class="brand-desc">Weld Quality Inspection System</div>
         </div>
 
-        <!-- Username -->
-        <div class="field">
-            <label class="field-label" for="username">Username</label>
-            <div class="field-wrap">
-                <input class="field-input" type="text" id="username" name="username"
-                       placeholder="Enter your username" autocomplete="username" required>
-                <div class="field-icon">
-                    <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor"
-                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="10" cy="7" r="3.5"/><path d="M2.5 17c0-3.5 3.5-6 7.5-6s7.5 2.5 7.5 6"/>
-                    </svg>
-                </div>
+        <!-- ════ SIGN IN ════ -->
+        <div id="panelSignIn">
+
+            <div class="banner banner-error" id="loginError">
+                <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
+                    <circle cx="10" cy="10" r="8"/><path d="M10 7v4M10 14h.01"/>
+                </svg>
+                <span id="loginErrorText">Invalid username or password.</span>
             </div>
-        </div>
 
-        <!-- Password -->
-        <div class="field">
-            <label class="field-label" for="password">Password</label>
-            <div class="field-wrap">
-                <input class="field-input" type="password" id="password" name="password"
-                       placeholder="Enter your password" autocomplete="current-password" required>
-                <div class="field-icon">
-                    <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor"
-                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="9" width="14" height="10" rx="2"/>
-                        <path d="M7 9V6a3 3 0 016 0v3"/>
-                    </svg>
+            <form id="loginForm" autocomplete="on">
+                <div style="display:flex;flex-direction:column;gap:14px;">
+
+                    <div class="field">
+                        <label class="field-label" for="username">Username</label>
+                        <div class="field-wrap">
+                            <input class="field-input" type="text" id="username" name="username"
+                                   placeholder="Enter your username" autocomplete="username" required>
+                            <div class="field-icon">
+                                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="10" cy="7" r="3.5"/><path d="M2.5 17c0-3.5 3.5-6 7.5-6s7.5 2.5 7.5 6"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label" for="password">Password</label>
+                        <div class="field-wrap">
+                            <input class="field-input" type="password" id="password" name="password"
+                                   placeholder="Enter your password" autocomplete="current-password" required>
+                            <div class="field-icon">
+                                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="9" width="14" height="10" rx="2"/><path d="M7 9V6a3 3 0 016 0v3"/>
+                                </svg>
+                            </div>
+                            <button type="button" class="pw-eye" id="pwToggle">
+                                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" id="pwIcon">
+                                    <path d="M1 10s3.5-7 9-7 9 7 9 7-3.5 7-9 7-9-7-9-7z"/>
+                                    <circle cx="10" cy="10" r="3"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="remember-row">
+                        <input type="checkbox" class="remember-check" id="rememberMe" name="remember">
+                        <label class="remember-box" for="rememberMe">
+                            <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.2"
+                                 stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 6l3 3 5-5"/>
+                            </svg>
+                        </label>
+                        <label class="remember-label" for="rememberMe">Remember me</label>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="loginBtn">
+                        <div class="btn-spinner" id="btnSpinner"></div>
+                        <span id="btnText">Sign In</span>
+                        <svg id="btnArrow" width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor"
+                             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 10h12M11 5l5 5-5 5"/>
+                        </svg>
+                    </button>
                 </div>
-                <button type="button" class="pw-eye" id="pwToggle" aria-label="Toggle password visibility">
-                    <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor"
-                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" id="pwIcon">
-                        <path d="M1 10s3.5-7 9-7 9 7 9 7-3.5 7-9 7-9-7-9-7z"/>
-                        <circle cx="10" cy="10" r="3"/>
+            </form>
+
+            <!-- Demo credentials -->
+            <div class="demo-wrap" id="demoWrap">
+                <button class="demo-hd" id="demoHd" type="button">
+                    Use demo account
+                    <svg class="demo-chevron" width="11" height="11" viewBox="0 0 20 20" fill="none"
+                         stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 8l5 5 5-5"/>
                     </svg>
                 </button>
+                <div class="demo-list" id="demoList"></div>
             </div>
+
         </div>
 
-        <!-- Remember me -->
-        <div class="remember-row">
-            <input type="checkbox" class="remember-check" id="rememberMe" name="remember">
-            <label class="remember-label" for="rememberMe">Remember me for 7 days</label>
-        </div>
-
-        <!-- Submit -->
-        <button type="submit" class="login-btn" id="loginBtn">
-            <div class="btn-spinner" id="btnSpinner"></div>
-            <span id="btnText">Sign In</span>
-            <svg id="btnArrow" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor"
-                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 10h12M11 5l5 5-5 5"/>
-            </svg>
-        </button>
-    </form>
-
-    <!-- Demo credentials -->
-    <div class="demo-wrap" id="demoWrap">
-        <button class="demo-hd" id="demoHd" type="button">
-            <span>Demo Credentials</span>
-            <svg class="demo-chevron" width="13" height="13" viewBox="0 0 20 20" fill="none"
-                 stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M5 8l5 5 5-5"/>
-            </svg>
-        </button>
-        <div class="demo-list" id="demoList"></div>
-    </div>
-
-</div>
-</div>
+    </div><!-- /card-body -->
+</div><!-- /card -->
+</div><!-- /page -->
 
 <div class="login-footer">
     PRO3S WQIS v1.0.0 &nbsp;·&nbsp; Industrial QA/QC Platform &nbsp;·&nbsp; EN ISO 5817:2023
@@ -388,24 +564,22 @@
 <script>
 'use strict';
 
-// ── THEME ──────────────────────────────────────────────────────────
+// ── THEME ──────────────────────────────────────────────────────────────
 const THEME_KEY = 'wqis_theme';
 function applyTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
-    const icon = document.getElementById('themeIcon');
-    icon.innerHTML = t === 'dark'
-        ? '<path d="M17 12A7 7 0 119 4a5 5 0 108 8z"/>'
-        : '<circle cx="10" cy="10" r="4"/><path d="M10 2v2M10 18v2M2 10h2M18 10h2M4.93 4.93l1.41 1.41M13.66 13.66l1.41 1.41M4.93 15.07l1.41-1.41M13.66 6.34l1.41-1.41"/>';
+    document.getElementById('segDark').classList.toggle('active',  t === 'dark');
+    document.getElementById('segLight').classList.toggle('active', t === 'light');
     localStorage.setItem(THEME_KEY, t);
 }
 applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
-document.getElementById('themeToggle').addEventListener('click', () =>
-    applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
+document.getElementById('segDark').addEventListener('click',  () => applyTheme('dark'));
+document.getElementById('segLight').addEventListener('click', () => applyTheme('light'));
 
-// ── REDIRECT IF ALREADY AUTHENTICATED ─────────────────────────────
+// ── REDIRECT IF ALREADY AUTHENTICATED ─────────────────────────────────
 if (Auth.isAuthenticated()) { window.location.replace('index.html'); }
 
-// ── PASSWORD TOGGLE ────────────────────────────────────────────────
+// ── PASSWORD TOGGLE ───────────────────────────────────────────────────
 const pwInput = document.getElementById('password');
 const pwIcon  = document.getElementById('pwIcon');
 document.getElementById('pwToggle').addEventListener('click', () => {
@@ -416,7 +590,7 @@ document.getElementById('pwToggle').addEventListener('click', () => {
         : '<path d="M1 10s3.5-7 9-7 9 7 9 7-3.5 7-9 7-9-7-9-7z"/><circle cx="10" cy="10" r="3"/>';
 });
 
-// ── DEMO CREDENTIALS ───────────────────────────────────────────────
+// ── DEMO CREDENTIALS ───────────────────────────────────────────────────
 const DEMO_FALLBACK = [
     { username: 'admin',     password: 'pro3s@admin', role: 'admin',     label: 'Administrator' },
     { username: 'inspector', password: 'weld@2024',   role: 'inspector', label: 'Inspector'     },
@@ -426,21 +600,19 @@ const DEMOS = Array.isArray(window.WQIS_USERS) && window.WQIS_USERS.length
     ? window.WQIS_USERS
         .filter(u => u.status !== 'disabled')
         .map(u => ({
-            username: u.username,
-            password: u.password,
-            role: u.role,
+            username: u.username, password: u.password, role: u.role,
             label: u.role === 'admin' ? 'Administrator' : u.role === 'inspector' ? 'Inspector' : 'Viewer'
         }))
     : DEMO_FALLBACK;
 const ROLE_COLORS = {
-    admin:     { color: '#4f8ef7', bg: 'rgba(79,142,247,0.14)'  },
-    inspector: { color: '#34d399', bg: 'rgba(52,211,153,0.13)'  },
-    viewer:    { color: '#a78bfa', bg: 'rgba(167,139,250,0.14)' },
+    admin:     { color: '#58a6ff', bg: 'rgba(88,166,255,0.12)'   },
+    inspector: { color: '#3fb950', bg: 'rgba(63,185,80,0.12)'    },
+    viewer:    { color: '#a5d6ff', bg: 'rgba(165,214,255,0.10)'  },
 };
 
 const demoList = document.getElementById('demoList');
 DEMOS.forEach(d => {
-    const c = ROLE_COLORS[d.role];
+    const c = ROLE_COLORS[d.role] || ROLE_COLORS.viewer;
     const el = document.createElement('div');
     el.className = 'demo-row';
     el.innerHTML = `
@@ -456,11 +628,10 @@ DEMOS.forEach(d => {
     });
     demoList.appendChild(el);
 });
-
 document.getElementById('demoHd').addEventListener('click', () =>
     document.getElementById('demoWrap').classList.toggle('open'));
 
-// ── LOGIN FORM ─────────────────────────────────────────────────────
+// ── LOGIN FORM ─────────────────────────────────────────────────────────
 const loginForm  = document.getElementById('loginForm');
 const loginError = document.getElementById('loginError');
 const loginErrTx = document.getElementById('loginErrorText');
@@ -469,9 +640,9 @@ const btnSpinner = document.getElementById('btnSpinner');
 const btnText    = document.getElementById('btnText');
 const btnArrow   = document.getElementById('btnArrow');
 
-function showError(msg) {
+function showLoginError(msg) {
     loginError.classList.remove('visible');
-    void loginError.offsetWidth;          // reflow to restart animation
+    void loginError.offsetWidth;
     loginErrTx.textContent = msg;
     loginError.classList.add('visible');
 }
@@ -495,21 +666,36 @@ loginForm.addEventListener('submit', async e => {
         btnSpinner.style.display = 'none';
         btnText.textContent = 'Success  ✓';
         loginBtn.classList.add('success-state');
+        document.querySelector('.card').classList.add('success-burst');
         setTimeout(() => window.location.replace('index.html'), 380);
     } else {
         btnSpinner.style.display = 'none';
         btnArrow.style.display   = '';
         btnText.textContent      = 'Sign In';
         loginBtn.disabled        = false;
-        showError('Invalid username or password. Please try again.');
+        showLoginError('Invalid username or password. Please try again.');
         document.getElementById('password').value = '';
         document.getElementById('password').focus();
     }
 });
 
-// Auto-focus username on load
-window.addEventListener('DOMContentLoaded', () =>
-    document.getElementById('username').focus());
+// ── RIPPLE EFFECT ─────────────────────────────────────────────────────
+function addRipple(btn) {
+    btn.addEventListener('click', function(e) {
+        if (this.disabled) return;
+        const r = document.createElement('span');
+        r.className = 'ripple';
+        const d = Math.max(this.clientWidth, this.clientHeight);
+        const rect = this.getBoundingClientRect();
+        r.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX - rect.left - d/2}px;top:${e.clientY - rect.top - d/2}px`;
+        this.appendChild(r);
+        r.addEventListener('animationend', () => r.remove());
+    });
+}
+addRipple(document.getElementById('loginBtn'));
+
+// Auto-focus on load
+document.getElementById('username')?.focus();
 </script>
 </body>
 </html>

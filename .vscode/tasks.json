@@ -2,13 +2,36 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "🔄 Reload Browser (WQIS-PRO3S)",
+      "detail": "โหลด browser ใหม่หลังจาก Claude แก้โค้ด",
+      "type": "shell",
+      "command": "Start-Process 'chrome' -ArgumentList 'http://127.0.0.1:5501/WQIS-PRO3S.html'",
+      "options": {
+        "shell": {
+          "executable": "powershell.exe",
+          "args": ["-NoProfile", "-Command"]
+        }
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared",
+        "focus": false,
+        "close": true
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "🚀 Deploy to Netlify",
       "detail": "บันทึกและ Deploy ขึ้น Netlify อัตโนมัติ",
       "type": "shell",
       "command": "git add -A && git commit -m \"${input:commitMessage}\" && git push",
       "group": {
         "kind": "build",
-        "isDefault": true
+        "isDefault": false
       },
       "presentation": {
         "panel": "new",
