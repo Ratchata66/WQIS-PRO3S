@@ -9,6 +9,15 @@ const PALETTES = {
   '#4fa8ff': { a:'#4fa8ff', a2:'#82c0ff', a3:'#b8dcff', glow:'rgba(79,168,255,0.5)'  },
   '#a06bff': { a:'#a06bff', a2:'#bf95ff', a3:'#dabfff', glow:'rgba(160,107,255,0.5)' },
   '#2dd4a4': { a:'#2dd4a4', a2:'#6ee5be', a3:'#9bf0d4', glow:'rgba(45,212,164,0.5)'  },
+  '#f43f5e': { a:'#f43f5e', a2:'#fb7185', a3:'#fda4af', glow:'rgba(244,63,94,0.5)'   },
+  '#facc15': { a:'#facc15', a2:'#fde047', a3:'#fef08a', glow:'rgba(250,204,21,0.45)' },
+};
+
+// Theme flash helper — smooth morph between themes
+const applyThemeTransition = (newTheme, setTheme) => {
+  document.body.classList.add('theme-transitioning');
+  setTheme(newTheme);
+  setTimeout(() => document.body.classList.remove('theme-transitioning'), 400);
 };
 
 // ── Toast icons ──────────────────────────────────────────────────────────────
@@ -121,7 +130,8 @@ const App = () => {
     if (s) setPhase('app');
   }, []);
 
-  const toggleTheme = () => setTheme(t => t === 'light' ? 'dark' : 'light');
+  const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  const handleThemeChange = (newTheme) => applyThemeTransition(newTheme, setTheme);
 
   // ── Splash ──
   if (phase === 'splash') {
@@ -169,6 +179,7 @@ const App = () => {
           active={page}
           theme={theme}
           onToggleTheme={toggleTheme}
+          onThemeChange={handleThemeChange}
           onNotifications={() => setNotifOpen(true)}
           onProfile={() => setPage('profile')}
           accent={accent}

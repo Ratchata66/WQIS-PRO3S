@@ -26,8 +26,14 @@
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
+  <!-- Auth -->
+  <script src="auth.js"></script>
+
   <!-- Tweaks panel + helpers (load first so app can use them) -->
   <script type="text/babel" data-presets="react" src="js/tweaks-panel.jsx"></script>
+
+  <!-- i18n (load early so all components can call window.t) -->
+  <script src="js/i18n.jsx"></script>
 
   <!-- Data + atoms -->
   <script type="text/babel" data-presets="react" src="js/data.jsx"></script>
@@ -40,7 +46,7 @@
 
   <!-- Screens -->
   <script type="text/babel" data-presets="react" src="js/dashboard.jsx"></script>
-  <script type="text/babel" data-presets="react" src="js/ai-inspect.jsx"></script>
+  <script type="text/babel" data-presets="react" src="js/ai-inspect.jsx?v=local-yolo-20260518-2"></script>
   <script type="text/babel" data-presets="react" src="js/projects.jsx"></script>
   <script type="text/babel" data-presets="react" src="js/operations.jsx"></script>
   <script type="text/babel" data-presets="react" src="js/insights.jsx"></script>
@@ -49,6 +55,7 @@
   <script type="text/babel" data-presets="react" src="js/standards.jsx"></script>
   <script type="text/babel" data-presets="react" src="js/users-teams.jsx"></script>
   <script type="text/babel" data-presets="react" src="js/profile.jsx"></script>
+  <script type="text/babel" data-presets="react" src="js/settings.jsx"></script>
 
   <!-- App entry -->
   <script type="text/babel" data-presets="react" src="js/app.jsx"></script>

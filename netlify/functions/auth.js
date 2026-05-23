@@ -15,8 +15,13 @@ exports.handler = async (event) => {
     const CORS = {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-store',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
     };
 
+    if (event.httpMethod === 'OPTIONS') {
+        return { statusCode: 204, headers: CORS, body: '' };
+    }
     if (event.httpMethod !== 'POST') {
         return { statusCode: 405, headers: CORS, body: JSON.stringify({ ok: false }) };
     }
@@ -41,10 +46,8 @@ exports.handler = async (event) => {
         { id: 3, username: process.env.USER_VIEWER,    password: process.env.PASS_VIEWER,    role: 'viewer',    name: 'Quality Viewer',        avatar: 'V' },
         { id: 4, username: process.env.USER_ADMIN2,    password: process.env.PASS_ADMIN2,    role: 'admin',     name: 'Nawapun W.',            avatar: 'N' },
     ];
-    const USERS = envUsers;
-
     const lookup = username.toLowerCase();
-    const user = USERS.find(u =>
+    const user = envUsers.find(u =>
         u.username &&
         u.status !== 'disabled' &&
         String(u.username).toLowerCase() === lookup &&

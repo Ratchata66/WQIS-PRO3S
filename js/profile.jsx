@@ -263,8 +263,8 @@ const ProfileScreen = ({ onBack, lang }) => {
             </button>
           )}
           <div>
-            {t('prof.title')}</div>
-            {t('prof.sub')}</div>
+            <div className="page-title">{t('prof.title')}</div>
+            <div className="page-sub">{t('prof.sub')}</div>
           </div>
         </div>
       </div>

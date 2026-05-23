@@ -351,12 +351,150 @@ const Sidebar = ({ active, onNav, collapsed, onToggle, lang }) => {
   );
 };
 
+// ── ThemePanel ───────────────────────────────────────────────────────────────
+const THEME_LIST = [
+  {
+    id: 'light', name: 'Office', nameTh: 'ออฟฟิศ', emoji: '🌤',
+    bg: '#F8F9FA', sidebar: '#FFFFFF', topbar: '#FFFFFF', accent: '#1B3A6B', card: '#FFFFFF',
+    swatches: ['#F8F9FA','#1B3A6B','#0D7377'],
+  },
+  {
+    id: 'dark', name: 'Dark', nameTh: 'ดาร์ก', emoji: '🌑',
+    bg: '#141929', sidebar: '#1c2235', topbar: '#1c2235', accent: '#5aabff', card: '#1e2740',
+    swatches: ['#141929','#5aabff','#2dd4a4'],
+  },
+  {
+    id: 'neon', name: 'Neon', nameTh: 'นีออน', emoji: '⚡',
+    bg: '#060c14', sidebar: '#0d1117', topbar: '#0d1117', accent: '#00ff88', card: '#0d1520',
+    swatches: ['#060c14','#00ff88','#00e5ff'],
+  },
+  {
+    id: 'midnight', name: 'Midnight', nameTh: 'มิดไนต์', emoji: '🌌',
+    bg: '#09071a', sidebar: '#12102a', topbar: '#12102a', accent: '#a78bfa', card: '#100e28',
+    swatches: ['#09071a','#a78bfa','#818cf8'],
+  },
+  {
+    id: 'sunset', name: 'Sunset', nameTh: 'ซันเซ็ต', emoji: '🌅',
+    bg: '#100604', sidebar: '#1e0e08', topbar: '#1e0e08', accent: '#f97316', card: '#1a0c08',
+    swatches: ['#100604','#f97316','#f43f5e'],
+  },
+];
+
+const ThemePanel = ({ theme, onThemeChange, onClose, lang }) => {
+  const isTh = (lang || 'th') === 'th';
+  return (
+    <>
+      <div className="theme-panel-backdrop" onClick={onClose}/>
+      <div className="theme-panel">
+        {/* Header */}
+        <div className="theme-panel-header">
+          <div>
+            <div style={{fontWeight:700,fontSize:15,color:'var(--text-1)',display:'flex',alignItems:'center',gap:7}}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" strokeWidth="2.2" strokeLinecap="round">
+                <circle cx="13.5" cy="6.5" r="0.5" fill="var(--navy)"/>
+                <circle cx="17.5" cy="10.5" r="0.5" fill="var(--navy)"/>
+                <circle cx="8.5"  cy="7.5"  r="0.5" fill="var(--navy)"/>
+                <circle cx="6.5"  cy="12.5" r="0.5" fill="var(--navy)"/>
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.041 0-.92.725-1.646 1.648-1.646H16c2.209 0 4-1.791 4-4 0-4.971-4-9-8-9z"/>
+              </svg>
+              {isTh ? 'ธีมและสไตล์' : 'Theme & Style'}
+            </div>
+            <div style={{fontSize:11.5,color:'var(--text-3)',marginTop:2}}>
+              {isTh ? 'เลือกสไตล์ที่ชอบ' : 'Pick your favourite look'}
+            </div>
+          </div>
+          <button className="theme-btn" onClick={onClose} title="Close">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        {/* Theme cards */}
+        <div className="theme-panel-body">
+          {THEME_LIST.map(th => (
+            <button key={th.id}
+              className={`theme-card${theme===th.id?' active':''}`}
+              onClick={() => { onThemeChange(th.id); onClose(); }}
+            >
+              {/* Mini preview */}
+              <div className="theme-preview" style={{background:th.bg}}>
+                <div className="theme-preview-sidebar" style={{background:th.sidebar}}/>
+                <div className="theme-preview-topbar" style={{background:th.topbar, borderBottom:`1px solid ${th.accent}30`}}/>
+                <div className="theme-preview-content" style={{background:th.accent+'22', borderRadius:3}}/>
+                <div className="theme-preview-bar" style={{background:th.accent, opacity:0.85}}/>
+                <div className="theme-preview-dot" style={{background:th.accent, boxShadow:`0 0 6px ${th.accent}`}}/>
+              </div>
+
+              {/* Info */}
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontWeight:700,fontSize:13,color:'var(--text-1)',marginBottom:5,display:'flex',alignItems:'center',gap:5}}>
+                  <span>{th.emoji}</span>
+                  <span>{isTh ? th.nameTh : th.name}</span>
+                </div>
+                <div style={{display:'flex',gap:5,alignItems:'center'}}>
+                  {th.swatches.map((c,i) => (
+                    <div key={i} style={{
+                      width:15, height:15, borderRadius:4, background:c,
+                      border:'1.5px solid rgba(128,128,128,0.25)',
+                      boxShadow: i===1 ? `0 0 5px ${c}99` : 'none',
+                    }}/>
+                  ))}
+                </div>
+              </div>
+
+              {/* Active badge */}
+              {theme===th.id
+                ? <div className="theme-check">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                : <div style={{width:24,height:24,borderRadius:'50%',border:'2px solid var(--border)',flexShrink:0}}/>
+              }
+            </button>
+          ))}
+
+          {/* Accent section */}
+          <div style={{marginTop:6,padding:'14px 0 2px',borderTop:'1px solid var(--border-lt)'}}>
+            <div style={{fontSize:12,fontWeight:600,color:'var(--text-3)',marginBottom:10,letterSpacing:'0.04em',textTransform:'uppercase'}}>
+              {isTh ? 'สีหลัก (Accent)' : 'Accent Color'}
+            </div>
+            <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+              {[
+                {c:'#ff8c1a',n:'Amber'},
+                {c:'#4fa8ff',n:'Blue'},
+                {c:'#a06bff',n:'Purple'},
+                {c:'#2dd4a4',n:'Teal'},
+                {c:'#f43f5e',n:'Rose'},
+                {c:'#facc15',n:'Gold'},
+              ].map(({c,n}) => (
+                <button key={c}
+                  onClick={() => typeof window.onAccentChange === 'function' && window.onAccentChange(c)}
+                  title={n}
+                  style={{
+                    width:28, height:28, borderRadius:8, background:c, border:'none',
+                    cursor:'pointer', boxShadow:`0 0 8px ${c}88`,
+                    transform:'scale(1)', transition:'transform 0.15s',
+                  }}
+                  onMouseEnter={e=>e.currentTarget.style.transform='scale(1.18)'}
+                  onMouseLeave={e=>e.currentTarget.style.transform='scale(1)'}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
 // ── Topbar ───────────────────────────────────────────────────────────────────
-const Topbar = ({ active, theme, onToggleTheme, onNotifications, onProfile, accent, onAccentChange, lang, onLangChange }) => {
+const Topbar = ({ active, theme, onToggleTheme, onThemeChange, onNotifications, onProfile, accent, onAccentChange, lang, onLangChange }) => {
   const t = k => (typeof window !== 'undefined' && window.t) ? window.t(k) : k;
   const pageLabel = getPageLabel(active);
   const ACCENTS   = ['#ff8c1a','#4fa8ff','#a06bff','#2dd4a4'];
   const NAMES     = { '#ff8c1a':'Amber','#4fa8ff':'Blue','#a06bff':'Purple','#2dd4a4':'Teal' };
+  const [themePanel, setThemePanel] = React.useState(false);
+
+  // expose accent handler for ThemePanel accent buttons
+  React.useEffect(() => { window.onAccentChange = onAccentChange; }, [onAccentChange]);
 
   const session  = Auth.getSession ? Auth.getSession() : null;
   const tbUsername = session?.username || '';
@@ -398,6 +536,7 @@ const Topbar = ({ active, theme, onToggleTheme, onNotifications, onProfile, acce
   }
 
   return (
+    <>
     <header className="topbar">
       <div className="topbar-breadcrumb">
         <span className="topbar-bc-root">PRO3S WQIS</span>
@@ -431,22 +570,26 @@ const Topbar = ({ active, theme, onToggleTheme, onNotifications, onProfile, acce
           ))}
         </div>
 
-        {/* Accent picker */}
-        <div className="topbar-accents">
-          {ACCENTS.map(c => (
-            <button key={c} className={`accent-dot${accent===c?' active':''}`}
-                    style={{background:c}} title={NAMES[c]}
-                    onClick={() => onAccentChange && onAccentChange(c)}/>
-          ))}
-        </div>
-
-        {/* Theme toggle */}
-        <button className="topbar-btn" onClick={onToggleTheme}
-                title={theme === 'dark' ? 'Light mode' : 'Dark mode'}>
-          {theme === 'dark'
-            ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
-            : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 14.1A8 8 0 119.9 4a6 6 0 1010.1 10.1z"/></svg>
-          }
+        {/* 🎨 Theme button */}
+        <button
+          className="topbar-btn"
+          onClick={() => setThemePanel(true)}
+          title={lang === 'en' ? 'Theme & Style' : 'ธีมและสไตล์'}
+          style={{position:'relative'}}
+        >
+          {/* Palette icon */}
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="13.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+            <circle cx="17.5" cy="10.5" r="1" fill="currentColor" stroke="none"/>
+            <circle cx="8.5"  cy="7.5"  r="1" fill="currentColor" stroke="none"/>
+            <circle cx="6.5"  cy="12.5" r="1" fill="currentColor" stroke="none"/>
+            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.041 0-.92.725-1.646 1.648-1.646H16c2.209 0 4-1.791 4-4 0-4.971-4-9-8-9z"/>
+          </svg>
+          {/* Active theme dot indicator */}
+          {(()=>{
+            const th = THEME_LIST.find(th=>th.id===theme);
+            return th ? <span style={{position:'absolute',bottom:4,right:4,width:6,height:6,borderRadius:'50%',background:th.accent,boxShadow:`0 0 5px ${th.accent}`}}/> : null;
+          })()}
         </button>
 
         {/* Notifications */}
@@ -467,6 +610,17 @@ const Topbar = ({ active, theme, onToggleTheme, onNotifications, onProfile, acce
         </button>
       </div>
     </header>
+
+    {/* Theme Panel */}
+    {themePanel && (
+      <ThemePanel
+        theme={theme}
+        onThemeChange={onThemeChange || onToggleTheme}
+        onClose={() => setThemePanel(false)}
+        lang={lang}
+      />
+    )}
+  </>
   );
 };
 

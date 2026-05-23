@@ -115,7 +115,10 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
   const [analyzing,   setAnalyzing]   = React.useState(false);
   const [dragging,    setDragging]    = React.useState(false);
   const [saved,       setSaved]       = React.useState(false);
-  const [zoomModal,   setZoomModal]   = React.useState(false);
+  const [zoomModal,      setZoomModal]      = React.useState(false);
+  const [oxideOpen,      setOxideOpen]      = React.useState(false);
+  const [exporting,      setExporting]      = React.useState(false);
+  const [exportProgress, setExportProgress] = React.useState(0);
   const fileInputRef = React.useRef(null);
   const folderInputRef = React.useRef(null);
 
@@ -242,6 +245,54 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
     setForm(f => ({...f, weldId:'', welder:'', cert:'', comment:''}));
   };
 
+  // ── Export Pass/Fail to local folders ──
+  const exportToFolders = async () => {
+    if (!('showDirectoryPicker' in window)) {
+      window.showToast && window.showToast(t('inspect.export_no_support'), 'error');
+      return;
+    }
+    const analyzed = files.filter(f => results[f.id]);
+    if (!analyzed.length) return;
+
+    let rootHandle;
+    try {
+      rootHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    } catch(e) {
+      return; // user cancelled
+    }
+
+    // Create Pass / Fail subfolders
+    const passDir = await rootHandle.getDirectoryHandle('Pass', { create: true });
+    const failDir = await rootHandle.getDirectoryHandle('Fail', { create: true });
+
+    setExporting(true);
+    setExportProgress(0);
+    let done = 0;
+    let passCount = 0;
+    let failCount = 0;
+
+    for (const f of analyzed) {
+      const res = results[f.id];
+      const targetDir = res.pass ? passDir : failDir;
+      try {
+        const fileHandle = await targetDir.getFileHandle(f.name, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(f.file);
+        await writable.close();
+        if (res.pass) passCount++; else failCount++;
+      } catch(_) { /* skip on error */ }
+      done++;
+      setExportProgress(Math.round(done / analyzed.length * 100));
+    }
+
+    setExporting(false);
+    setExportProgress(0);
+    window.showToast && window.showToast(
+      `${t('inspect.export_done')} · ✓ Pass: ${passCount}  ✗ Fail: ${failCount}`,
+      'success'
+    );
+  };
+
   const selFile   = files.find(f => f.id === selected);
   const selResult = selected ? results[selected] : null;
   const selectedProj = projects.find(p => p.id === form.projectId);
@@ -254,7 +305,7 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
       <div className="page-hd">
         <div>
           <div className="page-title">AI Inspect</div>
-          {t('inspect.sub')}</div>
+          <div className="page-sub">{t('inspect.sub')}</div>
         </div>
       </div>
 
@@ -320,7 +371,7 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
 
               {files.length > 0 && (
                 <div style={{display:'flex',gap:8,marginTop:12,justifyContent:'flex-end',alignItems:'center'}}>
-                  <span className="text-sm text-muted">{files.length} ไฟล์</span>
+                  <span className="text-sm text-muted">{files.length} {t('lbl.files')}</span>
                   <button className="btn btn-outline-danger btn-sm" onClick={clearAll}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
                     {t('btn.clear')}
@@ -338,6 +389,45 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
                       </>
                     )}
                   </button>
+
+                  {/* Export Pass/Fail button — shown only after analysis */}
+                  {Object.keys(results).length > 0 && (
+                    <button
+                      className="btn btn-primary"
+                      onClick={exportToFolders}
+                      disabled={exporting}
+                      title={t('inspect.export_title')}
+                      style={{minWidth:160,position:'relative',overflow:'hidden'}}
+                    >
+                      {/* Progress bar behind button text */}
+                      {exporting && (
+                        <div style={{
+                          position:'absolute',inset:0,left:0,top:0,
+                          width: exportProgress + '%',
+                          background:'rgba(255,255,255,0.18)',
+                          transition:'width 0.3s',
+                          borderRadius:'inherit',
+                          pointerEvents:'none',
+                        }}/>
+                      )}
+                      {exporting ? (
+                        <>
+                          <div style={{width:13,height:13,border:'2px solid rgba(255,255,255,0.3)',borderTopColor:'white',borderRadius:'50%',animation:'spin 0.6s linear infinite'}}/>
+                          {exportProgress}%
+                        </>
+                      ) : (
+                        <>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+                            <line x1="12" y1="11" x2="12" y2="17"/>
+                            <polyline points="9 14 12 17 15 14"/>
+                          </svg>
+                          {t('inspect.export_btn')}
+                        </>
+                      )}
+                    </button>
+                  )}
+
                 </div>
               )}
             </div>
@@ -387,7 +477,7 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
                   {/* Zoom button overlay */}
                   <button
                     onClick={()=>setZoomModal(true)}
-                    title="ดูภาพขยาย"
+                    title={t('btn.zoom')}
                     style={{position:'absolute',top:10,right:10,background:'rgba(0,0,0,0.6)',border:'1px solid rgba(255,255,255,0.25)',
                             borderRadius:7,color:'white',padding:'6px 10px',cursor:'pointer',display:'flex',
                             alignItems:'center',gap:5,fontSize:12.5,fontWeight:600,backdropFilter:'blur(4px)',
@@ -398,7 +488,7 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                       <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
                     </svg>
-                    ซูม
+                    {t('btn.zoom')}
                   </button>
                 </div>
 
@@ -477,7 +567,7 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
             <div className="form-group" style={{marginBottom:0}}>
               <label className="form-label">{t('inspect.weld_type')}</label>
               <select className="form-control" value={form.weldType} onChange={e=>setF('weldType',e.target.value)}>
-                {WQIS_DATA.weldTypes.map(t=><option key={t}>{t}</option>)}
+                {WQIS_DATA.weldTypes.map(wt=><option key={wt}>{wt}</option>)}
               </select>
             </div>
 
@@ -557,6 +647,88 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
 
       </div>
 
+
+      {/* ── Oxide Color Reference ── */}
+      <div className="card" style={{marginTop:20}}>
+        <div className="card-header" style={{cursor:'pointer'}} onClick={()=>setOxideOpen(o=>!o)}>
+          <div style={{display:'flex',alignItems:'center',gap:10}}>
+            <div style={{width:32,height:32,borderRadius:8,background:'linear-gradient(90deg,#c8c8c0,#d4b87a,#c8a030,#a87820,#7a4814,#5060a8,#202840)',flexShrink:0,border:'1px solid var(--border)'}}/>
+            <div>
+              <div className="card-title" style={{marginBottom:0}}>{t('inspect.oxide_title')}</div>
+              <div style={{fontSize:11.5,color:'var(--text-3)',marginTop:1}}>{t('inspect.oxide_sub')}</div>
+            </div>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <span style={{fontSize:11,fontWeight:600,padding:'2px 8px',borderRadius:20,
+              background:'var(--green-soft)',color:'var(--green)'}}>AWS D18.1:2009</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"
+                 style={{transform:oxideOpen?'rotate(180deg)':'rotate(0deg)',transition:'transform 0.2s'}}>
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+        </div>
+
+        {oxideOpen && (
+          <div className="card-body" style={{paddingTop:0}}>
+
+            {/* Photo reference */}
+            <div style={{marginBottom:16}}>
+              <img
+                src="assets/images/oxide-color-ref.jpg"
+                alt="AWS D18.1:2009 Weld Oxide Color Chart"
+                style={{width:'100%',borderRadius:8,display:'block',border:'1px solid var(--border)'}}
+                onError={e=>{e.currentTarget.style.display='none';}}
+              />
+            </div>
+
+            {/* Color zone legend */}
+            <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14}}>
+              {[
+                {c:'#c8ccc4',n:1,labelKey:'inspect.ox1',pass:true},
+                {c:'#d4c07a',n:2,labelKey:'inspect.ox2',pass:true},
+                {c:'#c8a030',n:3,labelKey:'inspect.ox3',pass:true},
+                {c:'#a87820',n:4,labelKey:'inspect.ox4',pass:false},
+                {c:'#8c5c18',n:5,labelKey:'inspect.ox5',pass:false},
+                {c:'#7a4814',n:6,labelKey:'inspect.ox6',pass:false},
+                {c:'#5060a8',n:7,labelKey:'inspect.ox7',pass:false},
+                {c:'#304090',n:8,labelKey:'inspect.ox8',pass:false},
+                {c:'#202840',n:9,labelKey:'inspect.ox9',pass:false},
+                {c:'#141414',n:10,labelKey:'inspect.ox10',pass:false},
+              ].map(({c:col,n,labelKey,pass})=>(
+                <div key={n} style={{display:'flex',alignItems:'center',gap:5,
+                  padding:'5px 9px',borderRadius:8,background:'var(--bg-alt)',
+                  border:pass?'1.5px solid var(--green)':'1px solid var(--border)'}}>
+                  <div style={{width:16,height:16,borderRadius:3,background:col,
+                    border:'1.5px solid rgba(128,128,128,0.3)',flexShrink:0}}/>
+                  <span style={{fontSize:11.5,fontWeight:700,color:'var(--text-3)'}}>{n}</span>
+                  <span style={{fontSize:11,color:'var(--text-2)',whiteSpace:'nowrap'}}>{t(labelKey)}</span>
+                  {pass
+                    ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="3.2"><polyline points="20 6 9 17 4 12"/></svg>
+                    : <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--red)"   strokeWidth="3.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                  }
+                </div>
+              ))}
+            </div>
+
+            {/* Summary badges */}
+            <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+              <div style={{display:'flex',alignItems:'center',gap:6,padding:'6px 14px',borderRadius:8,
+                background:'var(--green-soft)',border:'1px solid var(--green)',
+                fontSize:12,color:'var(--green)',fontWeight:600}}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                {t('inspect.ox_pass_note')}
+              </div>
+              <div style={{display:'flex',alignItems:'center',gap:6,padding:'6px 14px',borderRadius:8,
+                background:'var(--red-soft)',border:'1px solid var(--red)',
+                fontSize:12,color:'var(--red)',fontWeight:600}}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                {t('inspect.ox_fail_note')}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* ── Zoom lightbox ── */}
       {zoomModal && selFile && (
         <ModalPortal>
@@ -616,7 +788,7 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
               {/* Footer hint */}
               <div style={{padding:'8px 18px',borderTop:'1px solid var(--border-lt)',fontSize:11.5,
                            color:'var(--text-3)',textAlign:'center',flexShrink:0}}>
-                คลิกนอกภาพหรือกด ✕ เพื่อปิด
+                {t('lbl.zoom_close')}
               </div>
             </div>
           </div>

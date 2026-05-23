@@ -71,13 +71,13 @@ const SettingsScreen = ({ settings, setSettings, lang }) => {
           {saveStatus === 'saving' && (
             <span style={{fontSize:12,color:'var(--text-3)',display:'flex',alignItems:'center',gap:5}}>
               <div style={{width:10,height:10,border:'2px solid var(--border)',borderTopColor:'var(--accent)',borderRadius:'50%',animation:'spin 0.6s linear infinite'}}/>
-              กำลังบันทึก...
+              {t('prof.saving')}
             </span>
           )}
           {saveStatus === 'saved' && (
             <span style={{fontSize:12,color:'var(--ok)',display:'flex',alignItems:'center',gap:4,fontWeight:600}}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-              บันทึกแล้ว
+              {t('btn.saved')}
             </span>
           )}
           <button className="btn btn-primary" onClick={saveNow}>
