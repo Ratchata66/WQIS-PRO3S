@@ -1,4 +1,9 @@
-/* global React, Auth, window */
+/* global React, ReactDOM, Auth, window */
+
+// ── Portal: renders children directly at document.body (bypasses stacking contexts) ──
+const ModalPortal = ({ children }) =>
+  ReactDOM.createPortal(children, document.body);
+window.ModalPortal = ModalPortal;
 
 // ── Nav definitions (static; labels resolved dynamically via window.t) ───────
 const NAV_ITEMS = [
