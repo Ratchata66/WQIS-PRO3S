@@ -1,506 +1,547 @@
-/* global React, Icons, Charts, WeldImage, WQIS_DATA */
-// App shell: Splash, Login, Sidebar, Topbar
+/* global React, Auth, window */
 
-// ============== Splash / Opening Animation ==========================
+// ── Nav definitions (static; labels resolved dynamically via window.t) ───────
+const NAV_ITEMS = [
+  { id:'dashboard',   labelKey:'nav.dashboard',   group:'nav.group.main',
+    icon:(s=18)=><svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="8" height="9" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="14" width="8" height="7" rx="1.5"/></svg> },
+  { id:'inspect',     labelKey:'nav.inspect',      group:'nav.group.main',
+    icon:(s=18)=><svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.5-4.5M8 11h6M11 8v6"/></svg> },
+  { id:'inspections', labelKey:'nav.inspections',  group:'nav.group.main',
+    icon:(s=18)=><svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3 8-8"/><path d="M5 3a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V8l-5-5z"/><path d="M15 3v5h5"/></svg> },
+  { id:'projects',    labelKey:'nav.projects',     group:'nav.group.main',
+    icon:(s=18)=><svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M3 11h18"/></svg> },
+  { id:'reports',     labelKey:'nav.reports',      group:'nav.group.analysis',
+    icon:(s=18)=><svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg> },
+  { id:'analytics',   labelKey:'nav.analytics',    group:'nav.group.analysis',
+    icon:(s=18)=><svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> },
+  { id:'standards',   labelKey:'nav.standards',    group:'nav.group.system',
+    icon:(s=18)=><svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 3h7l5 5v11a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg> },
+  { id:'users',       labelKey:'nav.users',        group:'nav.group.system',
+    icon:(s=18)=><svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75M21 21v-2a4 4 0 00-3-3.87"/></svg> },
+  { id:'settings',    labelKey:'nav.settings',     group:'nav.group.system',
+    icon:(s=18)=><svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg> },
+  { id:'info',        labelKey:'nav.info',         group:'nav.group.system',
+    icon:(s=18)=><svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12.01" y2="8"/><line x1="12" y1="12" x2="12" y2="16"/></svg> },
+];
+
+const getPageLabel = (id) => {
+  const item = NAV_ITEMS.find(n => n.id === id);
+  return item ? (window.t ? window.t(item.labelKey) : item.labelKey) : id;
+};
+
+// ── Splash ───────────────────────────────────────────────────────────────────
 const Splash = ({ onDone }) => {
-  const lines = [
-    { t: 320,  txt: "BOOTING PRO3S WQIS CORE" },
-    { t: 900,  txt: "INITIALIZING AI INSPECTION ENGINE" },
-    { t: 1600, txt: "LOADING WELD DATABASE · 18,742 RECORDS" },
-    { t: 2300, txt: "SYNCING WPS / PQR · 6 ACTIVE" },
-    { t: 2900, txt: "MODEL cloud-v2 · ACC 99.24%" },
-    { t: 3500, txt: "SYSTEM READY" },
-  ];
-  const [shown, setShown] = React.useState(0);
   const [progress, setProgress] = React.useState(0);
+  const [fading,   setFading]   = React.useState(false);
 
   React.useEffect(() => {
-    const ts = lines.map((l, i) => setTimeout(() => setShown(i+1), l.t));
-    const pi = setInterval(() => setProgress(p => Math.min(p + 1.8, 100)), 60);
-    const done = setTimeout(() => onDone && onDone(), 4200);
-    return () => { ts.forEach(clearTimeout); clearInterval(pi); clearTimeout(done); };
+    const steps = [[22,70],[52,170],[76,300],[92,500],[100,760]];
+    const timers = [];
+    let elapsed = 0;
+    steps.forEach(([val, delay]) => {
+      elapsed += delay;
+      timers.push(setTimeout(() => setProgress(val), elapsed));
+    });
+    timers.push(setTimeout(() => setFading(true), elapsed + 140));
+    timers.push(setTimeout(() => onDone && onDone(), elapsed + 500));
+    return () => timers.forEach(clearTimeout);
   }, []);
 
   return (
-    <div className="splash">
-      <div className="bg-grid" style={{ opacity: 0.5 }}/>
-      <div className="scan-line"/>
-      <div className="bracket tl" style={{ position: "absolute", top: 24, left: 24, width: 32, height: 32 }}/>
-      <div className="bracket tr" style={{ position: "absolute", top: 24, right: 24, width: 32, height: 32 }}/>
-      <div className="bracket bl" style={{ position: "absolute", bottom: 24, left: 24, width: 32, height: 32 }}/>
-      <div className="bracket br" style={{ position: "absolute", bottom: 24, right: 24, width: 32, height: 32 }}/>
-
-      <div style={{ position: "absolute", top: 28, left: 28, display: "flex", alignItems: "center", gap: 10 }}>
-        <span className="kicker" style={{ color: "var(--amber-2)" }}>PRO3S · INDUSTRIAL QA/QC PLATFORM</span>
-      </div>
-      <div style={{ position: "absolute", top: 28, right: 28, display: "flex", alignItems: "center", gap: 10 }}>
-        <span className="kicker" style={{ color: "var(--t-4)" }}>BUILD 1.0.0 · CLOUD-V2 · TH-1</span>
-      </div>
-
-      <div style={{ textAlign: "center", maxWidth: 640 }}>
-        <BrandHero animate />
-        <div style={{ marginTop: 36, height: 1, background: "var(--border-2)", width: 280, marginLeft: "auto", marginRight: "auto" }}/>
-
-        <div style={{ marginTop: 22, fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: "0.1em", color: "var(--t-3)", textAlign: "left", margin: "22px auto 0", display: "inline-block" }}>
-          {lines.slice(0, shown).map((l, i) => (
-            <div key={i} style={{ display: "flex", gap: 14, marginBottom: 6, animation: "fadeIn 0.3s" }}>
-              <span style={{ color: i === shown - 1 ? "var(--amber)" : "var(--ok)" }}>
-                {i === shown - 1 ? "▸" : "✓"}
-              </span>
-              <span style={{ color: i === shown - 1 ? "var(--t-1)" : "var(--t-3)" }}>{l.txt}</span>
-              {i === shown - 1 && <span style={{ color: "var(--amber)", animation: "blink 0.8s infinite" }}>_</span>}
-            </div>
-          ))}
-        </div>
-
-        <div style={{ marginTop: 26, width: 360, marginLeft: "auto", marginRight: "auto" }}>
-          <div className="bar tall"><i style={{ width: `${progress}%` }}/></div>
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, fontFamily: "var(--font-mono)", fontSize: 10.5, color: "var(--t-4)", letterSpacing: "0.1em" }}>
-            <span>SYSTEM CHECK</span>
-            <span>{Math.round(progress)}%</span>
+    <div className={`splash${fading ? ' fading' : ''}`}>
+      <div className="splash-inner">
+        <div className="splash-brand">
+          <div className="splash-logo-wrap">
+            <img src="PRO3S_Logo_001.png" alt="PRO3S" className="splash-logo"
+                 onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}/>
+            <div className="splash-logo-ph" style={{display:'none'}}>P3</div>
           </div>
+          <div className="splash-title">PRO3S WQIS</div>
+          <div className="splash-sub">Weld Quality Inspection System</div>
+          <div className="splash-sub-th">ระบบตรวจสอบคุณภาพงานเชื่อม</div>
+        </div>
+        <div className="splash-loader">
+          <div className="splash-bar-wrap">
+            <div className="splash-bar-fill" style={{width:`${progress}%`}}/>
+          </div>
+          <div className="splash-pct">{progress}%</div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
-      `}</style>
     </div>
   );
 };
 
-// ============== Brand mark (logo + wordmark) ========================
-const BrandHero = ({ animate, size = 92 }) => (
-  <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
-    <div style={{ position: "relative", width: size, height: size }}>
-      <svg width={size} height={size} viewBox="0 0 92 92" style={{ filter: "drop-shadow(0 0 22px var(--amber-glow))" }}>
-        <defs>
-          <linearGradient id="brandGrad" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#ffc176"/>
-            <stop offset="50%" stopColor="#ff8c1a"/>
-            <stop offset="100%" stopColor="#c75300"/>
-          </linearGradient>
-        </defs>
-        <polygon points="46,4 84,26 84,66 46,88 8,66 8,26"
-                 fill="none" stroke="url(#brandGrad)" strokeWidth="1.4" opacity="0.8"/>
-        <polygon points="46,12 78,30 78,62 46,80 14,62 14,30"
-                 fill="rgba(255,140,26,0.08)" stroke="url(#brandGrad)" strokeWidth="1.2"/>
-        <g fill="url(#brandGrad)">
-          <rect x="32" y="30" width="4" height="32" rx="1"/>
-          <path d="M36 30 h12 a8 8 0 0 1 0 16 h-12" fill="none" stroke="url(#brandGrad)" strokeWidth="4"/>
-          <circle cx="46" cy="53" r="2.5"/>
-          <circle cx="54" cy="53" r="2.5"/>
-          <circle cx="62" cy="53" r="2.5"/>
-        </g>
-        <line x1="46" y1="0" x2="46" y2="6" stroke="var(--amber)" strokeWidth="1.2"/>
-        <line x1="46" y1="86" x2="46" y2="92" stroke="var(--amber)" strokeWidth="1.2"/>
-        <line x1="0" y1="46" x2="6" y2="46" stroke="var(--amber)" strokeWidth="1.2"/>
-        <line x1="86" y1="46" x2="92" y2="46" stroke="var(--amber)" strokeWidth="1.2"/>
-        {animate && (
-          <circle cx="46" cy="46" r="40" fill="none" stroke="var(--amber)" strokeWidth="1"
-                  strokeDasharray="6 8" opacity="0.5"
-                  style={{ transformOrigin: "46px 46px", animation: "spin-slow 10s linear infinite" }}/>
+// ── Login ────────────────────────────────────────────────────────────────────
+const Login = ({ onLogin, theme, onToggleTheme, lang }) => {
+  const t = k => (typeof window !== 'undefined' && window.t) ? window.t(k) : k;
+  const [username, setUsername] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [showPwd,  setShowPwd]  = React.useState(false);
+  const [remember, setRemember] = React.useState(false);
+  const [loading,  setLoading]  = React.useState(false);
+  const [error,    setError]    = React.useState('');
+  const [shaking,  setShaking]  = React.useState(false);
+  const [demoOpen, setDemoOpen] = React.useState(false);
+
+  const DEMOS_FALLBACK = [
+    { username:'admin',     password:'pro3s@admin', role:'admin',     label: t('role.admin') },
+    { username:'inspector', password:'weld@2024',   role:'inspector', label: t('role.inspector') },
+    { username:'viewer',    password:'view@2024',   role:'viewer',    label: t('role.viewer') },
+  ];
+  const DEMOS = (typeof window !== 'undefined' && Array.isArray(window.WQIS_USERS) && window.WQIS_USERS.length)
+    ? window.WQIS_USERS.filter(u => u.status !== 'disabled').map(u => ({
+        username: u.username, password: u.password, role: u.role,
+        label: t(`role.${u.role}`) || u.role,
+      }))
+    : DEMOS_FALLBACK;
+
+  const ROLE_BADGE = { admin:'badge-navy', inspector:'badge-teal', viewer:'badge-gray' };
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+    const u = username.trim();
+    if (!u || !password) { setError(t('auth.error_empty')); return; }
+    setError(''); setLoading(true);
+    await new Promise(r => setTimeout(r, 480));
+    const result = await Auth.login(u, password, remember);
+    setLoading(false);
+    if (result.ok) {
+      onLogin && onLogin();
+    } else {
+      setError(t('auth.error_invalid'));
+      setShaking(true);
+      setTimeout(() => setShaking(false), 450);
+    }
+  };
+
+  const fillDemo = d => { setUsername(d.username); setPassword(d.password); setDemoOpen(false); };
+  const roleT = r => r === 'admin' ? t('role.admin') : r === 'inspector' ? t('role.inspector') : t('role.viewer');
+
+  const EyeOpen  = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>;
+  const EyeClose = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3l18 18M10.6 10.6A3 3 0 0113.4 13.4M1 12s4-7 11-7c1.9 0 3.6.5 5.1 1.4M20.9 12.8C19.7 15.2 17 18 12 18c-1.5 0-2.9-.3-4.1-.8"/></svg>;
+  const SunIcon  = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>;
+  const MoonIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 14.1A8 8 0 119.9 4a6 6 0 1010.1 10.1z"/></svg>;
+
+  return (
+    <div className="login-page">
+      <button className="login-theme-btn" onClick={onToggleTheme} title="Toggle theme">
+        {theme === 'dark' ? <SunIcon/> : <MoonIcon/>}
+      </button>
+
+      <div className={`login-card${shaking ? ' shake' : ''}`}>
+        {/* Brand */}
+        <div className="login-logo-wrap">
+          <div className="login-logo-ring">
+            <img src="PRO3S_Logo_001.png" alt="PRO3S" className="login-logo"
+                 onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}/>
+            <div className="login-logo-ph" style={{display:'none'}}>P3</div>
+          </div>
+          <div className="login-app-name">PRO3S WQIS</div>
+          <div className="login-app-sub">{t('auth.app_sub')}</div>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className="login-error">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {error}
+          </div>
         )}
-      </svg>
-    </div>
-    <div style={{ textAlign: "center" }}>
-      <div style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, letterSpacing: "0.04em", color: "var(--t-1)" }}>
-        WQIS<span style={{ color: "var(--amber)" }}>·</span>PRO<span style={{ color: "var(--amber)" }}>3</span>S
-      </div>
-      <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.28em", color: "var(--t-3)", marginTop: 6, textTransform: "uppercase" }}>
-        Weld Quality Inspection System
-      </div>
-    </div>
-  </div>
-);
 
-// ============== Login screen ========================================
-const Login = ({ onLogin, theme, onToggleTheme }) => {
-  const [user, setUser] = React.useState("manop.k@pro3s.co.th");
-  const [pwd, setPwd] = React.useState("");
-  const [showPwd, setShowPwd] = React.useState(false);
-  const [remember, setRemember] = React.useState(true);
-
-  return (
-    <div className="login">
-      {/* Left panel — branding */}
-      <div className="left">
-        <div className="bg-grid"/>
-        <div className="bracket tl" style={{ top: 18, left: 18, width: 28, height: 28 }}/>
-        <div className="bracket tr" style={{ top: 18, right: 18, width: 28, height: 28 }}/>
-        <div className="bracket bl" style={{ bottom: 18, left: 18, width: 28, height: 28 }}/>
-        <div className="bracket br" style={{ bottom: 18, right: 18, width: 28, height: 28 }}/>
-
-        <div style={{ position: "absolute", top: 28, left: 28 }}>
-          <span className="kicker" style={{ color: "var(--amber-2)" }}>AI INSPECTION ENGINE · CLOUD-V2</span>
-        </div>
-        <div style={{ position: "absolute", top: 28, right: 28, display: "flex", alignItems: "center", gap: 10 }}>
-          <span className="live-dot"/>
-          <span className="mono" style={{ fontSize: 11, letterSpacing: "0.14em", color: "var(--t-3)", textTransform: "uppercase" }}>
-            LIVE · {new Date().toISOString().slice(11,19)} UTC
-          </span>
-        </div>
-
-        {/* Centered branding */}
-        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 60px" }}>
-          <BrandHero animate size={120}/>
-
-          <div style={{ marginTop: 40, textAlign: "center", maxWidth: 480 }}>
-            <h2 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 600, letterSpacing: "-0.01em", lineHeight: 1.2, color: "var(--t-1)" }}>
-              AI‑driven weld inspection<br/>
-              for <span style={{ color: "var(--amber)" }}>Industry 4.0</span>
-            </h2>
-            <div style={{ marginTop: 12, fontSize: 13.5, color: "var(--t-3)", lineHeight: 1.6 }}>
-              ระบบตรวจสอบคุณภาพงานเชื่อมด้วย AI
-            </div>
-
-            <div style={{ marginTop: 28, display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
-              {["F&B", "Pharma", "Oil & Gas", "Hygienic Piping"].map(p => (
-                <span key={p} className="chip amber" style={{ fontSize: 11 }}>{p}</span>
-              ))}
-            </div>
-
-            <div style={{ marginTop: 32, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-              {[
-                { l: "Total Welds", v: "18,742", c: "var(--amber)" },
-                { l: "Pass Rate",   v: "96.8%",  c: "var(--ok)" },
-                { l: "AI Accuracy", v: "99.24%", c: "var(--info)" },
-              ].map(s => (
-                <div key={s.l} style={{ padding: "12px 14px", background: "var(--bg-glass)", backdropFilter: "blur(12px)",
-                                        border: "1px solid var(--border-2)", borderRadius: 10 }}>
-                  <div className="mono" style={{ fontSize: 9.5, color: "var(--t-5)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 4 }}>{s.l}</div>
-                  <div style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 600, color: s.c }}>{s.v}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Standards pills bottom */}
-        <div style={{ position: "absolute", bottom: 28, left: 28, right: 28, display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-          {["ASME IX · 2023", "ISO 5817 · Level B", "ASME BPE · 2024", "AWS D18.2", "ISO 9606-1", "API 1104"].map(s => (
-            <span key={s} className="chip" style={{ fontSize: 9.5, background: "rgba(8,12,18,0.6)" }}>{s}</span>
-          ))}
-        </div>
-      </div>
-
-      {/* Right panel — login form */}
-      <div className="right">
-        <div className="bg-grid"/>
-
-        {/* Theme toggle top-right */}
-        <div style={{ position: "absolute", top: 20, right: 20 }}>
-          <div className="bell" title={theme === "light" ? "Switch to dark" : "Switch to light"} onClick={onToggleTheme}>
-            {theme === "light" ? <Icons.Moon size={17}/> : <Icons.Sun size={17}/>}
-          </div>
-        </div>
-
-        <form className="login-card" onSubmit={e => { e.preventDefault(); onLogin(); }}>
-          <div className="bracket tl"/>
-          <div className="bracket tr"/>
-          <div className="bracket bl"/>
-          <div className="bracket br"/>
-
-          {/* Small logo mark */}
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
-            <div className="brand-mark" style={{ width: 48, height: 48, borderRadius: 12 }}>
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                <polygon points="12,2 21,7 21,17 12,22 3,17 3,7" stroke="rgba(0,0,0,0.5)" strokeWidth="1.2"/>
-                <path d="M9 8h3a3 3 0 0 1 0 6h-3v4" stroke="#1a0d00" strokeWidth="2" fill="none" strokeLinecap="round"/>
-              </svg>
-            </div>
-          </div>
-
-          <div style={{ textAlign: "center", marginBottom: 24 }}>
-            <h3 style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>Sign in to PRO3S WQIS</h3>
-            <div style={{ marginTop: 6, fontSize: 12.5, color: "var(--t-3)" }}>
-              ลงชื่อเข้าใช้บัญชีของคุณ
-            </div>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <div>
-              <div className="label-row"><span>Email</span></div>
-              <div style={{ position: "relative" }}>
-                <input className="input" type="email" style={{ paddingLeft: 38, width: "100%" }}
-                       value={user} onChange={e => setUser(e.target.value)}/>
-                <div style={{ position: "absolute", left: 12, top: 9, color: "var(--t-4)" }}>
-                  <Icons.Mail size={16}/>
-                </div>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="login-form" autoComplete="on">
+          <div className="login-field">
+            <label className="login-label">{t('auth.username')}</label>
+            <div className="login-input-wrap">
+              <div className="login-input-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/>
+                </svg>
               </div>
+              <input className="login-input" type="text" value={username} autoComplete="username"
+                     placeholder={t('auth.username_ph')} onChange={e => setUsername(e.target.value)} autoFocus/>
             </div>
-            <div>
-              <div className="label-row">
-                <span>Password</span>
-                <a href="#" style={{ color: "var(--t-3)", textDecoration: "none", fontSize: 11 }}>Forgot password?</a>
+          </div>
+
+          <div className="login-field">
+            <label className="login-label">{t('auth.password')}</label>
+            <div className="login-input-wrap">
+              <div className="login-input-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0110 0v3"/>
+                </svg>
               </div>
-              <div style={{ position: "relative" }}>
-                <input className="input" type={showPwd ? "text" : "password"} style={{ paddingLeft: 38, paddingRight: 36, width: "100%" }}
-                       value={pwd} onChange={e => setPwd(e.target.value)} placeholder="••••••••"/>
-                <div style={{ position: "absolute", left: 12, top: 9, color: "var(--t-4)" }}>
-                  <Icons.Lock size={16}/>
-                </div>
-                <div style={{ position: "absolute", right: 10, top: 9, color: "var(--t-4)", cursor: "pointer" }}
-                     onClick={() => setShowPwd(s => !s)}>
-                  <Icons.Eye size={16}/>
-                </div>
-              </div>
+              <input className="login-input login-input-pw" type={showPwd ? 'text' : 'password'}
+                     value={password} autoComplete="current-password"
+                     placeholder={t('auth.password_ph')} onChange={e => setPassword(e.target.value)}/>
+              <button type="button" className="login-pw-toggle" onClick={() => setShowPwd(v => !v)}>
+                {showPwd ? <EyeClose/> : <EyeOpen/>}
+              </button>
             </div>
+          </div>
 
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <label style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 12, color: "var(--t-3)", cursor: "pointer" }}>
-                <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} style={{ accentColor: "var(--amber)" }}/>
-                Remember me
-              </label>
-              <span className="mono" style={{ fontSize: 10, letterSpacing: "0.12em", color: "var(--t-4)" }}>2FA · ACTIVE</span>
-            </div>
-
-            <button type="submit" className="btn primary lg" style={{ width: "100%", justifyContent: "center", marginTop: 4 }}>
-              <Icons.Shield size={16}/> Sign In
-              <Icons.ChevR size={14} style={{ marginLeft: "auto" }}/>
-            </button>
-
-            <div style={{ position: "relative", textAlign: "center", margin: "8px 0" }}>
-              <div className="divider" style={{ margin: 0 }}/>
-              <span className="mono" style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)",
-                                              background: "var(--bg-glass-strong)", padding: "0 10px",
-                                              fontSize: 10, letterSpacing: "0.14em", color: "var(--t-4)" }}>OR</span>
-            </div>
-
-            <button type="button" className="btn ghost sm" style={{ justifyContent: "center", width: "100%" }}>
-              <Icons.Shield size={14}/> SSO · Azure AD
+          <div className="login-row-opts">
+            <label className="login-remember">
+              <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)}/>
+              <span>{t('auth.remember')}</span>
+            </label>
+            <button type="button" className="login-forgot"
+                    onClick={() => alert(t('auth.forgot_msg'))}>
+              {t('auth.forgot')}
             </button>
           </div>
 
-          <div style={{ marginTop: 22, paddingTop: 16, borderTop: "1px solid var(--border-1)",
-                        display: "flex", justifyContent: "space-between", fontSize: 10.5,
-                        fontFamily: "var(--font-mono)", color: "var(--t-4)", letterSpacing: "0.1em" }}>
-            <span>v1.0.0 · PRO3S</span>
-            <span>ISO 27001 · CERTIFIED</span>
-          </div>
+          <button type="submit" className="login-submit" disabled={loading}>
+            {loading ? <><div className="login-spinner"/><span>{t('auth.logging_in')}</span></> : <span>{t('auth.login')}</span>}
+          </button>
         </form>
+
+        {/* Demo accounts */}
+        <div className="login-demo-wrap">
+          <button className="login-demo-toggle" onClick={() => setDemoOpen(o => !o)}>
+            <svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"
+                 style={{transform: demoOpen ? 'rotate(180deg)' : 'none', transition:'transform 0.2s'}}>
+              <path d="M5 8l5 5 5-5"/>
+            </svg>
+            {t('auth.demo')}
+          </button>
+          {demoOpen && (
+            <div className="login-demo-list">
+              {DEMOS.map((d, i) => (
+                <button key={i} className="login-demo-item" onClick={() => fillDemo(d)}>
+                  <div>
+                    <div className="login-demo-user">{d.username}</div>
+                    <div className="login-demo-pw">{d.password}</div>
+                  </div>
+                  <span className={`badge ${ROLE_BADGE[d.role] || 'badge-gray'}`}>{roleT(d.role)}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="login-footer">
+        PRO3S WQIS v1.0.0 &nbsp;·&nbsp; Industrial QA/QC Platform &nbsp;·&nbsp; © 2026 PRO3S
       </div>
     </div>
   );
 };
 
-// ============== Sidebar ==============================================
-const NAV = [
-  { section: "MAIN", items: [
-    { id: "dashboard",   label: "Dashboard",       icon: "Dashboard" },
-    { id: "inspect",     label: "AI Inspect",      icon: "Inspect",  badge: 3 },
-    { id: "inspections", label: "Inspections",     icon: "Rows",     count: 1842 },
-    { id: "projects",    label: "Projects",        icon: "Project",  count: 23 },
-  ]},
-  { section: "DATA", items: [
-    { id: "reports",     label: "Reports",         icon: "Report" },
-    { id: "analytics",   label: "Analytics",       icon: "Chart" },
-  ]},
-  { section: "REFERENCE", items: [
-    { id: "standards",   label: "Standard Ref.",   icon: "Standard" },
-  ]},
-  { section: "SYSTEM", items: [
-    { id: "users",       label: "Users & Teams",   icon: "Users" },
-    { id: "settings",    label: "Settings",        icon: "Settings" },
-    { id: "info",        label: "Information",     icon: "Info" },
-  ]},
-];
+// ── Sidebar ──────────────────────────────────────────────────────────────────
+const loadSidebarProfile = username => {
+  try {
+    const raw = localStorage.getItem(`wqis_profile_${username}`);
+    return raw ? JSON.parse(raw) : null;
+  } catch (_) { return null; }
+};
+const loadSidebarAvatar = username => {
+  try { return localStorage.getItem(`wqis_avatar_${username}`) || null; } catch (_) { return null; }
+};
 
-const Sidebar = ({ active, onNav, collapsed, onToggle }) => {
+const Sidebar = ({ active, onNav, collapsed, onToggle, lang }) => {
+  const t = k => (typeof window !== 'undefined' && window.t) ? window.t(k) : k;
+  const session = Auth.getSession ? Auth.getSession() : null;
+  const username = session?.username || '';
+
+  // Live-update when ProfileScreen saves
+  const [savedProfile, setSavedProfile] = React.useState(() => loadSidebarProfile(username));
+  const [savedAvatar,  setSavedAvatar]  = React.useState(() => loadSidebarAvatar(username));
+
+  React.useEffect(() => {
+    const onUpdate = () => {
+      setSavedProfile(loadSidebarProfile(username));
+      setSavedAvatar(loadSidebarAvatar(username));
+    };
+    window.addEventListener('wqis:profile-updated', onUpdate);
+    return () => window.removeEventListener('wqis:profile-updated', onUpdate);
+  }, [username]);
+
+  const displayName = savedProfile?.displayName || savedProfile?.fullName
+    || session?.name || session?.username || '—';
+  const initials = displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'U';
+  const roleLabel   = !session ? '' :
+    session.role === 'admin' ? t('role.admin') :
+    session.role === 'inspector' ? t('role.inspector') : t('role.viewer');
+
+  const groups = [];
+  let lastGroup = null;
+  NAV_ITEMS.forEach(item => {
+    if (item.group !== lastGroup) { groups.push({ group: item.group, items: [] }); lastGroup = item.group; }
+    groups[groups.length - 1].items.push(item);
+  });
+
   return (
-    <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
-      <div className="brand">
-        <div className="brand-mark">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <polygon points="12,2 21,7 21,17 12,22 3,17 3,7" stroke="rgba(0,0,0,0.5)" strokeWidth="1.2"/>
-            <path d="M9 8h3a3 3 0 0 1 0 6h-3v4" stroke="#1a0d00" strokeWidth="2" fill="none" strokeLinecap="round"/>
+    <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
+      {/* Brand */}
+      <div className="sidebar-brand">
+        <img src="PRO3S_Logo_001.png" alt="PRO3S" className="sidebar-brand-logo"
+             onError={e => { e.target.style.display='none'; e.target.nextSibling && (e.target.nextSibling.style.display='flex'); }}/>
+        <div className="sidebar-brand-ph" style={{display:'none'}}>P3</div>
+        {!collapsed && (
+          <div className="sidebar-brand-text">
+            <div className="sidebar-brand-name">PRO3S WQIS</div>
+            <div className="sidebar-brand-sub">Weld Inspection</div>
+          </div>
+        )}
+        <button className="sidebar-toggle" onClick={onToggle}
+                title={collapsed ? t('nav.expand') : t('nav.collapse')}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            {collapsed ? <path d="M9 18l6-6-6-6"/> : <path d="M15 18l-6-6 6-6"/>}
           </svg>
-        </div>
-        <div className="brand-name">
-          WQIS·PRO3S
-          <span className="sub">v1.0.0</span>
-        </div>
+        </button>
       </div>
 
-      <div className="scroll-y" style={{ flex: 1 }}>
-        {NAV.map(sec => (
-          <div className="nav-section" key={sec.section}>
-            <div className="nav-section-label">{sec.section}</div>
-            {sec.items.map(it => {
-              const Ico = Icons[it.icon];
-              const isActive = active === it.id;
+      {/* Nav */}
+      <nav className="sidebar-nav">
+        {groups.map(({ group, items }) => (
+          <div key={group}>
+            {!collapsed && <div className="nav-section-label">{t(group)}</div>}
+            {items.map(({ id, labelKey, icon }) => {
+              const label = t(labelKey);
               return (
-                <div key={it.id}
-                     className={`nav-item ${isActive ? "active" : ""}`}
-                     onClick={() => onNav(it.id)}
-                     title={collapsed ? it.label : ""}>
-                  <span className="ico"><Ico size={17}/></span>
-                  <span>{it.label}</span>
-                  {it.count != null && <span className="count">{it.count.toLocaleString()}</span>}
-                  {it.badge != null && <span className="count" style={{ background: "var(--amber)", color: "#1a0d00" }}>{it.badge}</span>}
-                </div>
+                <button key={id}
+                  className={`nav-item${active === id ? ' active' : ''}`}
+                  onClick={() => onNav(id)}
+                  title={collapsed ? label : undefined}>
+                  {icon(18)}
+                  {!collapsed && <span>{label}</span>}
+                </button>
               );
             })}
           </div>
         ))}
-      </div>
+      </nav>
 
-      <div className="sidebar-foot">
-        {/* AI status pill */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 6,
-                      background: "var(--ok-soft)", border: "1px solid var(--ok-line)", marginBottom: 8 }}>
-          <span className="live-dot"/>
-          <span className="mono" style={{ fontSize: 10, letterSpacing: "0.12em", color: "var(--ok)", flex: 1, textTransform: "uppercase" }}>
-            AI cloud-v2 · Online
-          </span>
-          <span className="mono" style={{ fontSize: 9.5, color: "var(--t-4)" }}>99.24%</span>
-        </div>
-        <div style={{ display: "flex", gap: 10, alignItems: "center", padding: "8px 10px", borderRadius: 8,
-                      border: "1px solid var(--border-1)", background: "var(--bg-2)" }}>
-          <div className="avatar" style={{ background: "linear-gradient(135deg, var(--ok), #1c8763)" }}>MK</div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--t-1)" }}>Manop Kosolwong</div>
-            <div className="mono" style={{ fontSize: 10, letterSpacing: "0.1em", color: "var(--t-4)" }}>QA MANAGER · TH</div>
-          </div>
-          <Icons.Logout size={14} style={{ color: "var(--t-4)", cursor: "pointer" }}/>
-        </div>
-        <button className="btn ghost sm" style={{ width: "100%", marginTop: 8, justifyContent: "center" }} onClick={onToggle}>
-          <Icons.ChevL size={14}/> {collapsed ? "" : "Collapse"}
+      {/* Footer */}
+      <div className="sidebar-footer">
+        <button className="nav-item danger" onClick={() => Auth.logout && Auth.logout()}
+                title={collapsed ? t('nav.logout') : undefined}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          {!collapsed && <span>{t('nav.logout')}</span>}
         </button>
+
+        {!collapsed && session && (
+          <>
+            <div className="sidebar-divider"/>
+            <div className="sidebar-user" onClick={() => onNav('profile')}>
+              {savedAvatar
+                ? <img src={savedAvatar} alt={initials} className="av av-sm"
+                       style={{ borderRadius:'50%', objectFit:'cover', flexShrink:0 }}/>
+                : <div className="av av-sm">{initials}</div>
+              }
+              <div className="sidebar-user-info">
+                <div className="sidebar-user-name">{displayName}</div>
+                <div className="sidebar-user-role">{roleLabel}</div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </aside>
   );
 };
 
-// ============== Topbar =============================================
-const useClock = () => {
+// ── Topbar ───────────────────────────────────────────────────────────────────
+const Topbar = ({ active, theme, onToggleTheme, onNotifications, onProfile, accent, onAccentChange, lang, onLangChange }) => {
+  const t = k => (typeof window !== 'undefined' && window.t) ? window.t(k) : k;
+  const pageLabel = getPageLabel(active);
+  const ACCENTS   = ['#ff8c1a','#4fa8ff','#a06bff','#2dd4a4'];
+  const NAMES     = { '#ff8c1a':'Amber','#4fa8ff':'Blue','#a06bff':'Purple','#2dd4a4':'Teal' };
+
+  const session  = Auth.getSession ? Auth.getSession() : null;
+  const tbUsername = session?.username || '';
+  const [tbAvatar, setTbAvatar] = React.useState(() => loadSidebarAvatar(tbUsername));
+  const [tbName,   setTbName]   = React.useState(() => {
+    const p = loadSidebarProfile(tbUsername);
+    return p?.displayName || p?.fullName || session?.name || session?.username || 'U';
+  });
+  React.useEffect(() => {
+    const onUpdate = () => {
+      const p = loadSidebarProfile(tbUsername);
+      setTbAvatar(loadSidebarAvatar(tbUsername));
+      setTbName(p?.displayName || p?.fullName || session?.name || session?.username || 'U');
+    };
+    window.addEventListener('wqis:profile-updated', onUpdate);
+    return () => window.removeEventListener('wqis:profile-updated', onUpdate);
+  }, [tbUsername]);
+  const initials = tbName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'U';
+
+  // ── Live clock ──
   const [now, setNow] = React.useState(new Date());
   React.useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
-  return now;
-};
+  const pad = n => String(n).padStart(2, '0');
+  const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
-const ACCENT_COLORS = ["#ff8c1a", "#4fa8ff", "#a06bff", "#2dd4a4"];
-
-const Topbar = ({ active, theme, onToggleTheme, onNotifications, onProfile, accent, onAccentChange }) => {
-  const now = useClock();
-  const titles = {
-    dashboard:   ["Main",      "Dashboard"],
-    inspect:     ["AI",        "Inspection"],
-    inspections: ["Records",   "Inspections"],
-    projects:    ["Operations","Projects"],
-    reports:     ["Data",      "Reports"],
-    analytics:   ["Data",      "Analytics"],
-    standards:   ["Reference", "Standard Ref."],
-    users:       ["System",    "Users & Teams"],
-    settings:    ["System",    "Settings"],
-    info:        ["System",    "Information"],
-    profile:     ["Account",   "Profile"],
-  };
-  const [a, b] = titles[active] || ["Main", "Dashboard"];
-
-  const timeStr = now.toLocaleTimeString("en-GB");
-  const dateStr = now.toISOString().slice(0,10);
+  // Date string — TH Buddhist year or EN Gregorian
+  let dateStr;
+  if ((lang || window.WQIS_LANG || 'th') === 'en') {
+    const MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const DAYS_EN   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    dateStr = `${DAYS_EN[now.getDay()]} ${now.getDate()} ${MONTHS_EN[now.getMonth()]} ${now.getFullYear()}`;
+  } else {
+    const MONTHS_TH = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    const DAYS_TH   = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+    dateStr = `${DAYS_TH[now.getDay()]} ${now.getDate()} ${MONTHS_TH[now.getMonth()]} ${now.getFullYear() + 543}`;
+  }
 
   return (
     <header className="topbar">
-      <div className="crumb">
-        <span>{a}</span>
-        <Icons.ChevR size={12}/>
-        <b>{b}</b>
+      <div className="topbar-breadcrumb">
+        <span className="topbar-bc-root">PRO3S WQIS</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+        <span className="topbar-bc-page">{pageLabel}</span>
       </div>
 
-      <div className="search" style={{ marginLeft: 16 }}>
-        <Icons.Search size={14}/>
-        <span>Search joints, welders, WPS, projects…</span>
-        <kbd>⌘K</kbd>
-      </div>
+      <div className="topbar-right">
+        {/* Live clock */}
+        <div className="topbar-clock">
+          <div className="topbar-clock-time">{timeStr}</div>
+          <div className="topbar-clock-date">{dateStr}</div>
+        </div>
 
-      <div className="right">
-        {/* Accent color dots */}
-        <div style={{ display: "flex", gap: 6, alignItems: "center", paddingRight: 10, borderRight: "1px solid var(--border-1)" }}>
-          {ACCENT_COLORS.map(c => (
-            <div key={c} onClick={() => onAccentChange && onAccentChange(c)}
-                 style={{ width: 14, height: 14, borderRadius: "50%", background: c, cursor: "pointer",
-                          outline: accent === c ? `2px solid ${c}` : "none",
-                          outlineOffset: 2, transition: "outline 0.12s" }}/>
+        {/* TH / EN language toggle */}
+        <div className="lang-toggle" style={{display:'flex',gap:2,border:'1px solid var(--border-lt)',borderRadius:'var(--r)',padding:2,background:'var(--white)'}}>
+          {['th','en'].map(l => (
+            <button key={l}
+              onClick={() => onLangChange && onLangChange(l)}
+              style={{
+                padding:'2px 9px', borderRadius:'calc(var(--r) - 2px)',
+                fontWeight: 700, fontSize: 11, letterSpacing:'0.03em',
+                border:'none', cursor:'pointer', transition:'all 0.15s',
+                background: (lang||'th') === l ? 'var(--navy)' : 'transparent',
+                color: (lang||'th') === l ? '#fff' : 'var(--text-3)',
+              }}>
+              {l.toUpperCase()}
+            </button>
           ))}
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 12px", height: 30,
-                      background: "var(--ok-soft)", border: "1px solid var(--ok-line)", borderRadius: 99 }}>
-          <span className="live-dot"/>
-          <span className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: "#5af0c4", textTransform: "uppercase" }}>
-            AI · Online
-          </span>
+        {/* Accent picker */}
+        <div className="topbar-accents">
+          {ACCENTS.map(c => (
+            <button key={c} className={`accent-dot${accent===c?' active':''}`}
+                    style={{background:c}} title={NAMES[c]}
+                    onClick={() => onAccentChange && onAccentChange(c)}/>
+          ))}
         </div>
 
-        <div className="clock">
-          <span className="t">{timeStr}</span>
-          <span className="d">{dateStr} · UTC+7</span>
-        </div>
+        {/* Theme toggle */}
+        <button className="topbar-btn" onClick={onToggleTheme}
+                title={theme === 'dark' ? 'Light mode' : 'Dark mode'}>
+          {theme === 'dark'
+            ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+            : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 14.1A8 8 0 119.9 4a6 6 0 1010.1 10.1z"/></svg>
+          }
+        </button>
 
-        <div className="bell" onClick={onNotifications} title="Notifications">
-          <Icons.Bell size={17}/>
-          <span className="pip"/>
-        </div>
-        <div className="bell" title={theme === "light" ? "Switch to dark" : "Switch to light"} onClick={onToggleTheme}>
-          {theme === "light" ? <Icons.Moon size={17}/> : <Icons.Sun size={17}/>}
-        </div>
+        {/* Notifications */}
+        <button className="topbar-btn" onClick={onNotifications} title={t('lbl.notifications')}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/>
+          </svg>
+          <span className="notif-dot"/>
+        </button>
 
-        <div className="user-card" onClick={onProfile}>
-          <div className="avatar" style={{ background: "linear-gradient(135deg, var(--ok), #1c8763)" }}>MK</div>
-          <div className="who">
-            <span className="n">Manop K.</span>
-            <span className="r">QA Manager</span>
-          </div>
-          <Icons.ChevD size={12} style={{ color: "var(--t-4)" }}/>
-        </div>
+        {/* Profile avatar */}
+        <button className="topbar-avatar" onClick={onProfile} title={t('prof.title')}
+                style={{border:'none',font:'inherit',lineHeight:1,padding:0,overflow:'hidden'}}>
+          {tbAvatar
+            ? <img src={tbAvatar} alt={initials} style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/>
+            : initials
+          }
+        </button>
       </div>
     </header>
   );
 };
 
-// ============== Notifications drawer ================================
-const NotificationsDrawer = ({ open, onClose }) => {
-  if (!open) return null;
+// ── NotificationsDrawer ──────────────────────────────────────────────────────
+const NotificationsDrawer = ({ open, onClose, lang }) => {
+  const t = k => (typeof window !== 'undefined' && window.t) ? window.t(k) : k;
+  const NOTIFS = [
+    { id:1, type:'fail', title:'ผล FAIL — TPA Chonburi',    body:'W-0041 ไม่ผ่าน ISO 5817 Grade C',          time:'5 นาทีที่แล้ว',   read:false },
+    { id:2, type:'info', title:'นำเข้าภาพสำเร็จ',           body:'24 รายการ — CPF-RYG Batch #7',              time:'1 ชั่วโมงที่แล้ว', read:false },
+    { id:3, type:'ok',   title:'โปรเจคเสร็จสมบูรณ์',       body:'Dutch Mill SRB ผ่านครบ 100% (312 แนว)',     time:'3 ชั่วโมงที่แล้ว', read:true  },
+    { id:4, type:'info', title:'รายงานประจำวันพร้อมแล้ว',  body:'สรุปผล 15 พ.ค. 2026 — 47 แนวเชื่อม',        time:'6 ชั่วโมงที่แล้ว', read:true  },
+    { id:5, type:'ok',   title:'AI ตรวจสอบเสร็จแบตช์',     body:'W-0038 → W-0042 ผ่านทั้ง 5 แนว',           time:'เมื่อวาน 14:22',   read:true  },
+  ];
+
+  const TYPE_STYLE = {
+    fail: { bg:'var(--red-soft)',    fg:'var(--red)'   },
+    info: { bg:'var(--navy-soft)',   fg:'var(--navy)'  },
+    ok:   { bg:'var(--green-soft)', fg:'var(--green)' },
+  };
+  const TypeIcon = ({ type }) => (
+    <div className="notif-dot-type" style={{background:TYPE_STYLE[type].bg, color:TYPE_STYLE[type].fg}}>
+      {type === 'fail'
+        ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        : type === 'ok'
+        ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12.01" y2="8"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
+      }
+    </div>
+  );
+
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 40, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(2px)" }} onClick={onClose}>
-      <aside className="panel glass" onClick={e => e.stopPropagation()}
-             style={{ position: "absolute", top: 64, right: 20, width: 380, maxHeight: "calc(100vh - 88px)",
-                      display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        <div className="panel-header">
-          <h3><span className="live-dot" style={{ marginRight: 8 }}/>Notifications</h3>
-          <span className="sub">{WQIS_DATA.notifications.length} new</span>
+    <>
+      {open && <div className="drawer-overlay" onClick={onClose}/>}
+      <div className={`drawer${open ? ' open' : ''}`}>
+        <div className="drawer-header">
+          <div className="drawer-title">{t('notif.title')}</div>
+          <button className="modal-close" onClick={onClose}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
         </div>
-        <div className="scroll-y">
-          {WQIS_DATA.notifications.map((n, i) => (
-            <div key={i} style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-1)", display: "flex", gap: 12 }}>
-              <div style={{ marginTop: 2 }}>
-                {n.kind === "bad"  && <Icons.Cross  size={18} stroke="var(--bad)"/>}
-                {n.kind === "warn" && <Icons.Warn   size={18} stroke="var(--warn)"/>}
-                {n.kind === "ok"   && <Icons.Tick   size={18} stroke="var(--ok)"/>}
-                {n.kind === "info" && <Icons.Info   size={18} stroke="var(--info)"/>}
+
+        <div className="drawer-body">
+          {NOTIFS.map(n => (
+            <div key={n.id} className={`notif-item${n.read ? ' read' : ''}`}>
+              <TypeIcon type={n.type}/>
+              <div className="notif-body">
+                <div className="notif-title">{n.title}</div>
+                <div className="notif-text">{n.body}</div>
+                <div className="notif-time">{n.time}</div>
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--t-1)" }}>{n.title}</span>
-                  <span className="mono" style={{ fontSize: 10, color: "var(--t-4)" }}>{n.t}</span>
-                </div>
-                <div style={{ fontSize: 12, color: "var(--t-3)", marginTop: 4 }}>{n.body}</div>
-              </div>
+              {!n.read && <div className="notif-unread"/>}
             </div>
           ))}
         </div>
-        <div style={{ padding: 12, borderTop: "1px solid var(--border-1)", display: "flex", gap: 8 }}>
-          <button className="btn sm ghost" style={{ flex: 1, justifyContent: "center" }}>Mark all read</button>
-          <button className="btn sm primary" style={{ flex: 1, justifyContent: "center" }}>Open inbox</button>
+
+        <div className="drawer-footer">
+          <button className="btn btn-ghost btn-sm" style={{width:'100%',justifyContent:'center'}}>
+            {t('notif.view_all')}
+          </button>
         </div>
-      </aside>
-    </div>
+      </div>
+    </>
   );
 };
 
-Object.assign(window, { Splash, Login, Sidebar, Topbar, NotificationsDrawer, BrandHero, NAV });
+// ── Global ripple (covers .btn and .login-submit) ────────────────────────────
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.btn,.login-submit');
+    if (!btn) return;
+    const r = document.createElement('span');
+    r.className = 'ripple';
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    r.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - rect.left - size/2}px;top:${e.clientY - rect.top - size/2}px;margin:0`;
+    btn.appendChild(r);
+    r.addEventListener('animationend', () => r.remove(), { once:true });
+  });
+}
+
+Object.assign(window, { Splash, Login, Sidebar, Topbar, NotificationsDrawer });
