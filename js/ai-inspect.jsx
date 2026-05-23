@@ -53,13 +53,15 @@ const isNotWeldResult = result => {
   });
 };
 
+const _t = k => (typeof window !== 'undefined' && window.t) ? window.t(k) : k;
+
 const formatAiReason = reason => {
-  if (reason === 'Not a weld image') return 'ไม่ใช่รูปแนวเชื่อม';
-  if (reason === 'No weld detected') return 'ไม่พบแนวเชื่อมในภาพ';
-  if (reason === 'FAIL detected') return 'พบข้อบกพร่องในแนวเชื่อม';
-  if (reason === 'PASS detected') return 'ตรวจพบแนวเชื่อมที่ผ่านเกณฑ์';
-  if (reason === 'Low confidence / no trusted PASS box') return 'ความมั่นใจต่ำ หรือยังไม่พบกรอบ PASS ที่เชื่อถือได้';
-  if (reason === 'No trusted model result') return 'ไม่มีผลจากโมเดลที่เชื่อถือได้';
+  if (reason === 'Not a weld image') return _t('ai.not_a_weld');
+  if (reason === 'No weld detected') return _t('ai.no_weld');
+  if (reason === 'FAIL detected') return _t('ai.fail_detected');
+  if (reason === 'PASS detected') return _t('ai.pass_detected');
+  if (reason === 'Low confidence / no trusted PASS box') return _t('ai.low_conf');
+  if (reason === 'No trusted model result') return _t('ai.no_model');
   return reason;
 };
 
@@ -72,10 +74,10 @@ const getResultLabel = result => {
 
 const getResultDescription = result => {
   if (!result) return '';
-  if (result.pass) return 'แนวเชื่อมผ่านมาตรฐาน';
-  if (isNotWeldResult(result)) return 'รูปนี้ไม่ใช่แนวเชื่อม จึงไม่ตัดสิน Pass/Fail งานเชื่อม';
-  if (result.reason === 'No weld detected') return 'ไม่พบแนวเชื่อมในภาพ กรุณาตรวจรูปหรือถ่ายใหม่';
-  return 'พบข้อบกพร่องในแนวเชื่อม ต้องตรวจสอบและแก้ไข';
+  if (result.pass) return _t('ai.weld_passed');
+  if (isNotWeldResult(result)) return _t('ai.not_weld_desc');
+  if (result.reason === 'No weld detected') return _t('ai.no_weld_desc');
+  return _t('ai.fail_desc');
 };
 
 const runLocalAI = async file => {
@@ -105,7 +107,8 @@ const runLocalAI = async file => {
   };
 };
 
-const AIInspectScreen = ({ projects, inspections, setInspections, setProjects }) => {
+const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, lang }) => {
+  const t = k => (typeof window !== 'undefined' && window.t) ? window.t(k) : k; // eslint-disable-line no-unused-vars
   const [files,       setFiles]       = React.useState([]);
   const [selected,    setSelected]    = React.useState(null);
   const [results,     setResults]     = React.useState({});
@@ -200,8 +203,8 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects })
 
     // Global toast
     if (typeof window !== 'undefined' && window.showToast) {
-      const label = aiResult === 'pass' ? '✓ PASS' : aiResult === 'fail' ? '✗ FAIL' : 'รอผล';
-      window.showToast(`บันทึกสำเร็จ · ${form.weldId} · ${label}`, aiResult === 'pass' ? 'success' : aiResult === 'fail' ? 'error' : 'info');
+      const label = aiResult === 'pass' ? '✓ PASS' : aiResult === 'fail' ? '✗ FAIL' : t('lbl.pending');
+      window.showToast(`${t('inspect.saved_lbl')} · ${form.weldId} · ${label}`, aiResult === 'pass' ? 'success' : aiResult === 'fail' ? 'error' : 'info');
     }
 
     setSaved(true);
@@ -232,7 +235,7 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects })
       ));
     }
     if (typeof window !== 'undefined' && window.showToast) {
-      window.showToast(`ส่ง QC ตรวจสอบอีกครั้ง · ${form.weldId}`, 'warning');
+      window.showToast(`${t('inspect.qc_sent')} · ${form.weldId}`, 'warning');
     }
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
@@ -251,7 +254,7 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects })
       <div className="page-hd">
         <div>
           <div className="page-title">AI Inspect</div>
-          <div className="page-sub">ตรวจสอบคุณภาพแนวเชื่อมด้วย AI</div>
+          {t('inspect.sub')}</div>
         </div>
       </div>
 
@@ -263,17 +266,17 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects })
           {/* Upload zone */}
           <div className="card">
             <div className="card-header">
-              <div className="card-title">อัปโหลดรูปภาพ</div>
+              <div className="card-title">{t('inspect.upload_title')}</div>
               <div style={{display:'flex',gap:8}}>
                 <input ref={fileInputRef} type="file" accept="image/*" multiple hidden onChange={e=>addFiles(e.target.files)}/>
                 <input ref={folderInputRef} type="file" accept="image/*" multiple webkitdirectory="" hidden onChange={e=>addFiles(e.target.files)}/>
                 <button className="btn btn-light btn-sm" onClick={()=>fileInputRef.current.click()}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  อัปโหลดไฟล์
+                  {t('inspect.upload_file')}
                 </button>
                 <button className="btn btn-light btn-sm" onClick={()=>folderInputRef.current.click()}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-                  อัปโหลดโฟลเดอร์
+                  {t('inspect.upload_folder')}
                 </button>
               </div>
             </div>
@@ -291,8 +294,8 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects })
                     <div className="upload-zone-icon">
                       <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                     </div>
-                    <div className="upload-zone-title">ลากและวางรูปภาพที่นี่</div>
-                    <div className="upload-zone-sub">หรือคลิกเพื่อเลือกไฟล์ · รองรับ JPG, PNG, BMP</div>
+                    <div className="upload-zone-title">{t('inspect.drop_hint')}</div>
+                    <div className="upload-zone-sub">{t('inspect.click_drop')} · {t('inspect.drop_sub')}</div>
                   </>
                 ) : (
                   <div className="img-grid" onClick={e=>e.stopPropagation()}>
@@ -320,18 +323,18 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects })
                   <span className="text-sm text-muted">{files.length} ไฟล์</span>
                   <button className="btn btn-outline-danger btn-sm" onClick={clearAll}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-                    เคลียร์
+                    {t('btn.clear')}
                   </button>
                   <button className="btn btn-teal" onClick={analyze} disabled={analyzing || Object.keys(results).length>0}>
                     {analyzing ? (
                       <>
                         <div style={{width:13,height:13,border:'2px solid rgba(255,255,255,0.3)',borderTopColor:'white',borderRadius:'50%',animation:'spin 0.6s linear infinite'}}/>
-                        กำลังวิเคราะห์...
+                        {t('btn.analyzing')}...
                       </>
-                    ) : Object.keys(results).length > 0 ? '✓ วิเคราะห์แล้ว' : (
+                    ) : Object.keys(results).length > 0 ? t('inspect.analyzed') : (
                       <>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg>
-                        ตรวจสอบด้วย AI
+                        {t('inspect.check_ai')}
                       </>
                     )}
                   </button>
@@ -346,7 +349,7 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects })
               <div className="card-header">
                 <div className="card-title">{selFile.name}</div>
                 <div style={{display:'flex',alignItems:'center',gap:8}}>
-                  <span className="text-sm text-muted">AI Confidence:</span>
+                  <span className="text-sm text-muted">{t('inspect.ai_conf')}:</span>
                   <span style={{fontWeight:700,color:'var(--navy)'}}>{selResult.conf}%</span>
                   <span className={`badge badge-${selResult.pass?'success':'danger'}`} style={{fontSize:11}}>
                     {getResultLabel(selResult)}
@@ -444,19 +447,19 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects })
         {/* ── Right: Inspection Form ── */}
         <div className="card" style={{position:'sticky',top:'calc(var(--topbar-h) + 24px)'}}>
           <div className="card-header">
-            <div className="card-title">บันทึกการตรวจสอบ</div>
+            <div className="card-title">{t('inspect.record_title')}</div>
           </div>
           <div className="card-body" style={{display:'flex',flexDirection:'column',gap:14}}>
 
             {saved && (
               <div className="alert alert-success">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                บันทึกข้อมูลสำเร็จ
+                {t('inspect.save_ok_msg')}
               </div>
             )}
 
             <div className="form-group" style={{marginBottom:0}}>
-              <label className="form-label">โปรเจค <span className="form-required">*</span></label>
+              <label className="form-label">{t('inspect.project')} <span className="form-required">*</span></label>
               <select className="form-control" value={form.projectId} onChange={e=>setF('projectId',e.target.value)}>
                 <option value="">— เลือกโปรเจค —</option>
                 {projects.filter(p=>p.status!=='planning').map(p=>(
@@ -466,20 +469,20 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects })
             </div>
 
             <div className="form-group" style={{marginBottom:0}}>
-              <label className="form-label">รหัสแนวเชื่อม / Weld ID <span className="form-required">*</span></label>
+              <label className="form-label">{t('inspect.weld_id')} / Weld ID <span className="form-required">*</span></label>
               <input className="form-control" value={form.weldId} onChange={e=>setF('weldId',e.target.value)}
-                     placeholder="เช่น W-001-A05"/>
+                     placeholder={t('inspect.weld_id_ph')}/>
             </div>
 
             <div className="form-group" style={{marginBottom:0}}>
-              <label className="form-label">ประเภทการเชื่อม</label>
+              <label className="form-label">{t('inspect.weld_type')}</label>
               <select className="form-control" value={form.weldType} onChange={e=>setF('weldType',e.target.value)}>
                 {WQIS_DATA.weldTypes.map(t=><option key={t}>{t}</option>)}
               </select>
             </div>
 
             <div className="form-group" style={{marginBottom:0}}>
-              <label className="form-label">ช่างเชื่อม <span className="form-required">*</span></label>
+              <label className="form-label">{t('inspect.welder')} <span className="form-required">*</span></label>
               {staffOptions.length > 0 ? (
                 <select className="form-control" value={form.welder} onChange={e=>setF('welder',e.target.value)}>
                   <option value="">— เลือกช่างเชื่อม —</option>
@@ -491,37 +494,37 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects })
                 </select>
               ) : (
                 <input className="form-control" value={form.welder} onChange={e=>setF('welder',e.target.value)}
-                       placeholder="ชื่อช่างเชื่อม"/>
+                       placeholder={t('inspect.welder_ph')}/>
               )}
             </div>
 
             <div className="form-group" style={{marginBottom:0}}>
-              <label className="form-label">ใบรับรอง / Cert No.</label>
+              <label className="form-label">{t('inspect.cert')} / Cert No.</label>
               <input className="form-control" value={form.cert} onChange={e=>setF('cert',e.target.value)}
-                     placeholder="เช่น TIG-204"/>
+                     placeholder={t('inspect.cert_ph')}/>
             </div>
 
             <div className="form-group" style={{marginBottom:0}}>
-              <label className="form-label">วันที่ตรวจ</label>
+              <label className="form-label">{t('inspect.date')}</label>
               <input className="form-control" type="date" value={form.date} onChange={e=>setF('date',e.target.value)}/>
             </div>
 
             <div className="form-group" style={{marginBottom:0}}>
-              <label className="form-label">QC Inspector</label>
+              <label className="form-label">{t('inspect.inspector_lbl')}</label>
               <input className="form-control" value={form.inspector} onChange={e=>setF('inspector',e.target.value)}
-                     placeholder="ชื่อ QC Inspector"/>
+                     placeholder={t('inspect.inspector_ph')}/>
             </div>
 
             <div className="form-group" style={{marginBottom:0}}>
-              <label className="form-label">หมายเหตุ QC</label>
+              <label className="form-label">{t('inspect.comment_lbl')}</label>
               <textarea className="form-control" rows="3" value={form.comment} onChange={e=>setF('comment',e.target.value)}
-                        placeholder="ข้อสังเกต / ความเห็น..."/>
+                        placeholder={t('inspect.comment_ph')}/>
             </div>
 
             {/* AI Result preview */}
             {selResult && (
               <div style={{borderRadius:'var(--r)',padding:'10px 12px',border:'1px solid var(--border-lt)',background:'var(--bg)',fontSize:12.5}}>
-                <div style={{fontSize:11,fontWeight:700,color:'var(--text-3)',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:4}}>ผลการตรวจ AI</div>
+                <div style={{fontSize:11,fontWeight:700,color:'var(--text-3)',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:4}}>{t('inspect.ai_result')}</div>
                 <span className={`badge badge-${selResult.pass?'success':'danger'}`} style={{fontSize:12}}>
                   {getResultLabel(selResult)} · {selResult.conf}%
                 </span>
@@ -541,12 +544,12 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects })
                 <path d="m20 20-3.5-3.5"/>
                 <path d="M11 8v3l2 2"/>
               </svg>
-              QC ตรวจอีกที
+              {t('btn.qc_review')}
             </button>
 
             <button className="btn btn-primary w-full" disabled={!formValid} onClick={saveRecord}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-              บันทึกข้อมูล
+              {t('btn.save_record')}
             </button>
 
           </div>
