@@ -1,464 +1,469 @@
-/* global React, Icons, Charts, WeldImage, WQIS_DATA */
+/* global React, window, ModalPortal */
 
-const TeamTab = ({ project }) => {
-  const [teams, setTeams] = React.useState([
-    { id: 1, name: "Team A", process: "GTAW", lead: "Somchai P." },
-    { id: 2, name: "Team B", process: "GMAW", lead: "Wirot C." },
-  ]);
-  const [welders, setWelders] = React.useState(
-    WQIS_DATA.welders.slice(0, 4)
-  );
-  const [newTeam, setNewTeam] = React.useState("");
-  const [newWelder, setNewWelder] = React.useState("");
+// ── Add / Edit Modal ──────────────────────────────────────────
+const ProjectModal = ({ project, onSave, onClose, lang }) => {
+  const t = k => (typeof window !== 'undefined' && window.t) ? window.t(k) : k;
+  const isEdit = !!project;
+  const [form, setForm] = React.useState(project || {
+    name:'', client:'', startDate:'', endDate:'', totalWelds:'', status:'active', note:'',
+  });
 
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-      {/* Teams panel */}
-      <div className="panel glass">
-        <div className="panel-header">
-          <h3>Teams</h3>
-          <div style={{ display: "flex", gap: 8 }}>
-            <input className="input" style={{ width: 140, height: 30 }}
-                   placeholder="Team name…" value={newTeam} onChange={e => setNewTeam(e.target.value)}/>
-            <button className="btn primary sm" onClick={() => {
-              if (newTeam.trim()) { setTeams(t => [...t, { id: Date.now(), name: newTeam, process: "GTAW", lead: "—" }]); setNewTeam(""); }
-            }}>+ Add</button>
-          </div>
-        </div>
-        <div className="panel-body flush">
-          {teams.map(t => (
-            <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderBottom: "1px solid var(--border-1)" }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600 }}>{t.name}</div>
-                <div className="mono" style={{ fontSize: 10.5, color: "var(--t-4)" }}>{t.process} · Lead: {t.lead}</div>
-              </div>
-              <button className="btn ghost sm" style={{ color: "var(--bad)" }} onClick={() => setTeams(ts => ts.filter(x => x.id !== t.id))}>Remove</button>
-            </div>
-          ))}
-        </div>
-      </div>
-      {/* Welders panel */}
-      <div className="panel glass">
-        <div className="panel-header">
-          <h3>Welders</h3>
-          <div style={{ display: "flex", gap: 8 }}>
-            <input className="input" style={{ width: 140, height: 30 }}
-                   placeholder="Welder code…" value={newWelder} onChange={e => setNewWelder(e.target.value)}/>
-            <button className="btn primary sm" onClick={() => {
-              if (newWelder.trim()) {
-                const w = WQIS_DATA.welders.find(x => x.code.toLowerCase().includes(newWelder.toLowerCase()) || x.name.toLowerCase().includes(newWelder.toLowerCase()));
-                if (w && !welders.find(x => x.id === w.id)) { setWelders(ws => [...ws, w]); }
-                setNewWelder("");
-              }
-            }}>+ Add</button>
-          </div>
-        </div>
-        <div className="panel-body flush">
-          {welders.map(w => (
-            <div key={w.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderBottom: "1px solid var(--border-1)" }}>
-              <div className="avatar sm">{w.initials}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600 }}>{w.name}</div>
-                <div className="mono" style={{ fontSize: 10.5, color: "var(--t-4)" }}>{w.code} · {w.proc.join(", ")} · Pass: {w.pass}%</div>
-              </div>
-              <button className="btn ghost sm" style={{ color: "var(--bad)" }} onClick={() => setWelders(ws => ws.filter(x => x.id !== w.id))}>Remove</button>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "flex-end", gap: 8 }}>
-        <button className="btn ghost sm">Discard changes</button>
-        <button className="btn primary sm">Save project data</button>
-      </div>
-    </div>
-  );
-};
+  const set = (k, v) => setForm(f => ({...f, [k]:v}));
+  const valid = form.name.trim() && form.startDate && form.endDate && form.totalWelds;
 
-const AddProjectModal = ({ onClose, onAdd }) => {
-  const [form, setForm] = React.useState({ name: "", client: "", industry: "Food & Beverage", wps: "WPS-001", due: "" });
-  return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 50, display: "grid", placeItems: "center" }}
-         onClick={onClose}>
-      <div className="panel glass" style={{ width: 480, padding: 24 }} onClick={e => e.stopPropagation()}>
-        <h3 style={{ marginTop: 0 }}>New Project</h3>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 18 }}>
-          {[["Project Name","name","text"],["Client","client","text"],["Due Date","due","date"]].map(([l,k,t]) => (
-            <div key={k}>
-              <div className="label-row"><span>{l}</span></div>
-              <input className="input" type={t} value={form[k]} onChange={e => setForm(f => ({...f,[k]:e.target.value}))} style={{ width: "100%" }}/>
-            </div>
-          ))}
-          <div>
-            <div className="label-row"><span>Industry</span></div>
-            <select className="select" style={{ width: "100%" }} value={form.industry} onChange={e => setForm(f => ({...f,industry:e.target.value}))}>
-              {WQIS_DATA.industries.map(i => <option key={i}>{i}</option>)}
-            </select>
-          </div>
-        </div>
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <button className="btn ghost sm" onClick={onClose}>Cancel</button>
-          <button className="btn primary sm" onClick={() => { onAdd(form); onClose(); }}>Save Project</button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const qaChip = (q) => {
-  if (q === "approved")  return <span className="chip ok"><span className="dot"/>APPROVED</span>;
-  if (q === "in-review") return <span className="chip info"><span className="dot"/>IN REVIEW</span>;
-  if (q === "pending")   return <span className="chip warn"><span className="dot"/>PENDING</span>;
-  return <span className="chip">—</span>;
-};
-
-const IndustryGlyph = ({ industry, size = 64 }) => {
-  // Industrial silhouette for project cards — abstract SVG
-  const map = {
-    "Food & Beverage":            { hue: "#2dd4a4", icon: <><circle cx="32" cy="32" r="20"/><path d="M22 26h20M22 32h20M22 38h20"/></> },
-    "Pharmaceutical":             { hue: "#a06bff", icon: <><path d="M18 18h28v28a14 14 0 0 1-28 0z"/><path d="M18 28h28"/></> },
-    "Oil & Gas":                  { hue: "#ff8c1a", icon: <><path d="M14 50V18l9 14 9-14v32M40 50V18"/><circle cx="45" cy="14" r="3"/></> },
-    "Stainless Hygienic Piping":  { hue: "#4fa8ff", icon: <><rect x="12" y="22" width="40" height="14" rx="3"/><circle cx="22" cy="29" r="3"/><circle cx="42" cy="29" r="3"/></> },
-    "Process Plant":              { hue: "#ffb547", icon: <><rect x="14" y="40" width="36" height="12"/><circle cx="22" cy="22" r="8"/><circle cx="42" cy="22" r="8"/></> },
-    "Industrial Fabrication":     { hue: "#ff5570", icon: <><path d="M14 50 32 16l18 34zM26 50V36h12v14"/></> },
+  const handleSubmit = e => {
+    e.preventDefault();
+    if (!valid) return;
+    onSave({
+      ...form,
+      totalWelds: parseInt(form.totalWelds)||0,
+      inspected: isEdit ? (project.inspected||0) : 0,
+      id: isEdit ? project.id : `PRJ-${String(Date.now()).slice(-4)}`,
+      code: isEdit ? project.code : form.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,8),
+      staff: isEdit ? project.staff : [],
+    });
+    onClose();
   };
-  const m = map[industry] || map["Process Plant"];
+
   return (
-    <div style={{
-      width: size, height: size, borderRadius: 10,
-      background: `linear-gradient(135deg, ${m.hue}1f, transparent)`,
-      border: `1px solid ${m.hue}40`,
-      display: "grid", placeItems: "center",
-      boxShadow: `0 0 18px -8px ${m.hue}`,
-      flexShrink: 0,
-    }}>
-      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" stroke={m.hue} strokeWidth="1.6"
-           strokeLinecap="round" strokeLinejoin="round">
-        {m.icon}
-      </svg>
+    <ModalPortal>
+    <div className="modal-overlay" onClick={e => e.target===e.currentTarget && onClose()}>
+      <div className="modal">
+        <div className="modal-header">
+          <div className="modal-title">{isEdit ? t('proj.edit_title') : t('proj.add_title')}</div>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="modal-body">
+            <div className="form-row form-row-2">
+              <div className="form-group">
+                <label className="form-label">{t('proj.name')} <span className="form-required">*</span></label>
+                <input className="form-control" value={form.name} onChange={e=>set('name',e.target.value)}
+                       placeholder="เช่น TPA Chonburi Line 4" required/>
+              </div>
+              <div className="form-group">
+                <label className="form-label">{t('proj.client')}</label>
+                <input className="form-control" value={form.client} onChange={e=>set('client',e.target.value)}
+                       placeholder="ชื่อลูกค้า"/>
+              </div>
+            </div>
+            <div className="form-row form-row-2">
+              <div className="form-group">
+                <label className="form-label">{t('proj.start_date')} <span className="form-required">*</span></label>
+                <input className="form-control" type="date" value={form.startDate} onChange={e=>set('startDate',e.target.value)} required/>
+              </div>
+              <div className="form-group">
+                <label className="form-label">{t('proj.end_date')} <span className="form-required">*</span></label>
+                <input className="form-control" type="date" value={form.endDate} onChange={e=>set('endDate',e.target.value)} required/>
+              </div>
+            </div>
+            <div className="form-row form-row-2">
+              <div className="form-group">
+                <label className="form-label">{t('proj.total_welds')} <span className="form-required">*</span></label>
+                <input className="form-control" type="number" min="1" value={form.totalWelds}
+                       onChange={e=>set('totalWelds',e.target.value)} placeholder="0" required/>
+              </div>
+              <div className="form-group">
+                <label className="form-label">{t('proj.status')}</label>
+                <select className="form-control" value={form.status} onChange={e=>set('status',e.target.value)}>
+                  <option value="planning">{t('status.planning')}</option>
+                  <option value="active">{t('status.active')}</option>
+                  <option value="completed">{t('status.completed')}</option>
+                </select>
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">{t('proj.notes')}</label>
+              <textarea className="form-control" value={form.note} onChange={e=>set('note',e.target.value)}
+                        placeholder={t('proj.notes_ph')} rows="3"/>
+            </div>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn btn-ghost" onClick={onClose}>{t('btn.cancel')}</button>
+            <button type="submit" className="btn btn-primary" disabled={!valid}>
+              {isEdit ? t('proj.save_changes') : t('btn.add_project')}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
+    </ModalPortal>
   );
 };
 
-// =========== PROJECT CARD ===========================================
-const ProjectCard = ({ p, onOpen }) => (
-  <div className="panel glass" style={{ cursor: "pointer", transition: "transform 0.16s, box-shadow 0.16s" }}
-       onClick={onOpen}
-       onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 0 0 1px var(--amber-line), 0 20px 40px -20px var(--amber-glow)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-       onMouseLeave={e => { e.currentTarget.style.boxShadow = ""; e.currentTarget.style.transform = ""; }}>
-    <div className="panel-body">
-      <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-        <IndustryGlyph industry={p.industry}/>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <span className="mono" style={{ fontSize: 10, color: "var(--amber-2)", letterSpacing: "0.1em" }}>{p.code}</span>
-            <span style={{ flex: 1 }}/>
-            {qaChip(p.qa)}
+// ── Staff Modal ───────────────────────────────────────────────
+const StaffModal = ({ staff, onSave, onClose }) => {
+  const t = k => (typeof window !== 'undefined' && window.t) ? window.t(k) : k;
+  const isEdit = !!staff;
+  const [form, setForm] = React.useState(staff || { name:'', position:'QC Inspector', team:'', cert:'' });
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+
+  return (
+    <ModalPortal>
+    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal" style={{maxWidth:420}}>
+        <div className="modal-header">
+          <div className="modal-title">{isEdit ? t('proj.edit_staff') : t('proj.add_staff')}</div>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          <div className="form-group">
+            <label className="form-label">{t('lbl.name')} <span className="form-required">*</span></label>
+            <input className="form-control" value={form.name} onChange={e=>set('name',e.target.value)} placeholder={t('lbl.name')}/>
           </div>
-          <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: "var(--t-1)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {p.name}
-          </h3>
-          <div style={{ fontSize: 11.5, color: "var(--t-3)", marginTop: 4 }}>{p.client} · {p.industry}</div>
-        </div>
-      </div>
-
-      <div style={{ fontSize: 12, color: "var(--t-3)", marginTop: 14, lineHeight: 1.5, minHeight: 36 }}>
-        {p.desc}
-      </div>
-
-      <div style={{ marginTop: 14 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 11, color: "var(--t-3)" }}>
-          <span className="mono" style={{ letterSpacing: "0.06em" }}>PROGRESS</span>
-          <span className="mono nums" style={{ color: "var(--t-1)", fontWeight: 600 }}>
-            {p.joints_done}/{p.joints} · {p.progress}%
-          </span>
-        </div>
-        <div className="bar tall"><i style={{ width: `${p.progress}%` }}/></div>
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--border-1)" }}>
-        <div>
-          <div className="mono" style={{ fontSize: 9.5, letterSpacing: "0.1em", color: "var(--t-5)", textTransform: "uppercase" }}>Pass</div>
-          <div className="mono nums" style={{ fontSize: 14, color: p.pass > 96 ? "var(--ok)" : p.pass ? "var(--warn)" : "var(--t-4)", marginTop: 2 }}>
-            {p.pass ? `${p.pass.toFixed(1)}%` : "—"}
+          <div className="form-row form-row-2">
+            <div className="form-group">
+              <label className="form-label">{t('lbl.position')}</label>
+              <select className="form-control" value={form.position} onChange={e=>set('position',e.target.value)}>
+                <option>QC Inspector</option>
+                <option>Engineer</option>
+                <option>ช่างเชื่อม</option>
+                <option>Supervisor</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">{t('lbl.team')}</label>
+              <input className="form-control" value={form.team} onChange={e=>set('team',e.target.value)} placeholder="เช่น Mechanical"/>
+            </div>
+          </div>
+          <div className="form-group">
+            <label className="form-label">{t('lbl.certificate')}</label>
+            <input className="form-control" value={form.cert} onChange={e=>set('cert',e.target.value)} placeholder="เช่น ISO 9606-1"/>
           </div>
         </div>
-        <div>
-          <div className="mono" style={{ fontSize: 9.5, letterSpacing: "0.1em", color: "var(--t-5)", textTransform: "uppercase" }}>Team</div>
-          <div style={{ fontSize: 14, color: "var(--t-1)", marginTop: 2 }}>{p.team}</div>
+        <div className="modal-footer">
+          <button className="btn btn-ghost" onClick={onClose}>{t('btn.cancel')}</button>
+          <button className="btn btn-primary" disabled={!form.name.trim()}
+                  onClick={()=>{ onSave({...form,id:isEdit?staff.id:Date.now()}); onClose(); }}>
+            {isEdit ? t('btn.save') : t('proj.add_staff')}
+          </button>
         </div>
-        <div>
-          <div className="mono" style={{ fontSize: 9.5, letterSpacing: "0.1em", color: "var(--t-5)", textTransform: "uppercase" }}>Due</div>
-          <div className="mono" style={{ fontSize: 12, color: "var(--t-1)", marginTop: 4 }}>{p.due}</div>
+      </div>
+    </div>
+    </ModalPortal>
+  );
+};
+
+// ── Delete Confirm ────────────────────────────────────────────
+const DeleteConfirm = ({ label, onConfirm, onClose }) => {
+  const t = k => (typeof window !== 'undefined' && window.t) ? window.t(k) : k;
+  return (
+  <ModalPortal>
+  <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div className="modal" style={{maxWidth:400}}>
+      <div className="modal-header">
+        <div className="modal-title">{t('lbl.confirm_delete')}</div>
+        <button className="modal-close" onClick={onClose}>✕</button>
+      </div>
+      <div className="modal-body">
+        <div className="alert alert-error">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          {t('lbl.confirm_del_msg')} <strong>{label}</strong>? {t('lbl.del_warning')}
         </div>
+      </div>
+      <div className="modal-footer">
+        <button className="btn btn-ghost" onClick={onClose}>{t('btn.cancel')}</button>
+        <button className="btn btn-danger" onClick={()=>{onConfirm();onClose();}}>{t('btn.delete')}</button>
       </div>
     </div>
   </div>
-);
+  </ModalPortal>
+  );
+};
 
-// =========== PROJECT DETAIL =========================================
-const ProjectDetail = ({ p, onBack }) => {
-  const joints = WQIS_DATA.joints;
-  const [detailTab, setDetailTab] = React.useState("joints");
+// ── Project Detail Panel ──────────────────────────────────────
+const ProjectDetail = ({ project, inspections, onUpdateProject }) => {
+  const t = k => (typeof window !== 'undefined' && window.t) ? window.t(k) : k;
+  const [activeTab, setActiveTab]  = React.useState('records');
+  const [staffModal, setStaffModal]= React.useState(null); // null | 'add' | staffObj
+  const [delStaff, setDelStaff]    = React.useState(null);
+
+  const projInspections = inspections.filter(i => i.projectId === project.id);
+  const pct = project.totalWelds ? Math.round(project.inspected / project.totalWelds * 100) : 0;
+
+  const saveStaff = (staffMember) => {
+    const existing = project.staff.find(s => s.id === staffMember.id);
+    const newStaff = existing
+      ? project.staff.map(s => s.id === staffMember.id ? staffMember : s)
+      : [...project.staff, staffMember];
+    onUpdateProject({ ...project, staff: newStaff });
+  };
+
+  const removeStaff = id => {
+    onUpdateProject({ ...project, staff: project.staff.filter(s => s.id !== id) });
+  };
+
   return (
-    <div className="page" style={{ padding: 24 }}>
-      <div className="bg-grid"/>
-
-      <div className="row" style={{ marginBottom: 16 }}>
-        <button className="btn ghost sm" onClick={onBack}>
-          <Icons.ChevL size={14}/> All projects
-        </button>
-        <span className="mono" style={{ fontSize: 10.5, color: "var(--t-4)", letterSpacing: "0.1em" }}>
-          PROJECTS / <b style={{ color: "var(--amber-2)" }}>{p.code}</b>
-        </span>
-      </div>
-
-      <div className="panel glass" style={{ marginBottom: 14 }}>
-        <div className="panel-body" style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
-          <IndustryGlyph industry={p.industry} size={84}/>
-          <div style={{ flex: 1 }}>
-            <div className="row" style={{ gap: 10, marginBottom: 6 }}>
-              <span className="mono" style={{ fontSize: 11, color: "var(--amber-2)", letterSpacing: "0.12em" }}>{p.code} · {p.id}</span>
-              {qaChip(p.qa)}
-              <span className="chip">{p.industry}</span>
+    <div style={{padding:'20px 24px',background:'var(--bg)',borderTop:'1px solid var(--border-lt)'}}>
+      {/* Project info bar */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:16,marginBottom:20}}>
+        {[
+          {label: t('proj.start_date'),  value:project.startDate},
+          {label: t('proj.end_date'),    value:project.endDate},
+          {label: t('col.total_welds'),  value:`${project.totalWelds} ${t('lbl.welds')}`},
+          {label: t('lbl.progress'),     value:`${pct}%`},
+        ].map((item,i)=>(
+          <div key={i} style={{background:'var(--white)',borderRadius:'var(--r)',padding:'10px 14px',border:'1px solid var(--border-lt)'}}>
+            <div style={{fontSize:11,color:'var(--text-3)',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:4}}>
+              {item.label}
             </div>
-            <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 600, letterSpacing: "-0.01em" }}>{p.name}</h1>
-            <div style={{ fontSize: 13, color: "var(--t-3)", marginTop: 6 }}>{p.client} · Lead {p.lead} · Due {p.due}</div>
+            <div style={{fontWeight:700,fontSize:15,color:'var(--navy)'}}>{item.value}</div>
           </div>
-          <div className="row" style={{ gap: 8 }}>
-            <button className="btn sm"><Icons.Upload size={14}/> Upload WPS</button>
-            <button className="btn sm"><Icons.Download size={14}/> Export</button>
-            <button className="btn primary sm"><Icons.Plus size={14}/> New batch</button>
-          </div>
-        </div>
-        {/* progress strip */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", borderTop: "1px solid var(--border-1)" }}>
-          {[
-            { l: "Joints total",  v: p.joints },
-            { l: "Completed",     v: p.joints_done },
-            { l: "Pass rate",     v: p.pass ? `${p.pass.toFixed(1)}%` : "—", color: "var(--ok)" },
-            { l: "Progress",      v: `${p.progress}%`, color: "var(--amber)" },
-            { l: "Open NCRs",     v: 4 },
-            { l: "Team",          v: `${p.team} ppl` },
-          ].map((c, i) => (
-            <div key={i} style={{ padding: "14px 18px", borderRight: i < 5 ? "1px solid var(--border-1)" : "none" }}>
-              <div className="mono" style={{ fontSize: 10, letterSpacing: "0.12em", color: "var(--t-4)", textTransform: "uppercase" }}>{c.l}</div>
-              <div style={{ fontFamily: "var(--font-display)", fontSize: 19, fontWeight: 600, color: c.color || "var(--t-1)", marginTop: 4 }}>{c.v}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* tabs row */}
-      <div className="row" style={{ marginBottom: 12, gap: 4 }}>
-        {[["joints","Joints (1842)"],["docs","Documents"],["timeline","Timeline"],["team","Team"],["traceability","Traceability"],["ai","AI History"]].map(([id,lbl]) => (
-          <button key={id} className={`btn ${detailTab === id ? "" : "ghost"} sm`}
-                  style={{ background: detailTab === id ? "var(--bg-3)" : "transparent" }}
-                  onClick={() => setDetailTab(id)}>
-            {lbl}
-          </button>
         ))}
-        <span style={{ flex: 1 }}/>
-        <button className="btn ghost sm"><Icons.Filter size={14}/> Filter</button>
-        <button className="btn ghost sm"><Icons.Search size={14}/> Search joint</button>
       </div>
 
-      {detailTab === "joints" && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 14 }}>
-          {/* joint table */}
-          <div className="panel glass" style={{ overflow: "hidden" }}>
-            <div className="panel-header">
-              <h3>Joint database</h3>
-              <span className="sub">10 of 1,842 SHOWN</span>
+      {project.note && (
+        <div className="alert alert-info mb-16" style={{fontSize:12.5}}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          {project.note}
+        </div>
+      )}
+
+      {/* Tabs */}
+      <div className="tabs">
+        <button className={`tab-btn${activeTab==='records'?' active':''}`} onClick={()=>setActiveTab('records')}>
+          {t('proj.records_tab')} ({projInspections.length})
+        </button>
+        <button className={`tab-btn${activeTab==='staff'?' active':''}`} onClick={()=>setActiveTab('staff')}>
+          Staff ({project.staff.length})
+        </button>
+      </div>
+
+      {/* Tab: Records */}
+      {activeTab === 'records' && (
+        projInspections.length === 0
+          ? <div className="empty-state">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              <div className="empty-state-title">{t('proj.no_records')}</div>
+              <div className="empty-state-sub">{t('proj.no_records_sub')}</div>
             </div>
-            <div style={{ overflowX: "auto" }}>
+          : <div className="tbl-wrap">
               <table className="tbl">
-                <thead>
-                  <tr>
-                    <th>Joint</th><th>Spool</th><th>WPS</th><th>Welder</th>
-                    <th>Ø</th><th>Pos</th><th>Date</th><th>Verdict</th><th>Conf.</th>
-                  </tr>
-                </thead>
+                <thead><tr><th>#</th><th>{t('col.weld_id')}</th><th>{t('col.type')}</th><th>{t('col.welder')}</th><th>{t('col.ai_result')}</th><th>{t('col.qc_result')}</th><th>{t('col.date')}</th><th>{t('col.remarks')}</th></tr></thead>
                 <tbody>
-                  {joints.map(j => (
-                    <tr key={j.id}>
-                      <td style={{ fontFamily: "var(--font-mono)", color: "var(--t-1)", fontWeight: 600 }}>{j.id}</td>
-                      <td className="mono" style={{ color: "var(--t-3)" }}>{j.spool}</td>
-                      <td><span className="chip amber">{j.wps}</span></td>
-                      <td><span className="mono" style={{ color: "var(--t-2)" }}>{j.welder}</span></td>
-                      <td className="mono">{j.dia}</td>
-                      <td className="mono">{j.pos}</td>
-                      <td className="mono" style={{ fontSize: 11.5, color: "var(--t-4)" }}>{j.date.slice(5)}</td>
-                      <td>
-                        {j.verdict === "pass"   && <span className="chip ok"><span className="dot"/>PASS</span>}
-                        {j.verdict === "review" && <span className="chip warn"><span className="dot"/>REVIEW</span>}
-                        {j.verdict === "fail"   && <span className="chip bad"><span className="dot"/>FAIL</span>}
-                      </td>
-                      <td className="mono nums" style={{ color: j.conf > 95 ? "var(--ok)" : j.conf > 85 ? "var(--t-1)" : "var(--warn)" }}>
-                        {j.conf.toFixed(1)}%
-                      </td>
+                  {projInspections.map((ins,i) => (
+                    <tr key={ins.id}>
+                      <td className="text-muted text-sm">{i+1}</td>
+                      <td><code style={{fontSize:11.5,color:'var(--navy)'}}>{ins.weldId}</code></td>
+                      <td className="text-sm">{ins.weldType}</td>
+                      <td className="text-sm">{ins.welder}</td>
+                      <td><span className={`badge badge-${ins.aiResult==='pass'?'success':'danger'}`} style={{fontSize:10}}>{ins.aiResult==='pass'?'PASS':'FAIL'}</span></td>
+                      <td><span className={`badge badge-${ins.result==='pass'?'success':'danger'}`}>{ins.result==='pass' ? t('status.pass') : t('status.fail')}</span></td>
+                      <td className="text-sm text-muted">{ins.date}</td>
+                      <td className="text-sm text-muted" style={{maxWidth:160,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{ins.comment||'—'}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </div>
+      )}
 
-          {/* side panel */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <div className="panel glass">
-              <div className="panel-header"><h3>Documents</h3><Icons.Plus size={14} stroke="var(--t-3)"/></div>
-              <div className="panel-body flush">
-                {[
-                  { name: "WPS-001 rev C", kind: "WPS", date: "2026-02-12", icon: "Doc", color: "var(--amber)" },
-                  { name: "PQR-001",       kind: "PQR", date: "2026-02-08", icon: "Doc", color: "var(--info)" },
-                  { name: "ITP — SYN-L3",  kind: "ITP", date: "2026-04-22", icon: "Standard", color: "var(--ok)" },
-                  { name: "Iso Drawing 12 of 47", kind: "DWG", date: "2026-04-30", icon: "Image", color: "var(--purple)" },
-                  { name: "Daily Report 2026-05-13", kind: "RPT", date: "2026-05-13", icon: "Report", color: "var(--amber)" },
-                ].map((d, i) => {
-                  const Ico = Icons[d.icon];
-                  return (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: "1px solid var(--border-1)", cursor: "pointer" }}>
-                      <Ico size={16} stroke={d.color}/>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12.5, color: "var(--t-1)", fontWeight: 500 }}>{d.name}</div>
-                        <div className="mono" style={{ fontSize: 10.5, color: "var(--t-4)", letterSpacing: "0.06em" }}>{d.kind} · {d.date}</div>
-                      </div>
-                      <Icons.Download size={14} stroke="var(--t-4)"/>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="panel glass">
-              <div className="panel-header"><h3>Timeline</h3></div>
-              <div className="panel-body" style={{ position: "relative" }}>
-                <div style={{ position: "absolute", left: 22, top: 16, bottom: 16, width: 1, background: "var(--border-2)" }}/>
-                {[
-                  { t: "TODAY", l: "Batch SP-A-12 inspected · 24 joints", c: "var(--amber)" },
-                  { t: "TODAY", l: "WPS-001 rev C signed by client", c: "var(--ok)" },
-                  { t: "13 MAY", l: "Welder WD-019 returned to qualification", c: "var(--warn)" },
-                  { t: "12 MAY", l: "Drawing 12 of 47 issued for construction", c: "var(--info)" },
-                  { t: "10 MAY", l: "Project kickoff · ITP issued", c: "var(--t-3)" },
-                ].map((e, i) => (
-                  <div key={i} style={{ position: "relative", paddingLeft: 28, marginBottom: 14 }}>
-                    <div style={{ position: "absolute", left: 18, top: 4, width: 9, height: 9, borderRadius: "50%", background: e.c, boxShadow: `0 0 8px ${e.c}` }}/>
-                    <div className="mono" style={{ fontSize: 10, color: "var(--t-4)", letterSpacing: "0.1em" }}>{e.t}</div>
-                    <div style={{ fontSize: 12, color: "var(--t-1)", marginTop: 2 }}>{e.l}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+      {/* Tab: Staff */}
+      {activeTab === 'staff' && (
+        <div>
+          <div style={{display:'flex',justifyContent:'flex-end',marginBottom:12}}>
+            <button className="btn btn-primary btn-sm" onClick={()=>setStaffModal('add')}>
+              {t('btn.add_member')}
+            </button>
           </div>
+          {project.staff.length === 0
+            ? <div className="empty-state">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+                <div className="empty-state-title">{t('proj.no_staff')}</div>
+              </div>
+            : <div className="tbl-wrap">
+                <table className="tbl">
+                  <thead><tr><th>#</th><th>{t('lbl.name')}</th><th>{t('lbl.position')}</th><th>{t('lbl.team')}</th><th>{t('lbl.certificate')}</th><th>{t('lbl.actions')}</th></tr></thead>
+                  <tbody>
+                    {project.staff.map((s,i) => (
+                      <tr key={s.id}>
+                        <td className="text-muted text-sm">{i+1}</td>
+                        <td style={{fontWeight:500}}>{s.name}</td>
+                        <td><span className="badge badge-navy" style={{fontSize:10.5}}>{s.position}</span></td>
+                        <td className="text-sm">{s.team||'—'}</td>
+                        <td className="text-sm">{s.cert||'—'}</td>
+                        <td>
+                          <div style={{display:'flex',gap:4}}>
+                            <button className="btn btn-ghost btn-icon" title="แก้ไข" onClick={()=>setStaffModal(s)}>
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </button>
+                            <button className="btn btn-ghost btn-icon" title="ลบ" onClick={()=>setDelStaff(s)}
+                                    style={{color:'var(--red)'}}>
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+          }
         </div>
       )}
 
-      {detailTab === "team" && <TeamTab project={p}/>}
-
-      {(detailTab === "docs" || detailTab === "timeline" || detailTab === "traceability" || detailTab === "ai") && (
-        <div className="panel glass" style={{ padding: 32, textAlign: "center" }}>
-          <div style={{ color: "var(--t-4)", fontSize: 13 }}>Select the Joints tab to view joint data, or Team to manage team assignments.</div>
-        </div>
+      {staffModal && (
+        <StaffModal
+          staff={staffModal !== 'add' ? staffModal : null}
+          onSave={saveStaff}
+          onClose={()=>setStaffModal(null)}
+        />
+      )}
+      {delStaff && (
+        <DeleteConfirm
+          label={delStaff.name}
+          onConfirm={()=>removeStaff(delStaff.id)}
+          onClose={()=>setDelStaff(null)}
+        />
       )}
     </div>
   );
 };
 
-// =========== PROJECTS LIST ==========================================
-const ProjectsScreen = () => {
-  const [view, setView] = React.useState("card");
-  const [filter, setFilter] = React.useState("all");
-  const [openProject, setOpenProject] = React.useState(null);
-  const [showAdd, setShowAdd] = React.useState(false);
-  const [projects, setProjects] = React.useState(WQIS_DATA.projects);
+// ── Projects Screen ───────────────────────────────────────────
+const ProjectsScreen = ({ projects, setProjects, inspections, lang }) => {
+  const t = k => (typeof window !== 'undefined' && window.t) ? window.t(k) : k;
+  const [modal,     setModal]     = React.useState(null); // null | 'add' | projectObj
+  const [expanded,  setExpanded]  = React.useState(null); // project id
+  const [delProject,setDelProject]= React.useState(null);
+  const [search,    setSearch]    = React.useState('');
 
-  if (openProject) return <ProjectDetail p={openProject} onBack={() => setOpenProject(null)}/>;
+  const filtered = projects.filter(p =>
+    p.name.toLowerCase().includes(search.toLowerCase()) ||
+    p.code.toLowerCase().includes(search.toLowerCase()) ||
+    (p.client||'').toLowerCase().includes(search.toLowerCase())
+  );
 
-  let list = projects;
-  if (filter !== "all") list = list.filter(p => p.qa === filter);
+  const saveProject = proj => {
+    setProjects(prev => {
+      const exists = prev.find(p => p.id === proj.id);
+      return exists ? prev.map(p => p.id === proj.id ? proj : p) : [...prev, proj];
+    });
+    if (typeof window !== 'undefined' && window.showToast) {
+      const exists = projects.find(p => p.id === proj.id);
+      window.showToast(exists ? `อัปเดตโปรเจค · ${proj.name}` : `เพิ่มโปรเจคใหม่ · ${proj.name}`, 'success');
+    }
+  };
+
+  const deleteProject = id => {
+    const proj = projects.find(p => p.id === id);
+    setProjects(prev => prev.filter(p => p.id !== id));
+    if (typeof window !== 'undefined' && window.showToast && proj) {
+      window.showToast(`ลบโปรเจค · ${proj.name}`, 'info');
+    }
+  };
+
+  const updateProject = proj => setProjects(prev => prev.map(p => p.id === proj.id ? proj : p));
+
+  const STATUS_LABELS = { planning: t('status.planning'), active: t('status.active'), completed: t('status.completed') };
+  const STATUS_BADGE  = { planning:'warning', active:'teal', completed:'success' };
 
   return (
-    <div className="page">
-      <div className="bg-grid"/>
-      <div className="page-head">
+    <div>
+      <div className="page-hd">
         <div>
-          <span className="kicker">PROJECTS · 23 ACTIVE</span>
-          <h1 style={{ marginTop: 8 }}>Project portfolio</h1>
-          <div className="sub">Track inspection progress across 6 industries and 142 welders.</div>
+          <div className="page-title">{t('proj.title')}</div>
+          <div className="page-sub">{t('proj.sub')}</div>
         </div>
-        <div className="row" style={{ gap: 8 }}>
-          <div className="seg">
-            <button className={filter === "all" ? "on" : ""}       onClick={() => setFilter("all")}>All</button>
-            <button className={filter === "in-review" ? "on" : ""} onClick={() => setFilter("in-review")}>In review</button>
-            <button className={filter === "approved" ? "on" : ""}  onClick={() => setFilter("approved")}>Approved</button>
-            <button className={filter === "pending" ? "on" : ""}   onClick={() => setFilter("pending")}>Pending</button>
-          </div>
-          <div className="seg">
-            <button className={view === "card" ? "on" : ""}  onClick={() => setView("card")}>
-              <Icons.Grid size={12}/>
-            </button>
-            <button className={view === "table" ? "on" : ""} onClick={() => setView("table")}>
-              <Icons.Rows size={12}/>
-            </button>
-          </div>
-          <button className="btn primary sm" onClick={() => setShowAdd(true)}><Icons.Plus size={14}/> New project</button>
+        <div className="page-hd-right">
+          <button className="btn btn-primary" onClick={()=>setModal('add')}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            {t('btn.add_project')}
+          </button>
         </div>
       </div>
 
-      {/* industry filter pills */}
-      <div className="row wrap" style={{ marginBottom: 18, gap: 6 }}>
-        <span className="mono" style={{ fontSize: 10.5, color: "var(--t-4)", letterSpacing: "0.12em", marginRight: 6 }}>INDUSTRY ·</span>
-        {WQIS_DATA.industries.map(ind => (
-          <span key={ind} className="chip" style={{ cursor: "pointer" }}>{ind}</span>
-        ))}
-      </div>
-
-      {view === "card" ? (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 14 }}>
-          {list.map(p => <ProjectCard key={p.id} p={p} onOpen={() => setOpenProject(p)}/>)}
+      <div className="card">
+        <div className="card-body" style={{paddingBottom:8}}>
+          <div className="search-row">
+            <div className="search-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg>
+              <input className="search-input" placeholder={t('proj.search_ph')} value={search} onChange={e=>setSearch(e.target.value)}/>
+            </div>
+            <span className="text-sm text-muted">{filtered.length} {t('lbl.projects')}</span>
+          </div>
         </div>
-      ) : (
-        <div className="panel glass" style={{ overflow: "hidden" }}>
+
+        <div className="tbl-wrap">
           <table className="tbl">
             <thead>
               <tr>
-                <th>Code</th><th>Project</th><th>Client</th><th>Industry</th>
-                <th>Progress</th><th>Pass</th><th>QA</th><th>Due</th><th></th>
+                <th style={{width:40}}>#</th>
+                <th>{t('proj.name')}</th>
+                <th>{t('lbl.duration')}</th>
+                <th style={{textAlign:'center'}}>{t('col.total_welds')}</th>
+                <th style={{textAlign:'center'}}>{t('col.inspected')}</th>
+                <th style={{textAlign:'center'}}>{t('lbl.remaining')}</th>
+                <th style={{width:160}}>{t('lbl.progress')}</th>
+                <th>{t('col.status')}</th>
+                <th style={{textAlign:'right'}}>{t('lbl.actions')}</th>
               </tr>
             </thead>
             <tbody>
-              {list.map(p => (
-                <tr key={p.id} onClick={() => setOpenProject(p)} style={{ cursor: "pointer" }}>
-                  <td className="mono" style={{ color: "var(--amber-2)" }}>{p.code}</td>
-                  <td style={{ color: "var(--t-1)", fontWeight: 600 }}>{p.name}</td>
-                  <td>{p.client}</td>
-                  <td><span className="chip">{p.industry}</span></td>
-                  <td style={{ width: 200 }}>
-                    <div className="row" style={{ gap: 8 }}>
-                      <div className="bar grow"><i style={{ width: `${p.progress}%` }}/></div>
-                      <span className="mono nums" style={{ width: 32, textAlign: "right" }}>{p.progress}%</span>
-                    </div>
-                  </td>
-                  <td className="mono nums" style={{ color: p.pass > 96 ? "var(--ok)" : p.pass ? "var(--warn)" : "var(--t-4)" }}>
-                    {p.pass ? `${p.pass.toFixed(1)}%` : "—"}
-                  </td>
-                  <td>{qaChip(p.qa)}</td>
-                  <td className="mono">{p.due}</td>
-                  <td><Icons.ChevR size={14} stroke="var(--t-4)"/></td>
-                </tr>
-              ))}
+              {filtered.length === 0 && (
+                <tr><td colSpan="9" style={{textAlign:'center',padding:'32px',color:'var(--text-3)'}}>{t('proj.not_found')}</td></tr>
+              )}
+              {filtered.map((p, i) => {
+                const pct = p.totalWelds ? Math.round(p.inspected / p.totalWelds * 100) : 0;
+                const remaining = Math.max(0, p.totalWelds - p.inspected);
+                const isOpen = expanded === p.id;
+                return (
+                  <React.Fragment key={p.id}>
+                    <tr className="tbl-clickable" onClick={()=>setExpanded(isOpen ? null : p.id)}
+                        style={{background: isOpen ? 'var(--navy-soft)' : undefined}}>
+                      <td className="text-sm text-muted">{i+1}</td>
+                      <td>
+                        <div style={{fontWeight:600,color:'var(--navy)'}}>{p.name}</div>
+                        <div style={{fontSize:11.5,color:'var(--text-3)'}}>{p.code} · {p.client}</div>
+                      </td>
+                      <td className="text-sm">{p.startDate} — {p.endDate}</td>
+                      <td style={{textAlign:'center',fontWeight:600}}>{p.totalWelds}</td>
+                      <td style={{textAlign:'center',fontWeight:600,color:'var(--teal)'}}>{p.inspected}</td>
+                      <td style={{textAlign:'center',fontWeight:600,color:remaining>0?'var(--orange)':'var(--green)'}}>{remaining}</td>
+                      <td>
+                        <div style={{display:'flex',alignItems:'center',gap:8}}>
+                          <div className="progress" style={{flex:1}}>
+                            <div className={`progress-bar ${p.status==='completed'?'green':p.status==='active'?'teal':'orange'}`} style={{width:`${pct}%`}}/>
+                          </div>
+                          <span style={{fontSize:12,fontWeight:700,color:'var(--navy)',minWidth:32,textAlign:'right'}}>{pct}%</span>
+                        </div>
+                      </td>
+                      <td><span className={`badge badge-${STATUS_BADGE[p.status]||'gray'}`}>{STATUS_LABELS[p.status]||p.status}</span></td>
+                      <td>
+                        <div style={{display:'flex',gap:4,justifyContent:'flex-end'}} onClick={e=>e.stopPropagation()}>
+                          <button className="btn btn-ghost btn-icon btn-sm" title="แก้ไข" onClick={()=>setModal(p)}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                          </button>
+                          <button className="btn btn-ghost btn-icon btn-sm" title="ลบ" style={{color:'var(--red)'}} onClick={()=>setDelProject(p)}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                          </button>
+                          <span style={{color:'var(--text-3)',display:'flex',alignItems:'center',paddingLeft:4}}>
+                            {isOpen ? '▲' : '▼'}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                    {isOpen && (
+                      <tr>
+                        <td colSpan="9" style={{padding:0}}>
+                          <ProjectDetail project={p} inspections={inspections} onUpdateProject={updateProject}/>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
-      )}
+      </div>
 
-      {showAdd && <AddProjectModal onClose={() => setShowAdd(false)} onAdd={form => {
-        const newProj = { id: `PRJ-NEW-${Date.now()}`, code: form.name.slice(0,8).toUpperCase().replace(/\s/g,"-"),
-          name: form.name, client: form.client, industry: form.industry,
-          progress: 0, joints: 0, joints_done: 0, qa: "pending", pass: null, lead: "—",
-          team: 0, due: form.due, desc: "" };
-        setProjects(ps => [newProj, ...ps]);
-      }}/>}
+      {modal && <ProjectModal project={modal !== 'add' ? modal : null} onSave={saveProject} onClose={()=>setModal(null)}/>}
+      {delProject && <DeleteConfirm label={delProject.name} onConfirm={()=>deleteProject(delProject.id)} onClose={()=>setDelProject(null)}/>}
     </div>
   );
 };

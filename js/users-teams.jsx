@@ -1,4 +1,4 @@
-/* global React, window */
+/* global React, window, ModalPortal */
 
 const ROLES = ['QA Manager', 'QA Engineer', 'Inspector', 'Client View', 'Welder', 'Auditor (R/O)'];
 
@@ -42,10 +42,11 @@ const EditUserModal = ({ user, onSave, onClose }) => {
   const handleBackdrop = e => { if (e.target === e.currentTarget) onClose(); };
 
   return (
+    <ModalPortal>
     <div
       onClick={handleBackdrop}
       style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
+        position: 'fixed', inset: 0, zIndex: 9000,
         background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(3px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
       }}
@@ -185,6 +186,7 @@ const EditUserModal = ({ user, onSave, onClose }) => {
         </form>
       </div>
     </div>
+    </ModalPortal>
   );
 };
 

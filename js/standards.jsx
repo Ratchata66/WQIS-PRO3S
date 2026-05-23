@@ -1,4 +1,4 @@
-/* global React, window */
+/* global React, window, ModalPortal */
 
 const StandardsScreen = ({ standards, setStandards, lang }) => {
   const t = k => (typeof window !== 'undefined' && window.t) ? window.t(k) : k;
@@ -164,6 +164,7 @@ const StandardsScreen = ({ standards, setStandards, lang }) => {
 
       {/* PDF Viewer Modal */}
       {pdfModal && (
+        <ModalPortal>
         <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&setPdfModal(null)}>
           <div className="modal modal-pdf">
             <div className="modal-header">
@@ -191,10 +192,12 @@ const StandardsScreen = ({ standards, setStandards, lang }) => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Delete confirm */}
       {delDoc && (
+        <ModalPortal>
         <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&setDelDoc(null)}>
           <div className="modal" style={{maxWidth:380}}>
             <div className="modal-header">
@@ -210,6 +213,7 @@ const StandardsScreen = ({ standards, setStandards, lang }) => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );
