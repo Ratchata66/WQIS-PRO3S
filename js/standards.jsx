@@ -1,157 +1,216 @@
-/* global React, Icons, WQIS_DATA */
+/* global React, window */
 
-const StandardsScreen = () => {
-  const [uploadName, setUploadName] = React.useState("");
-  const [uploadCode, setUploadCode] = React.useState("");
-  const [pdfs, setPdfs] = React.useState([
-    { code: "ASME IX", file: "ASME_IX_2023.pdf", size: "4.2 MB", uploaded: "2026-03-01" },
-    { code: "ISO 5817", file: "ISO_5817_2023.pdf", size: "2.8 MB", uploaded: "2026-03-01" },
-    { code: "ASME BPE", file: "ASME_BPE_2024.pdf", size: "6.1 MB", uploaded: "2026-04-15" },
-  ]);
+const StandardsScreen = ({ standards, setStandards, lang }) => {
+  const t = k => (typeof window !== 'undefined' && window.t) ? window.t(k) : k;
+  const [pdfModal, setPdfModal]   = React.useState(null);
+  const [delDoc,   setDelDoc]     = React.useState(null);
+  const [uploading,setUploading]  = React.useState(false);
+  const [stdSaved, setStdSaved]   = React.useState(false);
+  const fileInputRef = React.useRef(null);
+  const mountedStd   = React.useRef(false);
 
-  const standards = [
-    { code: "ASME IX",    title: "Welding & Brazing Qualifications",  desc: "Procedure (PQR) and performance (WPQ) qualification rules.", rev: "2023 Ed.", color: "var(--amber)", scope: "F&B · Pharma · O&G" },
-    { code: "ISO 5817",   title: "Quality Levels for Imperfections",  desc: "Acceptance levels B (strict), C (intermediate), D (low).", rev: "Level B", color: "var(--info)", scope: "All industries" },
-    { code: "ASME BPE",   title: "Bioprocessing Equipment",           desc: "Hygienic tubing, surface finish Ra ≤ 0.4 µm, oxide grading.", rev: "2024 Ed.", color: "var(--ok)", scope: "Pharma · F&B" },
-    { code: "AWS D18.2",  title: "Stainless Discoloration Guide",     desc: "Visual sample chart for oxide acceptance (silver → black).", rev: "2009 R23", color: "var(--purple)", scope: "Stainless" },
-    { code: "ISO 9606-1", title: "Welder Qualification — Steels",     desc: "Test piece + acceptance criteria for performance qualification.", rev: "2017", color: "var(--warn)", scope: "Welder cert." },
-    { code: "API 1104",   title: "Welding of Pipelines",              desc: "Oil & Gas — radiographic examination acceptance limits.", rev: "22nd Ed.", color: "var(--bad)", scope: "Oil & Gas" },
-  ];
+  // Show "saved" indicator when standards list changes
+  React.useEffect(() => {
+    if (!mountedStd.current) { mountedStd.current = true; return; }
+    setStdSaved(true);
+    const t2 = setTimeout(() => setStdSaved(false), 2500);
+    return () => clearTimeout(t2);
+  }, [standards]);
+
+  const STANDARD_COLORS = {
+    'AWS D1.1': '#1B3A6B', 'ASME IX': '#0D7377', 'ISO 5817': '#28a745',
+    'ASME BPE': '#6f42c1', 'AWS D18.2': '#fd7e14', 'ISO 9606-1': '#17a2b8',
+    'API 1104': '#dc3545',
+  };
+
+  const handleUpload = e => {
+    const file = e.target.files[0];
+    if (!file || file.type !== 'application/pdf') {
+      if (window.showToast) window.showToast(t('std.pdf_only'), 'warning'); return;
+    }
+    setUploading(true);
+    setTimeout(() => {
+      const url = URL.createObjectURL(file);
+      const stdName = file.name.replace('.pdf','').replace(/_/g,' ');
+      const newDoc = {
+        id: `STD-${Date.now()}`,
+        name: stdName,
+        standard: stdName.split(' ')[0],
+        year: new Date().getFullYear().toString(),
+        scope: 'งานเชื่อมทั่วไป',
+        fileUrl: url,
+        fileName: file.name,
+        uploadDate: new Date().toISOString().slice(0,10),
+      };
+      setStandards(prev => [newDoc, ...prev]);
+      setUploading(false);
+      e.target.value = '';
+      if (typeof window !== 'undefined' && window.showToast) {
+        window.showToast(`${t('std.upload_ok')} · ${stdName}`, 'success');
+      }
+    }, 800);
+  };
+
+  const deleteDoc = id => {
+    const doc = standards.find(s => s.id === id);
+    if (doc && doc.fileUrl && doc.fileUrl.startsWith('blob:')) URL.revokeObjectURL(doc.fileUrl);
+    setStandards(prev => prev.filter(s => s.id !== id));
+    if (typeof window !== 'undefined' && window.showToast && doc) {
+      window.showToast(`${t('std.delete_ok')} · ${doc.name}`, 'info');
+    }
+  };
+
+  const getColor = stdName => {
+    for (const key of Object.keys(STANDARD_COLORS)) {
+      if (stdName && stdName.includes(key.split(' ')[0])) return STANDARD_COLORS[key];
+    }
+    return '#6C757D';
+  };
 
   return (
-    <div className="page">
-      <div className="bg-grid"/>
-      <div className="page-head">
+    <div>
+      <div className="page-hd">
         <div>
-          <span className="kicker">REFERENCE LIBRARY · {standards.length} STANDARDS</span>
-          <h1 style={{ marginTop: 8 }}>Standard Reference</h1>
-          <div className="sub">คลังมาตรฐานอ้างอิง · Governing codes used by AI grading and human review.</div>
+          <div className="page-title">{t('std.title')}</div>
+          <div className="page-sub">{t('std.sub')}</div>
+        </div>
+        <div className="page-hd-right">
+          {stdSaved && (
+            <span style={{fontSize:12,color:'var(--ok)',display:'flex',alignItems:'center',gap:4,fontWeight:600}}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+              บันทึกแล้ว
+            </span>
+          )}
+          <input ref={fileInputRef} type="file" accept=".pdf" hidden onChange={handleUpload}/>
+          <button className="btn btn-primary" onClick={()=>fileInputRef.current.click()} disabled={uploading}>
+            {uploading ? (
+              <>
+                <div style={{width:14,height:14,border:'2px solid rgba(255,255,255,0.3)',borderTopColor:'white',borderRadius:'50%',animation:'spin 0.6s linear infinite'}}/>
+                {t('btn.uploading')}
+              </>
+            ) : (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                {t('btn.upload_pdf')}
+              </>
+            )}
+          </button>
         </div>
       </div>
 
+      {/* Info bar */}
+      <div className="alert alert-info mb-20" style={{fontSize:12.5}}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        {t('std.info')}
+      </div>
+
       {/* Standards grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 22 }}>
-        {standards.map(s => {
-          const hasPdf = pdfs.find(p => p.code === s.code);
+      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+        {standards.map(doc => {
+          const color = getColor(doc.standard);
           return (
-            <div key={s.code} className="panel glass"
-                 style={{ borderTop: `2px solid ${s.color}44`, transition: "all 0.16s" }}
-                 onMouseEnter={e => { e.currentTarget.style.boxShadow = `0 0 0 1px ${s.color}33, 0 14px 30px -14px ${s.color}44`; e.currentTarget.style.transform = "translateY(-2px)"; }}
-                 onMouseLeave={e => { e.currentTarget.style.boxShadow = ""; e.currentTarget.style.transform = ""; }}>
-              <div className="panel-body">
-                <div className="row" style={{ marginBottom: 12 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 10, background: `${s.color}18`,
-                                border: `1px solid ${s.color}44`, display: "grid", placeItems: "center", color: s.color }}>
-                    <Icons.Standard size={19}/>
+            <div key={doc.id} className="doc-card">
+              {/* Icon */}
+              <div className="doc-icon" style={{background:`${color}15`,color}}>
+                <div style={{textAlign:'center',lineHeight:1.2}}>
+                  <div style={{fontSize:16,marginBottom:2}}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M7 3h7l5 5v11a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"/><path d="M14 3v5h5"/>
+                    </svg>
                   </div>
-                  <div style={{ flex: 1, marginLeft: 10 }}>
-                    <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 15, color: s.color }}>{s.code}</div>
-                    <div className="mono" style={{ fontSize: 9.5, color: "var(--t-5)", letterSpacing: "0.1em", marginTop: 1 }}>{s.rev}</div>
-                  </div>
-                  {hasPdf
-                    ? <span className="chip ok" style={{ fontSize: 9.5 }}><span className="dot"/>PDF</span>
-                    : <span className="chip" style={{ fontSize: 9.5 }}>No PDF</span>}
+                  <div style={{fontSize:8,fontWeight:800}}>PDF</div>
                 </div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--t-1)" }}>{s.title}</div>
-                <div style={{ fontSize: 12, color: "var(--t-3)", marginTop: 5, lineHeight: 1.5 }}>{s.desc}</div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12,
-                              paddingTop: 10, borderTop: "1px solid var(--border-1)" }}>
-                  <span className="mono" style={{ fontSize: 9.5, color: "var(--t-5)" }}>◈ {s.scope}</span>
-                  <div style={{ display: "flex", gap: 4 }}>
-                    {hasPdf && <button className="btn ghost sm" style={{ fontSize: 11 }}>View PDF</button>}
-                    {hasPdf && <button className="btn ghost sm icon"><Icons.Download size={13}/></button>}
-                    {!hasPdf && <button className="btn ghost sm" style={{ fontSize: 11 }}>Upload PDF</button>}
-                  </div>
+              </div>
+
+              {/* Info */}
+              <div className="doc-info">
+                <div className="doc-name">{doc.name}</div>
+                <div className="doc-meta">
+                  <span className="badge" style={{background:`${color}12`,color,fontSize:10.5,padding:'2px 7px',fontWeight:700,borderRadius:3}}>
+                    {doc.standard}
+                  </span>
+                  {' · '}
+                  {doc.year && <span>{doc.year} · </span>}
+                  {doc.scope && <span>{doc.scope} · </span>}
+                  {t('std.uploaded')} {doc.uploadDate}
                 </div>
+              </div>
+
+              {/* Actions */}
+              <div style={{display:'flex',gap:6,flexShrink:0}}>
+                <button className="btn btn-secondary btn-sm"
+                        onClick={()=>setPdfModal({name:doc.name, url:doc.fileUrl, fileName:doc.fileName})}
+                        disabled={!doc.fileUrl}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                  {t('btn.view')}
+                </button>
+                <button className="btn btn-ghost btn-icon" style={{color:'var(--red)'}}
+                        onClick={()=>setDelDoc(doc)} title="ลบ">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                </button>
               </div>
             </div>
           );
         })}
+
+        {standards.length === 0 && (
+          <div className="empty-state">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M7 3h7l5 5v11a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg>
+            <div className="empty-state-title">{t('std.no_docs')}</div>
+            <div className="empty-state-sub">{t('std.no_docs_sub')}</div>
+          </div>
+        )}
       </div>
 
-      {/* Upload section */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 22 }}>
-        <div className="panel glass">
-          <div className="panel-header"><h3><Icons.Upload size={14}/> Upload Standard PDF</h3></div>
-          <div className="panel-body">
-            <div style={{ border: "1.5px dashed var(--border-3)", borderRadius: 10, padding: 24, textAlign: "center", marginBottom: 14,
-                          background: "var(--amber-soft)" }}>
-              <Icons.Doc size={32} stroke="var(--amber)"/>
-              <div style={{ fontSize: 13, fontWeight: 600, marginTop: 8 }}>Drop PDF here or click to browse</div>
-              <div style={{ fontSize: 11.5, color: "var(--t-3)", marginTop: 4 }}>PDF · Max 50 MB</div>
+      {/* PDF Viewer Modal */}
+      {pdfModal && (
+        <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&setPdfModal(null)}>
+          <div className="modal modal-pdf">
+            <div className="modal-header">
+              <div className="modal-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="2" style={{marginRight:6}}>
+                  <path d="M7 3h7l5 5v11a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"/><path d="M14 3v5h5"/>
+                </svg>
+                {pdfModal.name}
+              </div>
+              <button className="modal-close" onClick={()=>setPdfModal(null)}>✕</button>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <div>
-                <div className="label-row"><span>Standard Code</span></div>
-                <input className="input" style={{ width: "100%" }} placeholder="e.g. ASME IX" value={uploadCode} onChange={e => setUploadCode(e.target.value)}/>
-              </div>
-              <div>
-                <div className="label-row"><span>Description (optional)</span></div>
-                <input className="input" style={{ width: "100%" }} placeholder="e.g. ASME IX 2023 Edition" value={uploadName} onChange={e => setUploadName(e.target.value)}/>
-              </div>
-              <button className="btn primary sm" style={{ width: "100%", justifyContent: "center" }}
-                      onClick={() => {
-                        if (uploadCode.trim()) {
-                          setPdfs(p => [...p, { code: uploadCode, file: `${uploadCode.replace(/\s/g,"_")}.pdf`, size: "—", uploaded: new Date().toISOString().slice(0,10) }]);
-                          setUploadCode(""); setUploadName("");
-                        }
-                      }}>
-                <Icons.Upload size={14}/> Upload PDF
-              </button>
+            <div className="modal-body" style={{padding:'16px 20px'}}>
+              {pdfModal.url ? (
+                <div className="pdf-wrap">
+                  <iframe src={pdfModal.url} title={pdfModal.name}/>
+                </div>
+              ) : (
+                <div className="pdf-placeholder">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M7 3h7l5 5v11a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"/><path d="M14 3v5h5"/></svg>
+                  <div style={{fontWeight:600,color:'var(--text-2)'}}>{t('std.no_preview')}</div>
+                  <div style={{fontSize:12.5}}>{pdfModal.fileName}</div>
+                  <div style={{fontSize:12,color:'var(--text-3)'}}>{t('std.sample_note')}</div>
+                </div>
+              )}
             </div>
           </div>
         </div>
+      )}
 
-        <div className="panel glass">
-          <div className="panel-header"><h3>Uploaded PDFs</h3><span className="sub">{pdfs.length} FILES</span></div>
-          <div className="panel-body flush">
-            {pdfs.map((p, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: "1px solid var(--border-1)" }}>
-                <Icons.Doc size={16} stroke="var(--amber-2)"/>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12.5, fontWeight: 600 }}>{p.code}</div>
-                  <div className="mono" style={{ fontSize: 10.5, color: "var(--t-4)" }}>{p.file} · {p.size} · {p.uploaded}</div>
-                </div>
-                <button className="btn ghost sm icon" title="View"><Icons.Eye size={13}/></button>
-                <button className="btn ghost sm icon" title="Download"><Icons.Download size={13}/></button>
-              </div>
-            ))}
-            {pdfs.length === 0 && (
-              <div style={{ padding: 24, textAlign: "center", color: "var(--t-5)", fontSize: 12 }}>No PDFs uploaded yet</div>
-            )}
+      {/* Delete confirm */}
+      {delDoc && (
+        <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&setDelDoc(null)}>
+          <div className="modal" style={{maxWidth:380}}>
+            <div className="modal-header">
+              <div className="modal-title">{t('lbl.confirm_delete')}</div>
+              <button className="modal-close" onClick={()=>setDelDoc(null)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <div className="alert alert-error">{t('std.del_confirm')} <strong>{delDoc.name}</strong>?</div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-ghost" onClick={()=>setDelDoc(null)}>{t('btn.cancel')}</button>
+              <button className="btn btn-danger" onClick={()=>{deleteDoc(delDoc.id);setDelDoc(null);}}>{t('btn.delete')}</button>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Oxide discoloration scale */}
-      <div className="panel glass">
-        <div className="panel-header"><h3>Oxide discoloration scale · BPE 2024 / AWS D18.2</h3><span className="sub">REFERENCE STRIP</span></div>
-        <div className="panel-body">
-          <div style={{ height: 60, background: "linear-gradient(90deg, #d8d8c4, #b8c8d0, #d8b870, #a07020, #4a2c10, #1f1208)",
-                        borderRadius: 6, border: "1px solid var(--border-2)", marginBottom: 12 }}/>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8 }}>
-            {[
-              { lvl:"A", label:"Silver",           v:"0–2 ppm O₂",  ok:true },
-              { lvl:"B", label:"Light straw",      v:"≤ 5 ppm",     ok:true },
-              { lvl:"C", label:"Straw / blue",     v:"≤ 12 ppm",    ok:true },
-              { lvl:"D", label:"Gold",             v:"≤ 32 ppm",    ok:"review" },
-              { lvl:"E", label:"Dark blue / brown",v:"≤ 100 ppm",   ok:false },
-              { lvl:"F", label:"Black",            v:"> 100 ppm",   ok:false },
-            ].map(s => (
-              <div key={s.lvl} style={{ padding: 10, background: "var(--bg-2)", borderRadius: 6, border: "1px solid var(--border-1)" }}>
-                <div className="row" style={{ marginBottom: 4 }}>
-                  <span className="mono" style={{ fontSize: 11, color: "var(--amber-2)", fontWeight: 700 }}>LVL {s.lvl}</span>
-                  {s.ok === true     && <span className="chip ok" style={{ marginLeft:"auto",fontSize:9 }}>PASS</span>}
-                  {s.ok === "review" && <span className="chip warn" style={{ marginLeft:"auto",fontSize:9 }}>REVIEW</span>}
-                  {s.ok === false    && <span className="chip bad" style={{ marginLeft:"auto",fontSize:9 }}>REJECT</span>}
-                </div>
-                <div style={{ fontSize: 12, fontWeight: 500 }}>{s.label}</div>
-                <div className="mono" style={{ fontSize: 10, color: "var(--t-4)", marginTop: 2 }}>{s.v}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
