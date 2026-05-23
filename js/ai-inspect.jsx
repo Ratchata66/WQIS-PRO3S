@@ -112,7 +112,8 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
   const [files,       setFiles]       = React.useState([]);
   const [selected,    setSelected]    = React.useState(null);
   const [results,     setResults]     = React.useState({});
-  const [analyzing,   setAnalyzing]   = React.useState(false);
+  const [analyzing,      setAnalyzing]      = React.useState(false);
+  const [analyzeProgress,setAnalyzeProgress]= React.useState({done:0,total:0});
   const [dragging,    setDragging]    = React.useState(false);
   const [saved,       setSaved]       = React.useState(false);
   const [zoomModal,      setZoomModal]      = React.useState(false);
@@ -157,23 +158,33 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
     setFiles([]); setSelected(null); setResults({});
   };
 
-  // Run AI
+  // Run AI — parallel batches of 5
+  const BATCH_SIZE = 5;
   const analyze = async () => {
     if (!files.length) return;
     setAnalyzing(true);
+    setAnalyzeProgress({ done: 0, total: files.length });
     const newResults = {};
-    for (const f of files) {
-      try {
-        newResults[f.id] = await runLocalAI(f.file);
-      } catch (err) {
-        newResults[f.id] = buildUnavailableResult(err.message);
-        if (typeof window !== 'undefined' && window.showToast) {
-          window.showToast(err.message, 'warning');
+    let done = 0;
+
+    // Split into batches
+    for (let i = 0; i < files.length; i += BATCH_SIZE) {
+      const batch = files.slice(i, i + BATCH_SIZE);
+      await Promise.all(batch.map(async f => {
+        try {
+          newResults[f.id] = await runLocalAI(f.file);
+        } catch (err) {
+          newResults[f.id] = buildUnavailableResult(err.message);
         }
-      }
+        done++;
+        setAnalyzeProgress({ done, total: files.length });
+        // Show partial results while processing
+        setResults(prev => ({ ...prev, [f.id]: newResults[f.id] }));
+      }));
     }
-    setResults(newResults);
+
     setAnalyzing(false);
+    setAnalyzeProgress({ done: 0, total: 0 });
     if (files.length > 0) setSelected(files[0].id);
   };
 
@@ -376,13 +387,31 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
                     {t('btn.clear')}
                   </button>
-                  <button className="btn btn-teal" onClick={analyze} disabled={analyzing || Object.keys(results).length>0}>
+                  <button className="btn btn-teal" onClick={analyze}
+                    disabled={analyzing || Object.keys(results).length>0}
+                    style={{minWidth:160,position:'relative',overflow:'hidden'}}>
+                    {/* Progress fill */}
+                    {analyzing && analyzeProgress.total > 0 && (
+                      <div style={{
+                        position:'absolute',inset:0,left:0,top:0,
+                        width: Math.round(analyzeProgress.done/analyzeProgress.total*100)+'%',
+                        background:'rgba(255,255,255,0.15)',
+                        transition:'width 0.25s',borderRadius:'inherit',pointerEvents:'none',
+                      }}/>
+                    )}
                     {analyzing ? (
                       <>
                         <div style={{width:13,height:13,border:'2px solid rgba(255,255,255,0.3)',borderTopColor:'white',borderRadius:'50%',animation:'spin 0.6s linear infinite'}}/>
-                        {t('btn.analyzing')}...
+                        {analyzeProgress.total > 0
+                          ? `${analyzeProgress.done} / ${analyzeProgress.total}`
+                          : `${t('btn.analyzing')}...`}
                       </>
-                    ) : Object.keys(results).length > 0 ? t('inspect.analyzed') : (
+                    ) : Object.keys(results).length > 0 ? (
+                      <>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        {t('inspect.analyzed')} ({Object.keys(results).length})
+                      </>
+                    ) : (
                       <>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg>
                         {t('inspect.check_ai')}
