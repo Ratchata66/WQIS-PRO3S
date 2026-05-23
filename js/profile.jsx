@@ -14,8 +14,7 @@ const loadSavedProfile = (username, session) => {
     displayName: session?.name || '',
     email:       username ? `${username}@pro3s.com` : '',
     phone:       '',
-    position:    session?.role === 'admin'     ? 'ผู้ดูแลระบบ' :
-                 session?.role === 'inspector' ? 'QC Inspector' : 'ผู้ชม',
+    position:    session?.role === 'admin' ? (window.t ? window.t('role.admin') : 'ผู้ดูแลระบบ') : session?.role === 'inspector' ? 'QC Inspector' : (window.t ? window.t('role.viewer') : 'ผู้ชม'),
     team:        'Quality Assurance',
     department:  'Engineering',
     bio:         '',
@@ -91,7 +90,7 @@ const ProfileAvatar = ({ avatarUrl, initials, size = 88, onUpload }) => {
                 <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
                 <circle cx="12" cy="13" r="4"/>
               </svg>
-              <span style={{ fontSize: 10, marginTop: 4, fontWeight: 600, letterSpacing: '0.04em' }}>เปลี่ยนรูป</span>
+              <span style={{ fontSize: 10, marginTop: 4, fontWeight: 600, letterSpacing: '0.04em' }}>{window.t ? window.t('prof.change_photo') : 'เปลี่ยนรูป'}</span>
             </>
         }
       </div>
@@ -122,7 +121,8 @@ const PwdStrength = ({ pwd }) => {
   if (/[A-Z]/.test(pwd))        s++;
   if (/[0-9]/.test(pwd))        s++;
   if (/[^A-Za-z0-9]/.test(pwd)) s++;
-  const LABELS = ['', 'อ่อนแอ', 'พอใช้', 'ดี', 'แข็งแกร่ง'];
+  const tw = k => window.t ? window.t(k) : k;
+  const LABELS = ['', tw('prof.pwd_weak'), tw('prof.pwd_fair'), tw('prof.pwd_good'), tw('prof.pwd_strong')];
   const COLORS = ['', 'var(--red)', 'var(--orange)', '#eab308', 'var(--green)'];
   return (
     <div style={{ marginTop: 8 }}>
@@ -136,14 +136,15 @@ const PwdStrength = ({ pwd }) => {
         ))}
       </div>
       <div style={{ fontSize: 11.5, marginTop: 5, color: COLORS[s] || 'var(--text-3)', fontWeight: 500 }}>
-        {pwd ? `ความแข็งแกร่ง: ${LABELS[s]}` : ''}
+        {pwd ? `${window.t ? window.t('prof.pwd_strength') : 'ความแข็งแกร่ง'}: ${LABELS[s]}` : ''}
       </div>
     </div>
   );
 };
 
 // ── Main component ───────────────────────────────────────────────────────────
-const ProfileScreen = ({ onBack }) => {
+const ProfileScreen = ({ onBack, lang }) => {
+  const t = k => (typeof window !== 'undefined' && window.t) ? window.t(k) : k;
   const session  = Auth.getSession ? Auth.getSession() : null;
   const username = session?.username || 'guest';
 
@@ -187,8 +188,7 @@ const ProfileScreen = ({ onBack }) => {
   const initials = (profile.fullName || profile.displayName || username || 'U')
     .split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
-  const roleLabel = session?.role === 'admin'     ? 'ผู้ดูแลระบบ' :
-                    session?.role === 'inspector'  ? 'QC Inspector' : 'ผู้ชม';
+  const roleLabel = session?.role === 'admin' ? t('role.admin') : session?.role === 'inspector' ? 'QC Inspector' : t('role.viewer');
   const roleBadge = session?.role === 'admin'     ? 'badge-navy' :
                     session?.role === 'inspector'  ? 'badge-teal' : 'badge-gray';
 
@@ -197,7 +197,7 @@ const ProfileScreen = ({ onBack }) => {
     setAvatarUrl(dataUrl);
     persistAvatar(username, dataUrl);
     window.dispatchEvent(new CustomEvent('wqis:profile-updated'));
-    if (window.showToast) window.showToast('อัปโหลดรูปโปรไฟล์สำเร็จ', 'success');
+    if (window.showToast) window.showToast(t('prof.upload_ok'), 'success');
   };
 
   // Force-save now (flush debounce)
@@ -208,16 +208,16 @@ const ProfileScreen = ({ onBack }) => {
     setSaveStatus('saved');
     clearTimeout(statusTimer.current);
     statusTimer.current = setTimeout(() => setSaveStatus('idle'), 2000);
-    if (window.showToast) window.showToast('บันทึกข้อมูลส่วนตัวสำเร็จ', 'success');
+    if (window.showToast) window.showToast(t('prof.save_ok2'), 'success');
   };
 
   const savePwd = e => {
     e.preventDefault();
     setPwdErr('');
-    if (!pwd.current)                       { setPwdErr('กรุณากรอกรหัสผ่านเดิม'); return; }
-    if (pwd.newPwd.length < 6)              { setPwdErr('รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร'); return; }
-    if (pwd.newPwd !== pwd.confirm)         { setPwdErr('รหัสผ่านใหม่ไม่ตรงกัน'); return; }
-    if (window.showToast) window.showToast('เปลี่ยนรหัสผ่านสำเร็จ (Demo mode)', 'success');
+    if (!pwd.current)                       { setPwdErr(t('prof.pwd_missing')); return; }
+    if (pwd.newPwd.length < 6)              { setPwdErr(t('prof.pwd_too_short')); return; }
+    if (pwd.newPwd !== pwd.confirm)         { setPwdErr(t('prof.pwd_mismatch')); return; }
+    if (window.showToast) window.showToast(t('prof.pwd_change_ok'), 'success');
     setPwd({ current: '', newPwd: '', confirm: '' });
   };
 
@@ -225,18 +225,18 @@ const ProfileScreen = ({ onBack }) => {
     setAvatarUrl(null);
     try { localStorage.removeItem(AVATAR_KEY(username)); } catch (_) {}
     window.dispatchEvent(new CustomEvent('wqis:profile-updated'));
-    if (window.showToast) window.showToast('ลบรูปโปรไฟล์แล้ว', 'info');
+    if (window.showToast) window.showToast(t('prof.remove_ok'), 'info');
   };
 
   const META_ROWS = [
-    { icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16M3 21h18M9 21V9h6v12', label: 'แผนก',     val: profile.department },
-    { icon: 'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75', label: 'ทีม', val: profile.team },
-    { icon: 'M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 5.18 2 2 0 015.08 3h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L9.09 10.1a16 16 0 006.86 6.86l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 18v.92z', label: 'โทรศัพท์', val: profile.phone },
-    { icon: 'M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82zM7 7h.01', label: 'ตำแหน่ง', val: profile.position },
+    { icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16M3 21h18M9 21V9h6v12', label: t('prof.dept_label'), val: profile.department },
+    { icon: 'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75', label: t('prof.team_label'), val: profile.team },
+    { icon: 'M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 5.18 2 2 0 015.08 3h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L9.09 10.1a16 16 0 006.86 6.86l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 18v.92z', label: t('prof.phone_label'), val: profile.phone },
+    { icon: 'M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82zM7 7h.01', label: t('prof.pos_label'), val: profile.position },
   ];
 
   const SESSIONS_DATA = [
-    { device: 'Chrome · Windows 11', icon: 'desktop', location: 'Bangkok, TH',   time: 'ตอนนี้ (เครื่องนี้)', current: true  },
+    { device: 'Chrome · Windows 11', icon: 'desktop', location: 'Bangkok, TH',   time: t('prof.now_session'), current: true  },
   ];
 
   const DeviceIcon = ({ type }) => type === 'mobile'
@@ -258,13 +258,13 @@ const ProfileScreen = ({ onBack }) => {
       <div className="page-hd">
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {onBack && (
-            <button className="btn btn-ghost btn-icon" onClick={onBack} title="กลับ">
+            <button className="btn btn-ghost btn-icon" onClick={onBack} title={t('btn.back')}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
           )}
           <div>
-            <div className="page-title">โปรไฟล์</div>
-            <div className="page-sub">จัดการข้อมูลส่วนตัวและความปลอดภัย</div>
+            {t('prof.title')}</div>
+            {t('prof.sub')}</div>
           </div>
         </div>
       </div>
@@ -290,7 +290,7 @@ const ProfileScreen = ({ onBack }) => {
                 onUpload={handleAvatarUpload}
               />
               {avatarUrl && (
-                <button className="profile-remove-av" onClick={removeAvatar} title="ลบรูป">
+                <button className="profile-remove-av" onClick={removeAvatar} title={t('prof.remove_photo')}>
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
                 </button>
               )}
@@ -335,13 +335,13 @@ const ProfileScreen = ({ onBack }) => {
           <div className="card">
             <div className="card-header" style={{ padding: '12px 16px 10px' }}>
               <div className="card-title" style={{ fontSize: 11.5, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-3)' }}>
-                สถิติการใช้งาน
+                {t('prof.usage_stats')}
               </div>
             </div>
             <div style={{ padding: '8px 16px 16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <StatItem
                 icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.5-4.5"/></svg>}
-                label="การตรวจสอบ" value="142" unit=" รายการ"
+                label={t("prof.stat_insp_lbl")} value="142" unit={" "+t("lbl.items")}
                 color="var(--navy)"
               />
               <StatItem
@@ -351,12 +351,12 @@ const ProfileScreen = ({ onBack }) => {
               />
               <StatItem
                 icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>}
-                label="วันเข้าใช้" value="86" unit=" วัน"
+                label={t("prof.stat_days_lbl")} value="86" unit={" "+t("lbl.duration")}
                 color="var(--teal)"
               />
               <StatItem
                 icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>}
-                label="Fail Review" value="3" unit=" รายการ"
+                label="Fail Review" value="3" unit={" "+t("lbl.items")}
                 color="var(--orange)"
               />
             </div>
@@ -366,7 +366,7 @@ const ProfileScreen = ({ onBack }) => {
         {/* ── Right column ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
           <div className="tabs mb-0" style={{ borderBottom: '1px solid var(--border-lt)', paddingBottom: 0, marginBottom: 16 }}>
-            {[['info','ข้อมูลส่วนตัว'],['pwd','รหัสผ่าน'],['sessions','Sessions']].map(([key, lbl]) => (
+            {[['info', t('prof.info_tab')],['pwd', t('prof.security_tab')],['sessions','Sessions']].map(([key, lbl]) => (
               <button key={key} className={`tab-btn${tab === key ? ' active' : ''}`} onClick={() => switchTab(key)}>
                 {lbl}
               </button>
@@ -378,27 +378,27 @@ const ProfileScreen = ({ onBack }) => {
             <div className="card profile-tab-panel">
               <div className="card-header">
                 <div>
-                  <div className="card-title">ข้อมูลส่วนตัว</div>
-                  <div className="card-subtitle">แก้ไขชื่อ ตำแหน่ง และข้อมูลติดต่อ</div>
+                  <div className="card-title">{t('prof.info_tab')}</div>
+                  <div className="card-subtitle">{t('prof.edit_sub2')}</div>
                 </div>
                 {/* Auto-save status */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   {saveStatus === 'saving' && (
                     <span style={{ fontSize: 12, color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: 5 }}>
                       <div style={{ width: 10, height: 10, border: '2px solid var(--border)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }}/>
-                      กำลังบันทึก...
+                      {t('prof.saving')}
                     </span>
                   )}
                   {saveStatus === 'saved' && (
                     <span style={{ fontSize: 12, color: 'var(--ok)', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                      บันทึกแล้ว
+                      {t('btn.saved')}
                     </span>
                   )}
                   <button type="button" className="btn btn-primary btn-sm" onClick={saveNow}
                           style={{ fontSize: 12, padding: '4px 12px' }}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                    บันทึก
+                    {t('btn.save')}
                   </button>
                 </div>
               </div>
@@ -406,59 +406,59 @@ const ProfileScreen = ({ onBack }) => {
                 <form onSubmit={saveNow} autoComplete="off">
                   <div className="form-row form-row-2">
                     <div className="form-group">
-                      <label className="form-label">ชื่อ-นามสกุล <span className="form-required">*</span></label>
+                      <label className="form-label">{t('prof.full_name')} <span className="form-required">*</span></label>
                       <input className="form-control" value={profile.fullName}
-                             onChange={e => setP('fullName', e.target.value)} placeholder="ชื่อ นามสกุล" required/>
+                             onChange={e => setP('fullName', e.target.value)} placeholder={t('prof.fullname_ph')} required/>
                     </div>
                     <div className="form-group">
-                      <label className="form-label">ชื่อที่แสดงผล</label>
+                      <label className="form-label">{t('prof.display_name')}</label>
                       <input className="form-control" value={profile.displayName}
                              onChange={e => setP('displayName', e.target.value)} placeholder="Display Name"/>
                     </div>
                   </div>
                   <div className="form-group">
-                    <label className="form-label">อีเมล <span className="form-required">*</span></label>
+                    <label className="form-label">{t('prof.email')} <span className="form-required">*</span></label>
                     <input className="form-control" type="email" value={profile.email}
                            onChange={e => setP('email', e.target.value)} placeholder="email@pro3s.com" required/>
                   </div>
                   <div className="form-row form-row-2">
                     <div className="form-group">
-                      <label className="form-label">เบอร์โทรศัพท์</label>
+                      <label className="form-label">{t('prof.phone')}</label>
                       <input className="form-control" value={profile.phone}
                              onChange={e => setP('phone', e.target.value)} placeholder="+66 XX XXX XXXX"/>
                     </div>
                     <div className="form-group">
-                      <label className="form-label">ตำแหน่ง</label>
+                      <label className="form-label">{t('prof.position')}</label>
                       <input className="form-control" value={profile.position}
-                             onChange={e => setP('position', e.target.value)} placeholder="ตำแหน่งงาน"/>
+                             onChange={e => setP('position', e.target.value)} placeholder={t('prof.position_ph')}/>
                     </div>
                   </div>
                   <div className="form-row form-row-2">
                     <div className="form-group">
-                      <label className="form-label">แผนก</label>
+                      <label className="form-label">{t('prof.department')}</label>
                       <input className="form-control" value={profile.department}
-                             onChange={e => setP('department', e.target.value)} placeholder="แผนก"/>
+                             onChange={e => setP('department', e.target.value)} placeholder={t('prof.dept_ph')}/>
                     </div>
                     <div className="form-group">
-                      <label className="form-label">ทีม</label>
+                      <label className="form-label">{t('lbl.team')}</label>
                       <input className="form-control" value={profile.team}
-                             onChange={e => setP('team', e.target.value)} placeholder="ทีมงาน"/>
+                             onChange={e => setP('team', e.target.value)} placeholder={t('prof.team_ph')}/>
                     </div>
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Bio / เกี่ยวกับฉัน</label>
+                    <label className="form-label">{t('prof.bio')}</label>
                     <textarea className="form-control" rows="2" value={profile.bio}
                               onChange={e => setP('bio', e.target.value)}
-                              placeholder="แนะนำตัวเองสั้นๆ..."/>
+                              placeholder={t('prof.bio_ph')}/>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 4 }}>
                     <button type="button" className="btn btn-ghost btn-sm"
                             onClick={() => { setProfile(loadSavedProfile(username, session)); setSaveStatus('idle'); }}>
-                      รีเซ็ต
+                      {t('prof.reset')}
                     </button>
                     <button type="submit" className="btn btn-primary btn-sm">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                      บันทึกทันที
+                      {t('prof.save_now')}
                     </button>
                   </div>
                 </form>
@@ -471,8 +471,8 @@ const ProfileScreen = ({ onBack }) => {
             <div className="card profile-tab-panel">
               <div className="card-header">
                 <div>
-                  <div className="card-title">เปลี่ยนรหัสผ่าน</div>
-                  <div className="card-subtitle">ใช้รหัสผ่านที่มีตัวอักษร ตัวเลข และอักขระพิเศษ</div>
+                  <div className="card-title">{t('prof.change_pwd')}</div>
+                  <div className="card-subtitle">{t('prof.pwd_tab_sub')}</div>
                 </div>
               </div>
               <div className="card-body">
@@ -484,9 +484,9 @@ const ProfileScreen = ({ onBack }) => {
                 )}
                 <form onSubmit={savePwd}>
                   {[
-                    { key: 'current', label: 'รหัสผ่านเดิม',     ph: 'รหัสผ่านปัจจุบัน' },
-                    { key: 'newPwd',  label: 'รหัสผ่านใหม่',     ph: 'อย่างน้อย 6 ตัวอักษร' },
-                    { key: 'confirm', label: 'ยืนยันรหัสผ่านใหม่', ph: 'พิมพ์รหัสผ่านใหม่อีกครั้ง' },
+                    { key: 'current', label: t('prof.pwd_old_lbl'), ph: t('prof.old_pwd') },
+                    { key: 'newPwd',  label: t('prof.pwd_new_lbl'), ph: t('prof.new_pwd_ph') },
+                    { key: 'confirm', label: t('prof.pwd_confirm_lbl'), ph: t('prof.pwd_confirm_ph') },
                   ].map(({ key, label, ph }) => (
                     <div key={key} className="form-group">
                       <label className="form-label">{label}</label>
@@ -503,19 +503,19 @@ const ProfileScreen = ({ onBack }) => {
                       </div>
                       {key === 'newPwd' && pwd.newPwd && <PwdStrength pwd={pwd.newPwd}/>}
                       {key === 'confirm' && pwd.confirm && pwd.newPwd !== pwd.confirm && (
-                        <div className="form-error">รหัสผ่านไม่ตรงกัน</div>
+                        <div className="form-error">{t('prof.pwd_mismatch_inline')}</div>
                       )}
                     </div>
                   ))}
                   <div className="alert alert-info mb-16" style={{ fontSize: 12.5 }}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12.01" y2="8"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
-                    ในโหมด Demo รหัสผ่านจะไม่ถูกบันทึกจริง
+                    {t('prof.demo_mode')}
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <button type="submit" className="btn btn-primary"
                             disabled={!pwd.current || !pwd.newPwd || pwd.newPwd !== pwd.confirm}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0110 0v3"/></svg>
-                      เปลี่ยนรหัสผ่าน
+                      {t('prof.change_pwd')}
                     </button>
                   </div>
                 </form>
@@ -528,12 +528,12 @@ const ProfileScreen = ({ onBack }) => {
             <div className="card profile-tab-panel">
               <div className="card-header">
                 <div>
-                  <div className="card-title">Sessions ที่ใช้งานอยู่</div>
-                  <div className="card-subtitle">อุปกรณ์ที่เข้าสู่ระบบด้วยบัญชีนี้</div>
+                  <div className="card-title">{t('prof.sessions_title')}</div>
+                  <div className="card-subtitle">{t('prof.sessions_sub2')}</div>
                 </div>
                 <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red)' }}
-                        onClick={() => window.showToast && window.showToast('ยกเลิก Session ทั้งหมดแล้ว', 'info')}>
-                  ยกเลิกทั้งหมด
+                        onClick={() => window.showToast && window.showToast(t('prof.revoke_all') + ' Session', 'info')}>
+                  {t('prof.revoke_all_btn')}
                 </button>
               </div>
               <div className="card-body" style={{ padding: 0 }}>
@@ -550,10 +550,10 @@ const ProfileScreen = ({ onBack }) => {
                       </div>
                     </div>
                     {s.current
-                      ? <span className="badge badge-teal">ปัจจุบัน</span>
+                      ? <span className="badge badge-teal">{t('prof.current_badge')}</span>
                       : <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red)', flexShrink: 0 }}
-                                onClick={() => window.showToast && window.showToast(`ยกเลิก Session: ${s.device}`, 'info')}>
-                          ยกเลิก
+                                onClick={() => window.showToast && window.showToast(`${t('prof.revoke')} Session: ${s.device}`, 'info')}>
+                          {t('prof.revoke_btn')}
                         </button>
                     }
                   </div>
