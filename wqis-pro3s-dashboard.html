@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WQIS-PRO3S · Enterprise Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script>
+    (function () {
+      var host = window.location.hostname;
+      var isLocal = window.location.protocol === 'file:' || host === 'localhost' || host === '127.0.0.1' || host === '';
+      if (isLocal) document.write('<script src="generated-users.js"><\/script>');
+    })();
+  </script>
+  <script src="auth.js"></script>
 <style>
 /* ═══════════════════════════════════════════════
    TOKENS
@@ -486,7 +494,7 @@ a { color:inherit; text-decoration:none; }
 }
 .img-canvas-wrap {
   flex:1; position:relative;
-  background: #0a0f1e;
+  background: var(--bg3);
   display:flex; align-items:center; justify-content:center;
   min-height:200px;
 }
@@ -637,7 +645,7 @@ a { color:inherit; text-decoration:none; }
 
 /* Storage */
 .storage-bars { display:flex; flex-direction:column; gap:12px; }
-.sto-item {}
+.sto-item { display: block; }
 .sto-top { display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px; }
 .sto-label { color:var(--text2); font-weight:600; }
 .sto-size  { color:var(--text3); }
@@ -756,6 +764,20 @@ tbody td {
 ═══════════════════════════════════════════════ */
 .divider { border:none; border-top:1px solid var(--border); margin:4px 0; }
 .mt-24 { margin-top:24px; }
+
+.action-btn {
+  width:100%; padding:8px; border-radius:7px;
+  font-size:12px; font-weight:700; border:none;
+  transition: opacity var(--trans), border-color var(--trans);
+  cursor:pointer;
+}
+.action-btn-danger { background:var(--red); color:#fff; }
+.action-btn-danger:hover { opacity:0.82; }
+.action-btn-ghost {
+  background:var(--bg3); border:1px solid var(--border);
+  color:var(--text2); font-weight:600;
+}
+.action-btn-ghost:hover { border-color:var(--border-em); color:var(--text); }
 </style>
 </head>
 <body>
@@ -882,11 +904,11 @@ tbody td {
     </div>
 
     <!-- User -->
-    <div class="tb-user">
-      <div class="tb-avatar">RC</div>
+    <div class="tb-user" id="tbUserBtn" title="Sign out" style="cursor:pointer">
+      <div class="tb-avatar" id="tbUserAvatar">RC</div>
       <div>
-        <div class="tb-uname">Ratchata</div>
-        <div class="tb-urole">QA Engineer</div>
+        <div class="tb-uname" id="tbUserName">Ratchata</div>
+        <div class="tb-urole" id="tbUserRole">QA Engineer</div>
       </div>
     </div>
 
@@ -903,7 +925,7 @@ tbody td {
     <!-- ── WELCOME ── -->
     <div class="welcome-card fade-up">
       <div class="welcome-text">
-        <h1>Good morning, Ratchata 👋</h1>
+        <h1 id="welcomeGreeting">Welcome 👋</h1>
         <p>Weld Quality Inspection System · PRO3S Platform · <span style="color:var(--cyan)">Live Monitoring Active</span></p>
       </div>
       <div class="welcome-stats">
@@ -921,7 +943,6 @@ tbody td {
     </div>
     <div class="kpi-grid fade-up delay-2">
       <div class="kpi-card c-cyan">
-        <div class="kpi-card-top"></div>
         <div class="kpi-top">
           <div class="kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
           <div class="kpi-trend up">▲ 12%</div>
@@ -1014,7 +1035,8 @@ tbody td {
               <span class="upload-type">BMP</span>
               <span class="upload-type">TIFF</span>
             </div>
-            <button class="upload-btn">📁 Choose Files</button>
+            <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
+            <button class="upload-btn" id="chooseFilesBtn">📁 Choose Files</button>
           </div>
 
           <div style="margin-top:16px; display:flex; flex-direction:column; gap:8px;">
@@ -1102,8 +1124,8 @@ tbody td {
           <div class="rd-row"><span class="rd-label">Inference time</span><span class="rd-val">38 ms</span></div>
           <div class="rd-row"><span class="rd-label">Welder</span><span class="rd-val">W-012 · Somchai K.</span></div>
           <hr class="divider">
-          <button style="width:100%;padding:8px;border-radius:7px;background:var(--red);color:#fff;font-size:12px;font-weight:700;transition:opacity 0.2s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">Send for Re-inspection</button>
-          <button style="width:100%;padding:8px;border-radius:7px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:12px;font-weight:600;margin-top:6px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--border-em)'" onmouseout="this.style.borderColor='var(--border)'">Export Report PDF</button>
+          <button class="action-btn action-btn-danger">Send for Re-inspection</button>
+          <button class="action-btn action-btn-ghost" style="margin-top:6px">Export Report PDF</button>
         </div>
       </div>
     </div>
@@ -1486,6 +1508,38 @@ const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
 applyTheme(savedTheme);
 
 // ═══════════════════════════════════════════════
+//  AUTH GUARD
+// ═══════════════════════════════════════════════
+const session = Auth.requireAuth();
+if (!session) { /* requireAuth already redirected to login.html */ }
+
+// Populate user info from session
+if (session) {
+  document.getElementById('tbUserName').textContent = session.name || session.username;
+  document.getElementById('tbUserRole').textContent = session.role;
+  document.getElementById('tbUserAvatar').textContent = session.avatar || session.username[0].toUpperCase();
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const firstName = (session.name || session.username).split(' ')[0];
+  document.getElementById('welcomeGreeting').textContent = `${greeting}, ${firstName} 👋`;
+}
+
+// Upload zone — wire file input
+document.getElementById('chooseFilesBtn').addEventListener('click', () =>
+  document.getElementById('fileInput').click());
+document.getElementById('uploadZone').addEventListener('click', (e) => {
+  if (e.target.closest('#chooseFilesBtn')) return;
+  document.getElementById('fileInput').click();
+});
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+  document.querySelector('.upload-title').textContent = `${files.length} file${files.length > 1 ? 's' : ''} selected`;
+  document.querySelector('.upload-sub').textContent = files.map(f => f.name).join(', ');
+});
+
+// ═══════════════════════════════════════════════
 //  SIDEBAR TOGGLE
 // ═══════════════════════════════════════════════
 const sidebar = document.getElementById('sidebar');
@@ -1529,11 +1583,11 @@ setInterval(updateClock, 1000);
 
   function draw() {
     ctx.clearRect(0, 0, W, H);
-    // dark background
-    ctx.fillStyle = '#050a18';
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    ctx.fillStyle = isDark ? '#050a18' : '#f0f4f8';
     ctx.fillRect(0, 0, W, H);
     // grid
-    ctx.strokeStyle = 'rgba(56,189,248,0.06)';
+    ctx.strokeStyle = isDark ? 'rgba(56,189,248,0.06)' : 'rgba(14,165,233,0.10)';
     ctx.lineWidth = 0.5;
     for (let x = 0; x < W; x += 20) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
     for (let y = 0; y < H; y += 20) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
@@ -1644,13 +1698,17 @@ function initCharts() {
 }
 
 function updateChartColors() {
-  if (!lineChart) return;
   const c = getChartColors();
-  lineChart.options.scales.x.grid.color = c.grid;
-  lineChart.options.scales.x.ticks.color = c.text;
-  lineChart.options.scales.y.grid.color = c.grid;
-  lineChart.options.scales.y.ticks.color = c.text;
-  lineChart.update();
+  if (lineChart) {
+    lineChart.options.scales.x.grid.color = c.grid;
+    lineChart.options.scales.x.ticks.color = c.text;
+    lineChart.options.scales.y.grid.color = c.grid;
+    lineChart.options.scales.y.ticks.color = c.text;
+    lineChart.update();
+  }
+  if (donutChart) {
+    donutChart.update();
+  }
 }
 
 initCharts();
@@ -1691,21 +1749,27 @@ function renderTable() {
   const start = (currentPage - 1) * PAGE_SIZE;
   const rows  = filteredData.slice(start, start + PAGE_SIZE);
   const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = rows.map(r => `
-    <tr>
-      <td class="td-id">${r[0]}</td>
-      <td>${r[1]}</td>
-      <td class="td-weld">${r[2]}</td>
-      <td>${r[3]}</td>
-      <td>${r[4]}</td>
-      <td style="font-size:11px">${r[5]}</td>
-      <td style="font-size:11px">${r[6]}</td>
-      <td style="font-weight:700;color:${r[7]==='—'?'var(--text3)':parseFloat(r[7])>90?'var(--green)':parseFloat(r[7])>75?'var(--amber)':'var(--red)'}">${r[7]}</td>
-      <td><span class="${statusClass(r[8])}">${r[8]}</span></td>
-    </tr>
-  `).join('');
   const total = filteredData.length;
-  document.getElementById('pageInfo').textContent = `Showing ${start+1}–${Math.min(start+PAGE_SIZE,total)} of ${total}`;
+
+  if (total === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text3)">No results found</td></tr>`;
+    document.getElementById('pageInfo').textContent = 'No results';
+  } else {
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td class="td-id">${r[0]}</td>
+        <td>${r[1]}</td>
+        <td class="td-weld">${r[2]}</td>
+        <td>${r[3]}</td>
+        <td>${r[4]}</td>
+        <td style="font-size:11px">${r[5]}</td>
+        <td style="font-size:11px">${r[6]}</td>
+        <td style="font-weight:700;color:${r[7]==='—'?'var(--text3)':parseFloat(r[7])>90?'var(--green)':parseFloat(r[7])>75?'var(--amber)':'var(--red)'}">${r[7]}</td>
+        <td><span class="${statusClass(r[8])}">${r[8]}</span></td>
+      </tr>
+    `).join('');
+    document.getElementById('pageInfo').textContent = `Showing ${start+1}–${Math.min(start+PAGE_SIZE,total)} of ${total}`;
+  }
   const totalPages = Math.ceil(total / PAGE_SIZE);
   for (let i = 1; i <= 3; i++) {
     const btn = document.getElementById('pgBtn'+i);
@@ -1735,8 +1799,25 @@ function changePage(dir) {
   renderTable();
 }
 
+let sortCol = -1;
+let sortAsc = true;
+
 function sortTable(col) {
-  filteredData.sort((a, b) => a[col].localeCompare(b[col]));
+  if (sortCol === col) {
+    sortAsc = !sortAsc;
+  } else {
+    sortCol = col;
+    sortAsc = true;
+  }
+  filteredData.sort((a, b) => {
+    const cmp = a[col].localeCompare(b[col], undefined, { numeric: true });
+    return sortAsc ? cmp : -cmp;
+  });
+  document.querySelectorAll('thead th').forEach((th, i) => {
+    th.classList.toggle('sorted', i === col);
+    const icon = th.querySelector('.sort-icon');
+    if (icon) icon.textContent = i === col ? (sortAsc ? '↑' : '↓') : '↕';
+  });
   renderTable();
 }
 
@@ -1747,6 +1828,13 @@ for (let i = 1; i <= 3; i++) {
 }
 
 renderTable();
+
+// ═══════════════════════════════════════════════
+//  LOGOUT
+// ═══════════════════════════════════════════════
+document.getElementById('tbUserBtn').addEventListener('click', () => {
+  if (confirm('Sign out?')) Auth.logout();
+});
 </script>
 </body>
 </html>

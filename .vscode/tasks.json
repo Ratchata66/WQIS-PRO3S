@@ -2,10 +2,39 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "🔄 Reload Browser (WQIS-PRO3S)",
-      "detail": "โหลด browser ใหม่หลังจาก Claude แก้โค้ด",
+      "label": "🤖 Start Local AI Server (YOLO)",
+      "detail": "รัน YOLO model server บน port 3000 — ต้องรันก่อนใช้ AI Inspect",
       "type": "shell",
-      "command": "Start-Process 'chrome' -ArgumentList 'http://127.0.0.1:5501/WQIS-PRO3S.html'",
+      "command": "node scripts/local-ai-server.js",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "shell": {
+          "executable": "powershell.exe",
+          "args": ["-NoProfile", "-Command"]
+        }
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "WQIS local AI server",
+          "endsPattern": "WQIS local AI server"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": false,
+        "clear": true
+      },
+      "group": "none"
+    },
+    {
+      "label": "🔄 Reload Browser (WQIS-PRO3S)",
+      "detail": "โหลด browser ใหม่ → เปิด localhost:3000 (Local AI Server)",
+      "type": "shell",
+      "command": "Start-Process 'chrome' -ArgumentList 'http://localhost:3000/WQIS-PRO3S.html'",
       "options": {
         "shell": {
           "executable": "powershell.exe",

@@ -1,115 +1,180 @@
-/* global React, Icons, Charts, WQIS_DATA, WQIS_FMT */
+/* global React */
 
-const InspectionsScreen = () => {
-  const [filter, setFilter] = React.useState("all");
-  const [search, setSearch] = React.useState("");
-  const [selected, setSelected] = React.useState(null);
-  const [page, setPage] = React.useState(1);
-  const PAGE_SIZE = 12;
+const InspectionsScreen = ({ inspections, projects, lang }) => {
+  const t = k => (typeof window !== 'undefined' && window.t) ? window.t(k) : k;
+  const insp = inspections || [];
+  const proj = projects   || [];
 
-  const joints = WQIS_DATA.joints || [];
-  let filtered = joints;
-  if (filter !== "all") filtered = filtered.filter(j => j.verdict === filter);
-  if (search) filtered = filtered.filter(j =>
-    j.id.toLowerCase().includes(search.toLowerCase()) ||
-    j.welder.toLowerCase().includes(search.toLowerCase()) ||
-    j.spool.toLowerCase().includes(search.toLowerCase())
-  );
+  const [search,  setSearch]  = React.useState('');
+  const [filter,  setFilter]  = React.useState('all');
+  const [page,    setPage]    = React.useState(1);
+  const PAGE_SIZE = 15;
+
+  let filtered = [...insp].reverse();
+  if (filter !== 'all') filtered = filtered.filter(i => i.result === filter);
+  if (search) {
+    const q = search.toLowerCase();
+    filtered = filtered.filter(i =>
+      (i.weldId    || '').toLowerCase().includes(q) ||
+      (i.welder    || '').toLowerCase().includes(q) ||
+      (i.projectId || '').toLowerCase().includes(q) ||
+      (i.weldType  || '').toLowerCase().includes(q) ||
+      (i.comment   || '').toLowerCase().includes(q)
+    );
+  }
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paged = filtered.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const passCount = insp.filter(i => i.result === 'pass').length;
+  const failCount = insp.filter(i => i.result === 'fail').length;
+
+  const getProject = id => proj.find(p => p.id === id);
 
   return (
-    <div className="page">
-      <div className="bg-grid"/>
-      <div className="page-head">
+    <div>
+      <div className="page-hd">
         <div>
-          <span className="kicker">INSPECTION RECORDS · {filtered.length.toLocaleString()} RESULTS</span>
-          <h1 style={{ marginTop: 8 }}>Inspections</h1>
-          <div className="sub">ประวัติการตรวจสอบทั้งหมด · Weld joint inspection history</div>
+          <div className="page-title">{t('insp.title')}</div>
+          <div className="page-sub">{t('insp.sub')} · {insp.length} {t('lbl.items')}</div>
         </div>
-        <div className="row" style={{ gap: 8 }}>
-          <button className="btn ghost sm"><Icons.Download size={14}/> Export CSV</button>
-          <button className="btn primary sm"><Icons.Plus size={14}/> New Inspection</button>
+        <div className="page-hd-right">
+          <span className="badge badge-success">{passCount} {t('status.pass')}</span>
+          <span className="badge badge-danger">{failCount} {t('status.fail')}</span>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="row" style={{ gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
-        <div className="seg">
-          {["all","pass","review","fail"].map(v => (
-            <button key={v} className={filter === v ? "on" : ""} onClick={() => { setFilter(v); setPage(1); }}>
-              {v === "all" ? "All" : v.charAt(0).toUpperCase() + v.slice(1)}
-            </button>
-          ))}
-        </div>
-        <div style={{ position: "relative", flex: 1, maxWidth: 300 }}>
-          <input className="input" style={{ paddingLeft: 34, width: "100%" }}
-                 placeholder="Search joint, welder, spool…"
-                 value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}/>
-          <div style={{ position: "absolute", left: 10, top: 9, color: "var(--t-4)" }}>
-            <Icons.Search size={14}/>
+      <div className="card">
+        {/* ── Filters ── */}
+        <div className="card-body" style={{ paddingBottom: 8 }}>
+          <div className="search-row">
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flex: 1 }}>
+              <div className="search-wrap">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/>
+                </svg>
+                <input className="search-input" placeholder={t('insp.search_ph')}
+                       value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}/>
+              </div>
+              <div className="tabs" style={{ gap: 4 }}>
+                {[['all', t('status.all')],['pass', t('status.pass')],['fail', t('status.fail')],['pending', t('status.pending')]].map(([v, lbl]) => (
+                  <button key={v} className={`tab-btn${filter === v ? ' active' : ''}`}
+                          onClick={() => { setFilter(v); setPage(1); }}>
+                    {lbl}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <span className="text-sm text-muted">{filtered.length} {t('lbl.items')}</span>
           </div>
         </div>
-        <div className="seg">
-          <button className="on"><Icons.Calendar size={12}/> All dates</button>
-          <button><Icons.Filter size={12}/> Filter</button>
-        </div>
-      </div>
 
-      <div className="panel glass" style={{ overflow: "hidden" }}>
-        <div style={{ overflowX: "auto" }}>
+        {/* ── Table ── */}
+        <div className="tbl-wrap">
           <table className="tbl">
             <thead>
               <tr>
-                <th>Joint ID</th><th>Spool</th><th>Welder</th><th>WPS</th>
-                <th>Ø / Pos</th><th>Date</th><th>Verdict</th><th>Conf.</th><th></th>
+                <th>#</th>
+                <th>{t('col.weld_id')}</th>
+                <th>{t('col.project')}</th>
+                <th>{t('col.weld_type')}</th>
+                <th>{t('col.welder')}</th>
+                <th>{t('col.ai_result')}</th>
+                <th>{t('col.qc_result')}</th>
+                <th>{t('col.date')}</th>
+                <th>{t('col.remarks')}</th>
               </tr>
             </thead>
             <tbody>
-              {paged.map(j => (
-                <tr key={j.id} onClick={() => setSelected(selected && selected.id === j.id ? null : j)}
-                    style={{ cursor: "pointer", background: selected && selected.id === j.id ? "var(--amber-soft)" : "" }}>
-                  <td><span className="mono" style={{ color: "var(--amber-2)", fontWeight: 600 }}>{j.id}</span></td>
-                  <td className="mono" style={{ color: "var(--t-3)" }}>{j.spool}</td>
-                  <td>{j.welder}</td>
-                  <td><span className="chip amber">{j.wps}</span></td>
-                  <td className="mono">{j.dia} · {j.pos}</td>
-                  <td className="mono" style={{ color: "var(--t-4)", fontSize: 11.5 }}>{j.date}</td>
-                  <td>
-                    {j.verdict === "pass"   && <span className="chip ok"><span className="dot"/>PASS</span>}
-                    {j.verdict === "review" && <span className="chip warn"><span className="dot"/>REVIEW</span>}
-                    {j.verdict === "fail"   && <span className="chip bad"><span className="dot"/>FAIL</span>}
+              {paged.length === 0 && (
+                <tr>
+                  <td colSpan="9" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-3)' }}>
+                    {search || filter !== 'all' ? t('lbl.not_found') : t('lbl.no_records')}
                   </td>
-                  <td className="mono nums" style={{ color: j.conf > 95 ? "var(--ok)" : j.conf > 85 ? "var(--t-1)" : "var(--warn)" }}>
-                    {j.conf.toFixed(1)}%
-                  </td>
-                  <td><Icons.ChevR size={14} stroke="var(--t-4)"/></td>
                 </tr>
-              ))}
+              )}
+              {paged.map((ins, idx) => {
+                const p = getProject(ins.projectId);
+                const rowNum = (page - 1) * PAGE_SIZE + idx + 1;
+                const resultAI = ins.aiResult || 'pending';
+                const resultQC = ins.result   || 'pending';
+                return (
+                  <tr key={ins.id}>
+                    <td className="text-sm text-muted">{rowNum}</td>
+                    <td>
+                      <code style={{ fontSize: 12, color: 'var(--navy)', fontFamily: 'var(--mono)', fontWeight: 600 }}>
+                        {ins.weldId}
+                      </code>
+                    </td>
+                    <td style={{ fontSize: 12 }}>
+                      {p ? (
+                        <>
+                          <div style={{ fontWeight: 500 }}>{p.code}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{p.client}</div>
+                        </>
+                      ) : (
+                        <span style={{ color: 'var(--text-3)' }}>{ins.projectId || '—'}</span>
+                      )}
+                    </td>
+                    <td className="text-sm">{ins.weldType || '—'}</td>
+                    <td className="text-sm">{ins.welder || '—'}</td>
+                    <td>
+                      <span className={`badge badge-${resultAI === 'pass' ? 'success' : resultAI === 'fail' ? 'danger' : 'gray'}`}
+                            style={{ fontSize: 10 }}>
+                        {resultAI === 'pass' ? t('status.pass') : resultAI === 'fail' ? t('status.fail') : t('status.pending')}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`badge badge-${resultQC === 'pass' ? 'success' : resultQC === 'fail' ? 'danger' : 'gray'}`}>
+                        {resultQC === 'pass' ? t('status.pass') : resultQC === 'fail' ? t('status.fail') : t('status.pending')}
+                      </span>
+                    </td>
+                    <td className="text-sm text-muted">{ins.date || '—'}</td>
+                    <td className="text-sm text-muted"
+                        style={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                        title={ins.comment}>
+                      {ins.comment || '—'}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
-        {/* Pagination */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderTop: "1px solid var(--border-1)" }}>
-          <span className="mono" style={{ fontSize: 11, color: "var(--t-4)" }}>
-            Showing {filtered.length === 0 ? 0 : ((page-1)*PAGE_SIZE)+1}–{Math.min(page*PAGE_SIZE, filtered.length)} of {filtered.length}
+
+        {/* ── Pagination ── */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '12px 20px', borderTop: '1px solid var(--border-lt)' }}>
+          <span className="text-sm text-muted">
+            {filtered.length === 0
+              ? `0 ${t('lbl.items')}`
+              : `${(page-1)*PAGE_SIZE+1}–${Math.min(page*PAGE_SIZE, filtered.length)} / ${filtered.length} ${t('lbl.items')}`
+            }
           </span>
-          <div style={{ display: "flex", gap: 4 }}>
-            <button className="btn ghost sm icon" disabled={page <= 1} onClick={() => setPage(p => p-1)}>
-              <Icons.ChevL size={14}/>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button className="btn btn-ghost btn-sm btn-icon"
+                    disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="m15 18-6-6 6-6"/>
+              </svg>
             </button>
-            {Array.from({length: Math.min(5, totalPages)}, (_,i) => {
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               const pg = Math.max(1, Math.min(page - 2, totalPages - 4)) + i;
               if (pg > totalPages) return null;
               return (
-                <button key={pg} className={`btn ${page === pg ? "" : "ghost"} sm`}
-                        style={{ minWidth: 32, justifyContent: "center" }}
-                        onClick={() => setPage(pg)}>{pg}</button>
+                <button key={pg}
+                        className={`btn btn-sm${page === pg ? ' btn-primary' : ' btn-ghost'}`}
+                        style={{ minWidth: 32, justifyContent: 'center' }}
+                        onClick={() => setPage(pg)}>
+                  {pg}
+                </button>
               );
             })}
-            <button className="btn ghost sm icon" disabled={page >= totalPages} onClick={() => setPage(p => p+1)}>
-              <Icons.ChevR size={14}/>
+            <button className="btn btn-ghost btn-sm btn-icon"
+                    disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="m9 18 6-6-6-6"/>
+              </svg>
             </button>
           </div>
         </div>

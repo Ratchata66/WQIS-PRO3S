@@ -1,439 +1,260 @@
-/* global React, Icons, Charts, WQIS_DATA, WQIS_FMT */
+/* global React, window, WQIS_DATA */
 
-const KPI_META = {
-  welds:   { icon: "Activity", color: "var(--amber)",  thaiLabel: "งานเชื่อมทั้งหมด" },
-  pass:    { icon: "Tick",     color: "var(--ok)",     thaiLabel: "อัตราผ่าน" },
-  reject:  { icon: "Cross",   color: "var(--bad)",    thaiLabel: "อัตราปฏิเสธ" },
-  pending: { icon: "Warn",    color: "var(--warn)",   thaiLabel: "รอตรวจสอบ" },
-  active:  { icon: "Project", color: "var(--info)",   thaiLabel: "โครงการที่ใช้งาน" },
-  ai:      { icon: "Cpu",     color: "var(--purple)", thaiLabel: "ความแม่นยำ AI" },
+// ── Chart wrappers ────────────────────────────────────────────
+const BarChart = ({ labels, data, color='#1B3A6B', height=200 }) => {
+  const ref = React.useRef(null);
+  const ch  = React.useRef(null);
+  React.useEffect(() => {
+    if (!ref.current || !window.Chart) return;
+    if (ch.current) ch.current.destroy();
+    ch.current = new window.Chart(ref.current, {
+      type:'bar',
+      data:{ labels, datasets:[{ data, backgroundColor:color, borderRadius:5, borderSkipped:false }] },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false} },
+        scales:{
+          y:{ grid:{color:'rgba(0,0,0,0.05)'}, ticks:{color:'#6C757D',font:{size:11}} },
+          x:{ grid:{display:false}, ticks:{color:'#6C757D',font:{size:11},maxRotation:30} },
+        },
+      },
+    });
+    return () => ch.current && ch.current.destroy();
+  }, [JSON.stringify(labels), JSON.stringify(data), color]);
+  return <div style={{position:'relative',height}}><canvas ref={ref}/></div>;
 };
 
-const KpiCard = ({ k }) => {
-  const inverted = k.id === "reject" || k.id === "pending";
-  const goodDir = (k.delta > 0 && !inverted) || (k.delta < 0 && inverted);
-  const meta = KPI_META[k.id] || { icon: "Activity", color: "var(--amber)", thaiLabel: "" };
-  const Ico = Icons[meta.icon];
-  return (
-    <div className="kpi" style={{ borderTop: `2px solid ${meta.color}44`, position: "relative", overflow: "hidden" }}>
-      {/* background glow */}
-      <div style={{ position: "absolute", top: -20, right: -20, width: 80, height: 80,
-                    borderRadius: "50%", background: meta.color, opacity: 0.05, pointerEvents: "none" }}/>
-      <div className="label">
-        <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-          <span style={{ color: "var(--t-2)", fontWeight: 500 }}>{k.label}</span>
-          <span className="mono" style={{ fontSize: 9.5, color: "var(--t-5)", letterSpacing: "0.08em", marginTop: 1 }}>
-            {meta.thaiLabel}
-          </span>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 6, background: `${meta.color}1a`,
-                        border: `1px solid ${meta.color}33`, display: "grid", placeItems: "center",
-                        color: meta.color, flexShrink: 0 }}>
-            <Ico size={14}/>
-          </div>
-          <Charts.Spark data={k.trend} width={56} height={18}
-                        color={goodDir ? "var(--ok)" : "var(--bad)"} />
-        </div>
-      </div>
-      <div className="value">
-        <span style={{ color: meta.color }}>
-          {typeof k.value === "number" && k.value % 1 !== 0 ? k.value.toFixed(1) : WQIS_FMT.num(k.value)}
-        </span>
-        {k.unit && <span className="unit">{k.unit}</span>}
-      </div>
-      <div className="foot">
-        <span className={`delta ${goodDir ? "up" : "down"}`}>
-          {k.delta > 0 ? "▲" : "▼"} {Math.abs(k.delta).toFixed(1)}{k.unit === "%" ? "pp" : "%"} vs 7d
-        </span>
-        <span className="mono" style={{ color: "var(--t-5)", fontSize: 10, letterSpacing: "0.1em" }}>
-          {k.id.toUpperCase()}
-        </span>
-      </div>
-    </div>
-  );
+const DonutChart = ({ labels, data, colors, height=220 }) => {
+  const ref = React.useRef(null);
+  const ch  = React.useRef(null);
+  React.useEffect(() => {
+    if (!ref.current || !window.Chart) return;
+    if (ch.current) ch.current.destroy();
+    ch.current = new window.Chart(ref.current, {
+      type:'doughnut',
+      data:{ labels, datasets:[{ data, backgroundColor:colors, borderWidth:0, hoverOffset:4 }] },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        cutout:'65%',
+        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12, padding:12, font:{size:12} } } },
+      },
+    });
+    return () => ch.current && ch.current.destroy();
+  }, [JSON.stringify(data)]);
+  return <div style={{position:'relative',height}}><canvas ref={ref}/></div>;
 };
 
-const PassDistribution = () => {
-  const data = WQIS_DATA.passDist.map(d => ({ ...d, glow: d.label === "Pass" }));
-  return (
-    <div className="panel glass">
-      <div className="panel-header">
-        <h3>Pass / Review / Reject</h3>
-        <span className="sub">LAST 24 H · 484 INSP.</span>
-      </div>
-      <div className="panel-body" style={{ display: "flex", alignItems: "center", gap: 18 }}>
-        <Charts.Doughnut data={data} size={170} thickness={22}
-          center={
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 600 }}>96.8<span style={{ fontSize: 14, color: "var(--t-3)", marginLeft: 2 }}>%</span></div>
-              <div className="mono" style={{ fontSize: 10, letterSpacing: "0.12em", color: "var(--ok)" }}>PASS RATE</div>
-            </div>
-          }/>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
-          {data.map((d, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ width: 8, height: 8, borderRadius: 2, background: d.color, boxShadow: `0 0 8px ${d.color}` }}/>
-              <span style={{ flex: 1, fontSize: 12.5 }}>{d.label}</span>
-              <span className="mono nums" style={{ fontSize: 13, color: "var(--t-1)" }}>{d.value.toFixed(1)}%</span>
-            </div>
-          ))}
-          <div className="divider"/>
-          <div className="mono" style={{ fontSize: 10.5, letterSpacing: "0.1em", color: "var(--t-4)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-              <span>BENCHMARK</span><span style={{ color: "var(--t-2)" }}>95.0%</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>TREND 7D</span><span style={{ color: "var(--ok)" }}>▲ 1.1pp</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+const LineChart = ({ labels, data, color='#0D7377', height=160 }) => {
+  const ref = React.useRef(null);
+  const ch  = React.useRef(null);
+  React.useEffect(() => {
+    if (!ref.current || !window.Chart) return;
+    if (ch.current) ch.current.destroy();
+    ch.current = new window.Chart(ref.current, {
+      type:'line',
+      data:{ labels, datasets:[{
+        data, borderColor:color, backgroundColor:color+'22',
+        fill:true, tension:0.4, pointRadius:3, pointHoverRadius:5,
+        pointBackgroundColor:color, borderWidth:2,
+      }] },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false} },
+        scales:{
+          y:{ grid:{color:'rgba(0,0,0,0.05)'}, ticks:{color:'#6C757D',font:{size:11}} },
+          x:{ grid:{display:false}, ticks:{color:'#6C757D',font:{size:11},maxTicksLimit:8} },
+        },
+      },
+    });
+    return () => ch.current && ch.current.destroy();
+  }, [JSON.stringify(data)]);
+  return <div style={{position:'relative',height}}><canvas ref={ref}/></div>;
 };
 
-const DefectMix = () => {
-  return (
-    <div className="panel glass">
-      <div className="panel-header">
-        <h3>Defect classification</h3>
-        <span className="sub">DETECTED · 7D</span>
-      </div>
-      <div className="panel-body">
-        <Charts.Bars
-          data={WQIS_DATA.defectMix.map(d => ({
-            label: d.label.split(" ").map(w => w.slice(0,4)).join(" "),
-            value: d.value,
-          }))}
-          height={170} width={520} color="var(--amber)" />
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginTop: 12 }}>
-          {WQIS_DATA.defectMix.map(d => (
-            <div key={d.label} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11.5 }}>
-              <span className={`chip ${d.severity === "critical" ? "bad" : d.severity === "major" ? "warn" : "info"}`}
-                    style={{ height: 16, padding: "0 6px", fontSize: 9.5 }}>
-                {d.severity[0].toUpperCase()}
-              </span>
-              <span style={{ color: "var(--t-2)" }}>{d.label}</span>
-              <span className="mono" style={{ marginLeft: "auto", color: "var(--t-3)" }}>{d.value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+// ── Count-up hook ─────────────────────────────────────────────
+const useCountUp = (target, duration = 900) => {
+  const [value, setValue] = React.useState(0);
+  React.useEffect(() => {
+    if (typeof target !== 'number' || isNaN(target)) return;
+    let start = null;
+    const step = ts => {
+      if (!start) start = ts;
+      const p = Math.min((ts - start) / duration, 1);
+      // ease-out cubic
+      const ease = 1 - Math.pow(1 - p, 3);
+      setValue(Math.round(ease * target));
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [target]);
+  return value;
 };
 
-const InspectionTimeline = () => (
-  <div className="panel glass">
-    <div className="panel-header">
-      <h3>Inspection timeline</h3>
-      <div className="row" style={{ gap: 8 }}>
-        <span className="seg">
-          <button className="on">24H</button>
-          <button>7D</button>
-          <button>30D</button>
-        </span>
-      </div>
-    </div>
-    <div className="panel-body">
-      <Charts.Area data={WQIS_DATA.timeline} width={760} height={200}
-                   valueKey="insp" labelKey="hour" color="var(--amber)" />
-      <div style={{ display: "flex", gap: 18, marginTop: 8, fontSize: 11.5 }}>
-        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 8, height: 8, borderRadius: 2, background: "var(--amber)", boxShadow: "0 0 8px var(--amber)" }}/>
-          <span style={{ color: "var(--t-3)" }}>Inspections</span>
-          <span className="mono" style={{ color: "var(--t-1)" }}>568</span>
-        </span>
-        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 8, height: 8, borderRadius: 2, background: "var(--ok)" }}/>
-          <span style={{ color: "var(--t-3)" }}>Pass</span>
-          <span className="mono" style={{ color: "var(--t-1)" }}>545</span>
-        </span>
-        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 8, height: 8, borderRadius: 2, background: "var(--bad)" }}/>
-          <span style={{ color: "var(--t-3)" }}>Fail</span>
-          <span className="mono" style={{ color: "var(--t-1)" }}>23</span>
-        </span>
-        <span style={{ marginLeft: "auto", fontFamily: "var(--font-mono)", color: "var(--t-4)", fontSize: 10.5, letterSpacing: "0.1em" }}>
-          PEAK 14:00 · 104 INSP/HR
-        </span>
-      </div>
-    </div>
-  </div>
-);
+// ── Dashboard Screen ──────────────────────────────────────────
+const DashboardScreen = ({ projects, inspections, lang }) => {
+  const t = k => (typeof window !== 'undefined' && window.t) ? window.t(k) : k;
+  const totalProjects  = projects.filter(p => p.status !== 'planning').length;
+  const totalInspected = inspections.length;
+  const passCount      = inspections.filter(i => i.result === 'pass').length;
+  const failCount      = totalInspected - passCount;
+  const passRate       = totalInspected ? Math.round(passCount / totalInspected * 1000) / 10 : 0;
+  const pendingWelds   = projects.reduce((s,p) => s + Math.max(0, p.totalWelds - p.inspected), 0);
 
-const WelderRanking = () => {
-  const top = WQIS_DATA.welders.slice(0, 5);
-  const MEDALS = ["🥇", "🥈", "🥉"];
-  return (
-    <div className="panel glass">
-      <div className="panel-header">
-        <h3><Icons.Welder size={14} style={{ marginRight: 6 }}/>Welder performance</h3>
-        <span className="sub">AI RANKING · 30D</span>
-      </div>
-      <div className="panel-body" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {top.map((w, i) => {
-          const rankColor = i === 0 ? "var(--amber)" : i === 1 ? "var(--t-2)" : i === 2 ? "var(--warn)" : "var(--t-4)";
-          return (
-            <div key={w.id} style={{ display: "flex", alignItems: "center", gap: 10,
-                                     padding: "6px 8px", borderRadius: 8,
-                                     background: i === 0 ? "var(--amber-soft)" : "transparent",
-                                     border: `1px solid ${i === 0 ? "var(--amber-line)" : "transparent"}`,
-                                     transition: "background 0.12s" }}
-                 onMouseEnter={e => { if (i > 0) e.currentTarget.style.background = "var(--bg-2)"; }}
-                 onMouseLeave={e => { if (i > 0) e.currentTarget.style.background = "transparent"; }}>
-              <div style={{ width: 20, fontFamily: "var(--font-mono)", fontSize: i < 3 ? 14 : 11,
-                            fontWeight: 600, color: rankColor, textAlign: "center", flexShrink: 0 }}>
-                {i < 3 ? MEDALS[i] : `#${w.rank}`}
-              </div>
-              <div className="avatar sm" style={{ background: i === 0 ? "linear-gradient(135deg, var(--amber), #c75300)" : "var(--bg-3)" }}>
-                {w.initials}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--t-1)",
-                              whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {w.name}
-                </div>
-                <div className="mono" style={{ fontSize: 9.5, color: "var(--t-5)", letterSpacing: "0.07em", marginTop: 1 }}>
-                  {w.code} · {w.jobs} JOBS
-                </div>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-                <span className="mono nums" style={{ fontSize: 13, fontWeight: 600,
-                                                      color: w.pass >= 98 ? "var(--ok)" : w.pass >= 96 ? "var(--amber)" : "var(--warn)" }}>
-                  {w.pass.toFixed(1)}%
-                </span>
-                <div style={{ width: 80 }}>
-                  <div className="bar ok"><i style={{ width: `${(w.pass - 90) / 10 * 100}%` }}/></div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-        <button className="btn ghost sm" style={{ marginTop: 4, justifyContent: "center" }}>
-          <Icons.Users size={13}/> View all 142 welders <Icons.ChevR size={12} style={{ marginLeft: 4 }}/>
-        </button>
-      </div>
-    </div>
-  );
-};
+  const activeProjects = projects.filter(p => p.status !== 'planning');
+  const barLabels = activeProjects.map(p => p.code);
+  const barData   = activeProjects.map(p => p.inspected);
 
-const DefectHeatmap = () => {
-  const { rows, data } = WQIS_DATA.heat;
-  const max = 5;
-  const colorAt = (v) => {
-    if (v === 0) return "rgba(255,255,255,0.04)";
-    const t = v / max;
-    // amber-graded ramp
-    return `rgba(255, ${Math.round(180 - t*80)}, ${Math.round(60 - t*40)}, ${0.25 + t*0.55})`;
-  };
+  const donutData   = [passCount, failCount];
+  const donutColors = ['#28a745', '#dc3545'];
+  const donutLabels = [`${t('status.pass')} (${passCount})`, `${t('status.fail')} (${failCount})`];
+
+  const lineLabels = Array.from({length:14}, (_,i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (13 - i));
+    return `${d.getDate()}/${d.getMonth()+1}`;
+  });
+  const lineData = [8,12,6,14,18,10,9,16,20,13,11,15,17,14];
+
+  const recent = [...inspections].reverse().slice(0, 8);
+
+  // Count-up animated values
+  const cProjects  = useCountUp(totalProjects);
+  const cInspected = useCountUp(totalInspected);
+  const cPassRate  = useCountUp(parseFloat(passRate) * 10) / 10; // one decimal
+  const cPending   = useCountUp(pendingWelds);
+
+  const withProgress = projects.filter(p => p.totalWelds > 0).map(p => ({
+    ...p, pct: Math.round(p.inspected / p.totalWelds * 100),
+  }));
+
   return (
-    <div className="panel glass">
-      <div className="panel-header">
-        <h3>Defect heatmap</h3>
-        <span className="sub">SPOOL × HOUR · 14H</span>
-      </div>
-      <div className="panel-body" style={{ paddingTop: 8 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "60px 1fr", gap: 8 }}>
-          <div></div>
-          <div style={{ display: "grid", gridTemplateColumns: `repeat(${data[0].length}, 1fr)`, gap: 3,
-                        fontFamily: "var(--font-mono)", fontSize: 9.5, color: "var(--t-5)", textAlign: "center", letterSpacing: "0.08em" }}>
-            {Array.from({ length: 14 }).map((_, i) => <div key={i}>{(i*2).toString().padStart(2,"0")}</div>)}
-          </div>
-          {data.map((row, ri) => (
-            <React.Fragment key={ri}>
-              <div className="mono" style={{ fontSize: 10.5, color: "var(--t-3)", display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 8 }}>
-                {rows[ri]}
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: `repeat(${row.length}, 1fr)`, gap: 3, height: 28 }}>
-                {row.map((v, ci) => (
-                  <div key={ci} className="heat-cell"
-                       title={`${rows[ri]} · ${(ci*2).toString().padStart(2,"0")}:00 · ${v} defect${v===1?"":"s"}`}
-                       style={{ background: colorAt(v) }}/>
+    <div>
+      {/* KPI Cards */}
+      <div className="grid-4 mb-24">
+        {[
+          { label: t('dash.total_projects'), value:cProjects,
+            sub:`${projects.filter(p=>p.status==='active').length} ${t('dash.active_count')}`,
+            iconPath:'M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2zM3 11h18',
+            bg:'var(--navy-soft)', clr:'var(--navy)', delta:'up', accent:'accent-navy' },
+          { label: t('dash.inspected'), value:cInspected.toLocaleString(),
+            sub: t('dash.welds_all'),
+            iconPath:'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4 9.5-9.5z',
+            bg:'var(--teal-soft)', clr:'var(--teal)', delta:'neu', accent:'accent-teal' },
+          { label: t('dash.pass_rate'), value:`${cPassRate}%`,
+            sub: t('dash.vs_target'),
+            iconPath:'M20 6L9 17l-5-5',
+            bg:'var(--green-soft)', clr:'var(--green)', delta:'up', accent:'accent-green' },
+          { label: t('dash.pending'), value:cPending.toLocaleString(),
+            sub: t('dash.remaining'),
+            iconPath:'M12 22c5.5 0 10-4.5 10-10S17.5 2 12 2 2 6.5 2 12s4.5 10 10 10zM12 8v4M12 16h.01',
+            bg:'var(--orange-soft)', clr:'var(--orange)', delta:'down', accent:'accent-orange' },
+        ].map((kpi, i) => (
+          <div key={i} className={`stat-card ${kpi.accent}`}>
+            <div className="stat-icon" style={{background:kpi.bg}}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={kpi.clr}
+                   strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {kpi.iconPath.split('M').filter(Boolean).map((seg,j)=>(
+                  <path key={j} d={`M${seg}`}/>
                 ))}
-              </div>
-            </React.Fragment>
-          ))}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14 }}>
-          <span className="mono" style={{ fontSize: 10.5, letterSpacing: "0.1em", color: "var(--t-4)" }}>
-            5 SPOOLS · 14 H WINDOW · 47 DEFECTS DETECTED
-          </span>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span className="mono" style={{ fontSize: 10, color: "var(--t-5)" }}>0</span>
-            <div style={{ display: "flex", gap: 2 }}>
-              {[0,1,2,3,4,5].map(v => (
-                <div key={v} style={{ width: 14, height: 10, background: colorAt(v), borderRadius: 2 }}/>
-              ))}
+              </svg>
             </div>
-            <span className="mono" style={{ fontSize: 10, color: "var(--t-5)" }}>5+</span>
+            <div>
+              <div className="stat-label">{kpi.label}</div>
+              <div className="stat-value">{kpi.value}</div>
+              <div className={`stat-delta delta-${kpi.delta}`}>{kpi.sub}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts */}
+      <div className="grid-3 mb-24">
+        <div className="card" style={{gridColumn:'span 2'}}>
+          <div className="card-header">
+            <div>
+              <div className="card-title">{t('dash.welds_by_proj')}</div>
+              <div className="card-subtitle">{t('dash.inspected_count')}</div>
+            </div>
+          </div>
+          <div className="card-body"><BarChart labels={barLabels} data={barData} height={200}/></div>
+        </div>
+
+        <div className="card">
+          <div className="card-header">
+            <div>
+              <div className="card-title">{t('dash.pass_fail')}</div>
+              <div className="card-subtitle">{t('dash.ratio_all')}</div>
+            </div>
+          </div>
+          <div className="card-body">
+            <DonutChart labels={[`${t('status.pass')} (${passCount})`, `${t('status.fail')} (${failCount})`]} data={donutData} colors={donutColors} height={200}/>
           </div>
         </div>
       </div>
-    </div>
-  );
-};
 
-const ActivityFeed = () => {
-  const META = {
-    ai:     { ico: "Cpu",    color: "var(--amber)", bg: "var(--amber-soft)" },
-    review: { ico: "Check",  color: "var(--info)",  bg: "var(--info-soft)" },
-    fail:   { ico: "Cross",  color: "var(--bad)",   bg: "var(--bad-soft)" },
-    upload: { ico: "Upload", color: "var(--t-2)",   bg: "var(--bg-3)" },
-    wps:    { ico: "Doc",    color: "var(--purple)", bg: "var(--purple-soft)" },
-    ok:     { ico: "Tick",   color: "var(--ok)",    bg: "var(--ok-soft)" },
-  };
-  return (
-    <div className="panel glass">
-      <div className="panel-header">
-        <h3><span className="live-dot" style={{ marginRight: 8 }}/>Real-time activity</h3>
-        <span className="sub mono" style={{ fontSize: 10 }}>LIVE FEED</span>
+      <div className="card mb-24">
+        <div className="card-header">
+          <div className="card-title">{t('dash.activity_14d')}</div>
+        </div>
+        <div className="card-body"><LineChart labels={lineLabels} data={lineData} height={160}/></div>
       </div>
-      <div className="panel-body flush" style={{ maxHeight: 320, overflow: "auto" }}>
-        {WQIS_DATA.activity.map((a, i) => {
-          const m = META[a.kind] || META.upload;
-          const Ico = Icons[m.ico];
-          return (
-            <div key={i} style={{ display: "flex", gap: 12, padding: "9px 16px",
-                                  borderBottom: "1px solid var(--border-1)",
-                                  transition: "background 0.12s" }}
-                 onMouseEnter={e => e.currentTarget.style.background = "var(--bg-2)"}
-                 onMouseLeave={e => e.currentTarget.style.background = ""}>
-              <span className="mono" style={{ fontSize: 10, color: "var(--t-5)", width: 36, paddingTop: 4, letterSpacing: "0.06em", flexShrink: 0 }}>
-                {a.t}
-              </span>
-              <div style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, marginTop: 1,
-                            background: m.bg, border: `1px solid ${m.color}33`,
-                            display: "grid", placeItems: "center", color: m.color }}>
-                <Ico size={13}/>
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12.5, color: "var(--t-1)", fontWeight: 500 }}>{a.msg}</div>
-                <div style={{ fontSize: 11, color: "var(--t-4)", marginTop: 2, display: "flex", gap: 6 }}>
-                  <span style={{ color: "var(--t-3)" }}>{a.who}</span>
-                  {a.proj !== "system" && (
-                    <>
-                      <span>·</span>
-                      <span className="mono" style={{ color: "var(--amber-2)", fontSize: 10.5 }}>{a.proj}</span>
-                    </>
-                  )}
+
+      {/* Recent + Progress */}
+      <div className="grid-2">
+        <div className="card">
+          <div className="card-header"><div className="card-title">{t('dash.recent')}</div></div>
+          <div className="tbl-wrap">
+            <table className="tbl">
+              <thead><tr><th>{t('col.weld_code')}</th><th>{t('col.project')}</th><th>{t('col.result')}</th><th>{t('col.date')}</th></tr></thead>
+              <tbody>
+                {recent.map(ins => {
+                  const proj = projects.find(p => p.id === ins.projectId);
+                  return (
+                    <tr key={ins.id}>
+                      <td><code style={{fontSize:11.5,color:'var(--navy)'}}>{ins.weldId}</code></td>
+                      <td style={{maxWidth:140,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                        {proj ? proj.code : ins.projectId}
+                      </td>
+                      <td>
+                        <span className={`badge badge-${ins.result==='pass'?'success':'danger'}`}>
+                          {ins.result==='pass' ? t('status.pass') : t('status.fail')}
+                        </span>
+                      </td>
+                      <td className="text-sm text-muted">{ins.date}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-header"><div className="card-title">{t('dash.proj_progress')}</div></div>
+          <div className="card-body" style={{display:'flex',flexDirection:'column',gap:16}}>
+            {withProgress.map(p => (
+              <div key={p.id}>
+                <div style={{display:'flex',justifyContent:'space-between',marginBottom:6,gap:8}}>
+                  <div style={{minWidth:0}}>
+                    <div style={{fontWeight:600,fontSize:13,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.name}</div>
+                    <div style={{fontSize:11.5,color:'var(--text-3)'}}>{p.inspected}/{p.totalWelds} {t('lbl.welds')}</div>
+                  </div>
+                  <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
+                    <span className={`badge badge-${p.status==='completed'?'success':p.status==='active'?'teal':'warning'}`} style={{fontSize:10}}>
+                      {p.status==='completed' ? t('status.completed') : p.status==='active' ? t('status.active') : t('status.planning')}
+                    </span>
+                    <span style={{fontWeight:800,color:'var(--navy)',fontSize:14,minWidth:34,textAlign:'right'}}>{p.pct}%</span>
+                  </div>
+                </div>
+                <div className="progress">
+                  <div className={`progress-bar ${p.status==='completed'?'green':p.status==='active'?'teal':'orange'}`}
+                       style={{width:`${p.pct}%`}}/>
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
-      <div style={{ padding: "8px 14px", borderTop: "1px solid var(--border-1)" }}>
-        <button className="btn ghost sm" style={{ width: "100%", justifyContent: "center", fontSize: 11.5 }}>
-          View full activity log <Icons.ChevR size={12} style={{ marginLeft: "auto" }}/>
-        </button>
-      </div>
-    </div>
-  );
-};
-
-const ApprovalsCompact = () => (
-  <div className="panel glass">
-    <div className="panel-header">
-      <h3><Icons.Workflow size={14} style={{ marginRight: 6 }}/>Pending approvals</h3>
-      <span className="chip warn"><span className="dot"/>5 pending · รออนุมัติ</span>
-    </div>
-    <div className="panel-body flush">
-      {WQIS_DATA.pendingApprovals.slice(0,5).map((a, i) => {
-        const stageColor = a.stage === "client" ? "var(--info)" : a.stage === "qa" ? "var(--warn)" : "var(--amber)";
-        const stageLabel = a.stage === "client" ? "CLIENT" : a.stage === "qa" ? "QA ENG." : "INSP.";
-        return (
-          <div key={a.id}
-               style={{ display: "flex", gap: 10, alignItems: "center", padding: "10px 16px",
-                        borderBottom: "1px solid var(--border-1)", transition: "background 0.12s",
-                        borderLeft: `3px solid ${stageColor}66` }}
-               onMouseEnter={e => e.currentTarget.style.background = "var(--bg-2)"}
-               onMouseLeave={e => e.currentTarget.style.background = ""}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 12.5, fontWeight: 500, color: "var(--t-1)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {a.item}
-              </div>
-              <div className="mono" style={{ fontSize: 10, color: "var(--t-4)", marginTop: 2, letterSpacing: "0.06em", display: "flex", gap: 6 }}>
-                <span style={{ color: "var(--amber-2)" }}>{a.proj}</span>
-                <span>·</span>
-                <span>{a.sub}</span>
-                <span>·</span>
-                <span>{a.age} ago</span>
-              </div>
-            </div>
-            <span className="chip" style={{ borderColor: `${stageColor}55`, color: stageColor, fontSize: 9.5 }}>
-              {stageLabel}
-            </span>
-          </div>
-        );
-      })}
-    </div>
-    <div style={{ padding: "8px 14px", borderTop: "1px solid var(--border-1)" }}>
-      <button className="btn ghost sm" style={{ width: "100%", justifyContent: "center", fontSize: 11.5 }}>
-        Open workflow board <Icons.ChevR size={12} style={{ marginLeft: "auto" }}/>
-      </button>
-    </div>
-  </div>
-);
-
-const DashboardScreen = () => {
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-  const thaiGreeting = hour < 12 ? "สวัสดีตอนเช้า" : hour < 17 ? "สวัสดีตอนบ่าย" : "สวัสดีตอนเย็น";
-  return (
-    <div className="page">
-      <div className="bg-grid"/>
-      <div className="page-head">
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-            <span className="kicker" style={{ color: "var(--amber-2)" }}>OVERVIEW · TH-1 · LIVE</span>
-            <span style={{ width: 1, height: 12, background: "var(--border-2)" }}/>
-            <span className="mono" style={{ fontSize: 10.5, color: "var(--ok)", letterSpacing: "0.1em" }}>
-              <span className="live-dot" style={{ marginRight: 6 }}/>AI ONLINE
-            </span>
-          </div>
-          <h1 style={{ marginTop: 0 }}>
-            {greeting}, <span style={{ color: "var(--amber)" }}>Manop</span>.
-            <span style={{ fontFamily: "var(--font-sans)", fontWeight: 400, fontSize: 16, color: "var(--t-3)", marginLeft: 12 }}>
-              {thaiGreeting} คุณมนพ
-            </span>
-          </h1>
-          <div className="sub">
-            <span style={{ color: "var(--ok)" }}>23</span> active projects ·{" "}
-            <span style={{ color: "var(--amber)" }}>484</span> inspections in the last 24 h ·{" "}
-            <span style={{ color: "var(--purple)" }}>AI accuracy 99.2%</span>
+            ))}
           </div>
         </div>
-        <div className="row" style={{ gap: 8 }}>
-          <button className="btn ghost sm"><Icons.Calendar size={14}/> Today · 14 May 2026</button>
-          <button className="btn ghost sm"><Icons.Filter size={14}/> All projects</button>
-          <button className="btn primary sm"><Icons.Plus size={14}/> New inspection</button>
-        </div>
       </div>
-
-      {/* KPI strip */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 14, marginBottom: 18 }}>
-        {WQIS_DATA.kpis.map(k => <KpiCard key={k.id} k={k}/>)}
-      </div>
-
-      {/* Row 2 — charts + welder ranking */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14, marginBottom: 14 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-          <PassDistribution/>
-          <DefectMix/>
-        </div>
-        <WelderRanking/>
-      </div>
-
-      {/* Row 3 — timeline + activity */}
-      <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: 14, marginBottom: 14 }}>
-        <InspectionTimeline/>
-        <ActivityFeed/>
-      </div>
-
-      {/* Row 4 — approvals compact full width */}
-      <ApprovalsCompact/>
     </div>
   );
 };

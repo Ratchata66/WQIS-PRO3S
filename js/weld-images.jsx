@@ -2,7 +2,67 @@
 // Stylized SVG weld imagery — realistic-feeling but procedural.
 // Used as the AI Inspection viewer canvas.
 
-const WeldImage = ({ variant = "tig-pass", showBoxes = false, showHeatmap = false, showScan = false, w = 760, h = 480 }) => {
+const WeldImage = ({
+  variant = "tig-pass",
+  showBoxes = false,
+  showHeatmap = false,
+  showScan = false,
+  w = 760,
+  h = 480,
+  imageSrc = "",
+  detections = [],
+  imageMeta = null,
+}) => {
+  if (imageSrc) {
+    const iw = imageMeta?.width || w;
+    const ih = imageMeta?.height || h;
+    const colorFor = (name) => {
+      const n = String(name || "").toLowerCase();
+      if (n.includes("pass")) return "#2dd4a4";
+      if (n.includes("fail")) return "#ff5570";
+      if (n.includes("negative") || n.includes("not")) return "#ffb547";
+      return "#4fa8ff";
+    };
+
+    return (
+      <div style={{ position: "relative", width: "100%", height: "100%" }}>
+        <svg width="100%" height="100%" viewBox={`0 0 ${iw} ${ih}`} preserveAspectRatio="xMidYMid meet"
+             style={{ display: "block", width: "100%", height: "100%", borderRadius: "inherit", background: "var(--bg-0)" }}>
+          <image href={imageSrc} x="0" y="0" width={iw} height={ih} preserveAspectRatio="xMidYMid meet"/>
+          {showBoxes && detections.map((d, i) => {
+            const bw = Number(d.width || 0);
+            const bh = Number(d.height || 0);
+            const x = Number(d.x || 0) - bw / 2;
+            const y = Number(d.y || 0) - bh / 2;
+            const col = colorFor(d.class || d.label);
+            return (
+              <g key={i}>
+                <rect x={x} y={y} width={bw} height={bh}
+                      fill="none" stroke={col} strokeWidth={Math.max(2, iw / 450)}
+                      style={{ filter: `drop-shadow(0 0 5px ${col})` }}/>
+                <rect x={x} y={Math.max(0, y - Math.max(22, ih * 0.035))}
+                      width={Math.max(116, String(d.class || "DETECT").length * 9)}
+                      height={Math.max(20, ih * 0.032)}
+                      fill={col} opacity="0.92"/>
+                <text x={x + 6} y={Math.max(14, y - Math.max(7, ih * 0.012))}
+                      fill="#071019" fontSize={Math.max(13, iw / 70)}
+                      fontFamily="Inter, sans-serif" fontWeight="700">
+                  {String(d.class || "DETECT").toUpperCase()} {Math.round(Number(d.confidence || 0) * 100)}%
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+        {showScan && (
+          <div className="scan-overlay">
+            <div className="grid"/>
+            <div className="line"/>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   // Variants change tone of weld + position of defects
   const isStainless = variant.startsWith("tig");
   const isPass = variant.endsWith("pass");
