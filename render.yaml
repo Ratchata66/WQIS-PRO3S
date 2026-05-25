@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: wqis-ai-server
+    runtime: python
+    rootDir: local-ai
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    plan: free
+    envVars:
+      - key: YOLO_CONF
+        value: "0.20"
+      - key: PYTHON_VERSION
+        value: "3.11.0"
