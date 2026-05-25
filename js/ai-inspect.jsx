@@ -310,6 +310,8 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
   const staffOptions = selectedProj ? selectedProj.staff : [];
 
   const formValid = form.projectId && form.weldId.trim() && form.welder.trim();
+  const passCount = Object.values(results).filter(r => r && r.pass).length;
+  const failCount = Object.values(results).filter(r => r && !r.pass).length;
 
   return (
     <div>
@@ -319,6 +321,31 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
           <div className="page-sub">{t('inspect.sub')}</div>
         </div>
       </div>
+
+      {/* ── Stats summary bar ── */}
+      {files.length > 0 && (
+        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}}>
+          {[
+            {lbl:'ไฟล์ทั้งหมด', val:files.length,                   ico:'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z', col:'var(--navy)',  bg:'var(--navy-soft)'},
+            {lbl:'วิเคราะห์แล้ว', val:Object.keys(results).length,    ico:'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', col:'var(--teal)',  bg:'var(--teal-soft)'},
+            {lbl:'ผ่าน PASS',    val:passCount,                        ico:'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',                                                                                             col:'var(--green)', bg:'var(--green-soft)'},
+            {lbl:'ไม่ผ่าน FAIL', val:failCount,                        ico:'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z',                                                                   col:'var(--red)',   bg:'var(--red-soft)'},
+          ].map(s=>(
+            <div key={s.lbl} style={{background:'var(--white)',borderRadius:'var(--r-md)',padding:'14px 18px',
+              border:'1px solid var(--border)',boxShadow:'var(--sh-xs)',display:'flex',alignItems:'center',gap:14}}>
+              <div style={{width:42,height:42,borderRadius:10,background:s.bg,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={s.col} strokeWidth="1.8">
+                  <path d={s.ico}/>
+                </svg>
+              </div>
+              <div>
+                <div style={{fontSize:26,fontWeight:800,color:s.col,lineHeight:1}}>{s.val}</div>
+                <div style={{fontSize:11.5,color:'var(--text-3)',marginTop:3,fontWeight:500}}>{s.lbl}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div style={{display:'grid',gridTemplateColumns:'1fr 380px',gap:20,alignItems:'start'}}>
 
@@ -354,10 +381,22 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
                 {files.length === 0 ? (
                   <>
                     <div className="upload-zone-icon">
-                      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                      </svg>
                     </div>
                     <div className="upload-zone-title">{t('inspect.drop_hint')}</div>
                     <div className="upload-zone-sub">{t('inspect.click_drop')} · {t('inspect.drop_sub')}</div>
+                    <div style={{marginTop:12,display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}>
+                      {['JPG','PNG','WEBP','HEIC'].map(f=>(
+                        <span key={f} style={{fontSize:10.5,fontWeight:700,padding:'2px 8px',borderRadius:5,
+                          background:'var(--navy-soft)',color:'var(--navy)',border:'1px solid var(--navy-mid)'}}>
+                          {f}
+                        </span>
+                      ))}
+                    </div>
                   </>
                 ) : (
                   <div className="img-grid" onClick={e=>e.stopPropagation()}>
@@ -367,10 +406,22 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
                         <div key={f.id} className={`img-thumb${selected===f.id?' sel':''}`}
                              onClick={()=>setSelected(f.id)}>
                           <img src={f.url} alt={f.name}/>
-                          {res && (
-                            <span className={`img-thumb-badge badge-${res.pass?'success':'danger'}`}
-                                  style={{background:res.pass?'#28a745':'#dc3545',color:'white'}}>
+                          {res ? (
+                            <span style={{
+                              position:'absolute',bottom:4,left:4,right:4,
+                              background:res.pass?'rgba(40,167,69,0.92)':'rgba(220,53,69,0.92)',
+                              color:'white',fontSize:9.5,fontWeight:800,padding:'3px 4px',
+                              borderRadius:4,textAlign:'center',backdropFilter:'blur(2px)',
+                              letterSpacing:'0.04em'
+                            }}>
                               {getResultLabel(res)}
+                            </span>
+                          ) : analyzing && (
+                            <span style={{
+                              position:'absolute',inset:0,background:'rgba(0,0,0,0.35)',
+                              display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'inherit'
+                            }}>
+                              <div style={{width:16,height:16,border:'2px solid rgba(255,255,255,0.4)',borderTopColor:'white',borderRadius:'50%',animation:'spin 0.6s linear infinite'}}/>
                             </span>
                           )}
                         </div>
@@ -521,41 +572,78 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
                   </button>
                 </div>
 
-                {/* ── Result info row ── */}
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
-                  {/* Verdict */}
-                  <div className={`ai-result ${selResult.pass?'pass':'fail'}`}>
-                    <div className={`ai-verdict ${selResult.pass?'pass':'fail'}`}>
+                {/* ── Result: Verdict + Confidence bar ── */}
+                <div style={{display:'flex',gap:12,alignItems:'stretch'}}>
+
+                  {/* Verdict badge */}
+                  <div style={{flex:'0 0 160px',display:'flex',flexDirection:'column',alignItems:'center',
+                    justifyContent:'center',padding:'18px 12px',borderRadius:'var(--r-md)',textAlign:'center',
+                    background:selResult.pass?'var(--green-soft)':'var(--red-soft)',
+                    border:`2px solid ${selResult.pass?'var(--green)':'var(--red)'}`,gap:8}}>
+                    <div style={{width:52,height:52,borderRadius:'50%',display:'flex',alignItems:'center',
+                      justifyContent:'center',
+                      background:selResult.pass?'var(--green)':'var(--red)',color:'white',flexShrink:0}}>
                       {selResult.pass
-                        ? <><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>PASS</>
-                        : <><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>{getResultLabel(selResult)}</>
+                        ? <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                       }
                     </div>
-                    <div style={{fontSize:12.5,marginTop:4,color:'var(--text-2)'}}>
+                    <div style={{fontSize:24,fontWeight:900,color:selResult.pass?'var(--green)':'var(--red)',letterSpacing:'0.03em',lineHeight:1}}>
+                      {getResultLabel(selResult)}
+                    </div>
+                    <div style={{fontSize:11,color:'var(--text-3)',lineHeight:1.4}}>
                       {getResultDescription(selResult)}
                     </div>
                   </div>
 
-                  {/* Zone table */}
-                  <div>
-                    <div style={{fontSize:11.5,fontWeight:700,color:'var(--text-3)',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:6}}>
-                      การวิเคราะห์สีออกไซด์
-                    </div>
-                    {selResult.zones.map((z,i) => (
-                      <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'5px 0',borderBottom:'1px solid var(--border-lt)',fontSize:12}}>
-                        <div>
-                          <div style={{fontWeight:500,color:'var(--text-1)'}}>{z.zone}</div>
-                          <div style={{color:'var(--text-3)',fontSize:11}}>{formatAiReason(z.ref)}</div>
-                        </div>
-                        <div style={{display:'flex',alignItems:'center',gap:8}}>
-                          <span style={{fontWeight:600}}>{z.area}</span>
-                          <span className={`badge badge-${z.ok?'success':'danger'}`} style={{fontSize:10}}>
-                            {z.ok?'OK':'NG'}
-                          </span>
-                        </div>
+                  {/* Confidence + Detection */}
+                  <div style={{flex:1,display:'flex',flexDirection:'column',gap:10}}>
+
+                    {/* Confidence bar card */}
+                    <div style={{background:'var(--white)',borderRadius:'var(--r)',padding:'12px 14px',
+                      border:'1px solid var(--border)',boxShadow:'var(--sh-xs)'}}>
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                        <span style={{fontSize:11,fontWeight:700,color:'var(--text-3)',textTransform:'uppercase',letterSpacing:'0.05em'}}>
+                          AI Confidence
+                        </span>
+                        <span style={{fontSize:20,fontWeight:900,color:selResult.pass?'var(--green)':'var(--red)',lineHeight:1}}>
+                          {selResult.conf}%
+                        </span>
                       </div>
-                    ))}
+                      <div style={{height:8,background:'var(--bg-alt)',borderRadius:20,overflow:'hidden'}}>
+                        <div style={{height:'100%',width:`${selResult.conf}%`,borderRadius:20,
+                          background:`linear-gradient(90deg,${selResult.pass?'var(--teal),var(--green)':'var(--orange),var(--red)'})`,
+                          transition:'width 0.65s cubic-bezier(0.4,0,0.2,1)'}}/>
+                      </div>
+                      <div style={{display:'flex',justifyContent:'space-between',marginTop:5,fontSize:10,color:'var(--text-4)'}}>
+                        <span>0%</span><span>50%</span><span>100%</span>
+                      </div>
+                    </div>
+
+                    {/* Zone / detection detail */}
+                    <div style={{flex:1,background:'var(--white)',borderRadius:'var(--r)',padding:'10px 14px',
+                      border:'1px solid var(--border)',boxShadow:'var(--sh-xs)'}}>
+                      <div style={{fontSize:11,fontWeight:700,color:'var(--text-3)',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:8}}>
+                        Detection Details
+                      </div>
+                      {selResult.zones.map((z,i) => (
+                        <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',
+                          padding:'5px 0',borderBottom:i<selResult.zones.length-1?'1px solid var(--border-lt)':'none',fontSize:12}}>
+                          <div>
+                            <div style={{fontWeight:600,color:'var(--text-1)'}}>{z.zone}</div>
+                            <div style={{color:'var(--text-3)',fontSize:10.5,marginTop:1}}>{formatAiReason(z.ref)}</div>
+                          </div>
+                          <div style={{display:'flex',alignItems:'center',gap:6}}>
+                            <span style={{fontWeight:600,color:'var(--text-2)'}}>{z.area}</span>
+                            <span className={`badge badge-${z.ok?'success':'danger'}`} style={{fontSize:10,fontWeight:700}}>
+                              {z.ok?'OK':'NG'}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
+
                 </div>
 
               </div>
@@ -576,6 +664,12 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
                 {t('inspect.save_ok_msg')}
               </div>
             )}
+
+            {/* Section: Project info */}
+            <div style={{fontSize:10.5,fontWeight:700,color:'var(--text-4)',textTransform:'uppercase',letterSpacing:'0.08em',
+              paddingBottom:6,borderBottom:'1px solid var(--border-lt)'}}>
+              ข้อมูลโปรเจค
+            </div>
 
             <div className="form-group" style={{marginBottom:0}}>
               <label className="form-label">{t('inspect.project')} <span className="form-required">*</span></label>
@@ -600,6 +694,12 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
               </select>
             </div>
 
+            {/* Section: Welder info */}
+            <div style={{fontSize:10.5,fontWeight:700,color:'var(--text-4)',textTransform:'uppercase',letterSpacing:'0.08em',
+              paddingBottom:6,borderBottom:'1px solid var(--border-lt)'}}>
+              ข้อมูลช่างเชื่อม
+            </div>
+
             <div className="form-group" style={{marginBottom:0}}>
               <label className="form-label">{t('inspect.welder')} <span className="form-required">*</span></label>
               {staffOptions.length > 0 ? (
@@ -621,6 +721,12 @@ const AIInspectScreen = ({ projects, inspections, setInspections, setProjects, l
               <label className="form-label">{t('inspect.cert')} / Cert No.</label>
               <input className="form-control" value={form.cert} onChange={e=>setF('cert',e.target.value)}
                      placeholder={t('inspect.cert_ph')}/>
+            </div>
+
+            {/* Section: Inspection record */}
+            <div style={{fontSize:10.5,fontWeight:700,color:'var(--text-4)',textTransform:'uppercase',letterSpacing:'0.08em',
+              paddingBottom:6,borderBottom:'1px solid var(--border-lt)'}}>
+              บันทึกการตรวจ
             </div>
 
             <div className="form-group" style={{marginBottom:0}}>
