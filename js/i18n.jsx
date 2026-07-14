@@ -12,6 +12,7 @@
     'nav.users':       'ทีมงาน',
     'nav.settings':    'ตั้งค่า',
     'nav.info':        'เกี่ยวกับ',
+    'nav.drawing3d':   'ดูแบบ 3D',
     'nav.profile':     'โปรไฟล์',
     'nav.logout':      'ออกจากระบบ',
     'nav.expand':      'ขยาย Sidebar',
@@ -19,6 +20,7 @@
     'nav.group.main':     'เมนูหลัก',
     'nav.group.analysis': 'รายงาน & วิเคราะห์',
     'nav.group.system':   'ระบบ',
+    'nav.group.tools':    'เครื่องมือ',
     // ── Roles ────────────────────────────────────────────────────
     'role.admin':     'ผู้ดูแลระบบ',
     'role.inspector': 'ผู้ตรวจสอบ',
@@ -443,9 +445,9 @@
     'nav.dashboard':'Dashboard','nav.inspect':'AI Inspect','nav.inspections':'Inspections',
     'nav.projects':'Projects','nav.reports':'Reports','nav.analytics':'Analytics',
     'nav.standards':'Standards','nav.users':'Users & Teams','nav.settings':'Settings',
-    'nav.info':'Info','nav.profile':'Profile','nav.logout':'Logout',
+    'nav.info':'Info','nav.drawing3d':'3D Viewer','nav.profile':'Profile','nav.logout':'Logout',
     'nav.expand':'Expand Sidebar','nav.collapse':'Collapse Sidebar',
-    'nav.group.main':'Main Menu','nav.group.analysis':'Reports & Analytics','nav.group.system':'System',
+    'nav.group.main':'Main Menu','nav.group.analysis':'Reports & Analytics','nav.group.system':'System','nav.group.tools':'Tools',
     // ── Roles ────────────────────────────────────────────────────
     'role.admin':'Administrator','role.inspector':'Inspector','role.viewer':'Viewer',
     // ── Auth ─────────────────────────────────────────────────────

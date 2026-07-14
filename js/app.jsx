@@ -2,7 +2,8 @@
    Splash, Login, Sidebar, Topbar, NotificationsDrawer,
    DashboardScreen, AIInspectScreen, InspectionsScreen, ProjectsScreen,
    ReportsScreen, AnalyticsScreen, StandardsScreen,
-   UsersTeamsScreen, SettingsScreen, InfoScreen, ProfileScreen */
+   UsersTeamsScreen, SettingsScreen, InfoScreen, ProfileScreen,
+   Drawing3DScreen */
 
 const PALETTES = {
   '#ff8c1a': { a:'#ff8c1a', a2:'#ffa645', a3:'#ffc176', glow:'rgba(255,140,26,0.45)' },
@@ -43,6 +44,118 @@ const ToastStack = ({ toasts, onRemove }) => (
   </div>
 );
 
+// ── Demo Notice Modal ─────────────────────────────────────────────────────────
+const DEMO_NOTICE_KEY = 'wqis-demo-notice-seen';
+
+const DemoNoticeModal = ({ onClose, session }) => {
+  const userKey = DEMO_NOTICE_KEY + (session ? '-' + session.username : '');
+  const items = [
+    {
+      icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>,
+      title: 'ข้อมูลเก็บเฉพาะในเครื่องของคุณ (Local Storage)',
+      body:  'ผลการตรวจ โปรเจค และรายงานทั้งหมดถูกบันทึกใน Browser ของอุปกรณ์นี้เท่านั้น ไม่มีการซิงค์ข้ามเครื่องหรือแชร์ระหว่างผู้ใช้คนอื่น หากล้างข้อมูล Browser ข้อมูลจะหายถาวร',
+    },
+    {
+      icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>,
+      title: 'Demo Version — ยังไม่มีเซิร์ฟเวอร์กลาง',
+      body:  'ระบบอยู่ในช่วงทดลองใช้งาน เหมาะสำหรับบันทึกผลการตรวจส่วนตัวและทดสอบระบบ AI ยังไม่รองรับการทำงานร่วมกันเป็นทีม',
+    },
+    {
+      icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
+      title: 'อยู่ระหว่างการพัฒนาต่อเนื่อง',
+      body:  'ระบบเซิร์ฟเวอร์กลาง การซิงค์ข้อมูล และฟีเจอร์สำหรับทีมอยู่ในแผนพัฒนา จะแจ้งให้ทราบเมื่อพร้อมใช้งาน',
+    },
+  ];
+
+  return (
+    <ModalPortal>
+      <div style={{
+        position:'fixed', inset:0, background:'rgba(0,0,0,0.65)', backdropFilter:'blur(6px)',
+        display:'flex', alignItems:'center', justifyContent:'center',
+        zIndex:9999, padding:20, animation:'fadeIn .2s ease'
+      }}>
+        <div style={{
+          background:'var(--bg-card)', borderRadius:12, maxWidth:480, width:'100%',
+          boxShadow:'0 32px 80px rgba(0,0,0,0.45)', border:'1px solid var(--border-lt)',
+          animation:'slideUp .28s ease', overflow:'hidden'
+        }}>
+
+          {/* ── Header ── */}
+          <div style={{ background:'var(--navy)', padding:'18px 22px', display:'flex', alignItems:'center', gap:12 }}>
+            <div style={{
+              width:36, height:36, borderRadius:8, flexShrink:0,
+              background:'rgba(255,255,255,0.12)', display:'grid', placeItems:'center'
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </div>
+            <div>
+              <div style={{ fontWeight:700, fontSize:14, color:'#fff', letterSpacing:'.3px' }}>
+                หมายเหตุสำคัญ — WQIS PRO3S
+              </div>
+              <div style={{ fontSize:11, color:'rgba(255,255,255,0.5)', marginTop:1, letterSpacing:'.2px' }}>
+                DEMO VERSION · กรุณาอ่านก่อนเริ่มใช้งาน
+              </div>
+            </div>
+          </div>
+
+          {/* ── Items ── */}
+          <div style={{ padding:'20px 22px 4px' }}>
+            {items.map((item, i) => (
+              <div key={i} style={{ display:'flex', gap:13, marginBottom:18 }}>
+                <div style={{
+                  width:32, height:32, borderRadius:8, flexShrink:0,
+                  background:'var(--navy)', border:'none',
+                  display:'grid', placeItems:'center', color:'#fff'
+                }}>{item.icon}</div>
+                <div>
+                  <div style={{ fontWeight:700, fontSize:13, color:'var(--text-1)', marginBottom:4, lineHeight:1.35 }}>
+                    {item.title}
+                  </div>
+                  <div style={{ fontSize:12, color:'var(--text-2)', lineHeight:1.75 }}>
+                    {item.body}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Divider ── */}
+          <div style={{ height:1, background:'var(--border-lt)', margin:'0 22px' }}/>
+
+          {/* ── Footer ── */}
+          <div style={{ padding:'13px 22px 16px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+            <label style={{ display:'flex', alignItems:'center', gap:7, cursor:'pointer', userSelect:'none' }}>
+              <input type="checkbox" id="demoNoticeDontShow"
+                style={{ width:13, height:13, cursor:'pointer', accentColor:'var(--navy)' }}/>
+              <span style={{ fontSize:11.5, color:'var(--text-3)' }}>ไม่ต้องแสดงอีก</span>
+            </label>
+            <button
+              onClick={() => {
+                if (document.getElementById('demoNoticeDontShow')?.checked) {
+                  try { localStorage.setItem(userKey, '1'); } catch(_) {}
+                }
+                onClose();
+              }}
+              style={{
+                background:'var(--navy)', color:'#fff', border:'none', borderRadius:7,
+                padding:'9px 22px', fontWeight:600, fontSize:12.5, cursor:'pointer',
+                fontFamily:'inherit', letterSpacing:'.2px', transition:'opacity .15s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity='.82'}
+              onMouseLeave={e => e.currentTarget.style.opacity='1'}
+            >รับทราบ เริ่มใช้งาน →</button>
+          </div>
+
+        </div>
+      </div>
+    </ModalPortal>
+  );
+};
+
 const App = () => {
   const [phase,   setPhase]   = React.useState('splash');  // splash → login → app
   const [page,    setPage]    = React.useState('dashboard');
@@ -51,6 +164,7 @@ const App = () => {
   const [lang,    setLang]    = React.useState(() => localStorage.getItem('wqis-lang') || 'th');
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
   const [notifOpen, setNotifOpen] = React.useState(false);
+  const [showDemoNotice, setShowDemoNotice] = React.useState(false);
 
   const loadStored = (key, fallback) => {
     try { const d = localStorage.getItem(key); return d ? JSON.parse(d) : fallback; } catch(_) { return fallback; }
@@ -130,6 +244,15 @@ const App = () => {
     if (s) setPhase('app');
   }, []);
 
+  // Show demo notice every login unless this user permanently dismissed it
+  React.useEffect(() => {
+    if (phase === 'app') {
+      const s = typeof Auth !== 'undefined' && Auth.getSession ? Auth.getSession() : null;
+      const userKey = DEMO_NOTICE_KEY + (s ? '-' + s.username : '');
+      if (!localStorage.getItem(userKey)) setShowDemoNotice(true);
+    }
+  }, [phase]);
+
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
   const handleThemeChange = (newTheme) => applyThemeTransition(newTheme, setTheme);
 
@@ -153,13 +276,14 @@ const App = () => {
       case 'dashboard':   return <DashboardScreen   projects={projects} inspections={inspections} lang={lang}/>;
       case 'projects':    return <ProjectsScreen    projects={projects} setProjects={setProjects} inspections={inspections} lang={lang}/>;
       case 'inspect':     return <AIInspectScreen   projects={projects} inspections={inspections} setInspections={setInspections} setProjects={setProjects} lang={lang}/>;
-      case 'inspections': return <InspectionsScreen inspections={inspections} projects={projects} lang={lang}/>;
+      case 'inspections': return <InspectionsScreen inspections={inspections} setInspections={setInspections} projects={projects} lang={lang}/>;
       case 'reports':     return <ReportsScreen     projects={projects} inspections={inspections} lang={lang}/>;
       case 'analytics':   return <AnalyticsScreen   projects={projects} inspections={inspections} lang={lang}/>;
       case 'standards':   return <StandardsScreen   standards={standards} setStandards={setStandards} lang={lang}/>;
       case 'users':       return <UsersTeamsScreen  lang={lang}/>;
       case 'settings':    return <SettingsScreen    settings={appSettings} setSettings={setAppSettings} lang={lang}/>;
       case 'info':        return <InfoScreen        lang={lang}/>;
+      case 'drawing3d':   return <Drawing3DScreen   lang={lang}/>;
       case 'profile':     return <ProfileScreen     onBack={() => setPage('dashboard')} lang={lang}/>;
       default:            return <DashboardScreen   projects={projects} inspections={inspections} lang={lang}/>;
     }
@@ -195,6 +319,7 @@ const App = () => {
       </div>
       <NotificationsDrawer open={notifOpen} onClose={() => setNotifOpen(false)} lang={lang}/>
       <ToastStack toasts={toasts} onRemove={removeToast}/>
+      {showDemoNotice && <DemoNoticeModal onClose={() => setShowDemoNotice(false)} session={typeof Auth !== 'undefined' && Auth.getSession ? Auth.getSession() : null}/>}
     </div>
   );
 };

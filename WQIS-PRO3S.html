@@ -26,6 +26,21 @@
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
+  <!-- Three.js (3D viewer) -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+
+  <!-- PDF.js (Drawing viewer) -->
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+
+  <!-- Local user database (localhost only) -->
+  <script>
+    (function(){
+      var host = window.location.hostname;
+      var isLocal = window.location.protocol==='file:'||host==='localhost'||host==='127.0.0.1'||host==='';
+      if(isLocal) document.write('<scr'+'ipt src="generated-users.js"><\/scr'+'ipt>');
+    })();
+  </script>
+
   <!-- Auth -->
   <script src="auth.js"></script>
 
@@ -46,7 +61,7 @@
 
   <!-- Screens -->
   <script type="text/babel" data-presets="react" src="js/dashboard.jsx?v=20260525"></script>
-  <script type="text/babel" data-presets="react" src="js/ai-inspect.jsx?v=20260525"></script>
+  <script type="text/babel" data-presets="react" src="js/ai-inspect.jsx?v=20260602-new-model"></script>
   <script type="text/babel" data-presets="react" src="js/projects.jsx?v=20260525"></script>
   <script type="text/babel" data-presets="react" src="js/operations.jsx?v=20260525"></script>
   <script type="text/babel" data-presets="react" src="js/insights.jsx?v=20260525"></script>
@@ -57,7 +72,10 @@
   <script type="text/babel" data-presets="react" src="js/profile.jsx?v=20260525"></script>
   <script type="text/babel" data-presets="react" src="js/settings.jsx?v=20260525"></script>
 
+  <!-- 3D Drawing viewer -->
+  <script type="text/babel" data-presets="react" src="js/drawing3d.jsx?v=20260714b"></script>
+
   <!-- App entry -->
-  <script type="text/babel" data-presets="react" src="js/app.jsx?v=20260525"></script>
+  <script type="text/babel" data-presets="react" src="js/app.jsx?v=20260714"></script>
 </body>
 </html>

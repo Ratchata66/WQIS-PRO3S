@@ -857,6 +857,9 @@ textarea.form-control { resize:vertical;min-height:80px; }
   animation:fadeUp 0.35s cubic-bezier(.22,1,.36,1);
 }
 @keyframes fadeUp { from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none} }
+@keyframes fadeIn { from{opacity:0}to{opacity:1} }
+@keyframes slideUp { from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none} }
+@keyframes spin { from{transform:rotate(0deg)}to{transform:rotate(360deg)} }
 .login-logo-wrap { text-align:center;margin-bottom:28px; }
 .login-logo { width:56px;height:56px;object-fit:contain;margin-bottom:10px; }
 .login-logo-ph {
